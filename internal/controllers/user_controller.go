@@ -119,3 +119,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
   })
   write.JSON(w, http.StatusOK, write.H{"message": "Logged out successfully"})
 }
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+  
+}

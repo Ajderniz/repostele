@@ -59,7 +59,7 @@ func GetItems(start int, limit int, sort string, dir string) ([]Item, error) {
   return items, err
 }
 
-func GetItemFromId(id string) (Item, error) {
+func GetItemFromID(id string) (Item, error) {
   item := Item{}
   err := _DB.Get(&item,
     "SELECT * "+

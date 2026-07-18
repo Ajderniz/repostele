@@ -42,14 +42,14 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   write.JSON(w, http.StatusOK, write.H{"data": items})
 }
 
-func GetItemFromId(w http.ResponseWriter, r *http.Request) {
+func GetItemFromID(w http.ResponseWriter, r *http.Request) {
   id := chi.URLParam(r, "id")
   if _, err := strconv.Atoi(id); err != nil { 
     write.ErrorJSON(w, http.StatusNotAcceptable, errors.New("Bad search criteria"))
     return
   }
 
-  item, err := models.GetItemFromId(id)
+  item, err := models.GetItemFromID(id)
   if err != nil {
     write.ErrorJSON(w, http.StatusInternalServerError, err)
     return

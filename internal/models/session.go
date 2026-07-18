@@ -30,22 +30,20 @@ const (
 var _OpenSessionErr = errors.New("Could not open session")
 
 func OpenSession(session Session) error {
-  tx := _DB.MustBegin()
-  _, err := tx.NamedExec(
+  tx, err := _DB.Beginx()
+  if err != nil { errman.PrintError(err); return _OpenSessionErr }
+
+  _, err = tx.NamedExec(
     "INSERT INTO "+_SESSIONS+" ("+_SESSION_FIELDS+") "+
     "VALUES(:"+SESSION_TOKEN+",:"+SESSION_CSRF_TOKEN+",:"+_SESSION_USER+
             ",:"+_SESSION_STARTS+",:"+_SESSION_EXPIRES+")",
     &session,
   )
-  if err != nil {
-    errman.PrintError(err)
-    return _OpenSessionErr
-  }
+  if err != nil { errman.PrintError(err); return _OpenSessionErr }
+
   err = tx.Commit()
-  if err != nil {
-    errman.PrintError(err)
-    return _OpenSessionErr
-  }
+  if err != nil { errman.PrintError(err); return _OpenSessionErr }
+
   return nil
 }
 
@@ -68,21 +66,19 @@ func GetSessionFromToken(sessionToken string) (Session, error) {
 var _CloseSessionErr = errors.New("Could not close session")
 
 func CloseSession(sessionToken string) error {
-  tx := _DB.MustBegin()
-  _, err := tx.Exec(
+  tx, err := _DB.Beginx()
+  if err != nil { errman.PrintError(err); return _CloseSessionErr }
+
+  _, err = tx.Exec(
     "UPDATE "+_SESSIONS+" "+
     "SET "+_SESSION_EXPIRES+" = $1 "+
     "WHERE "+SESSION_TOKEN+" = $2",
     time.Now().Add(-time.Hour).Unix(), sessionToken,
   )
-  if err != nil {
-    errman.PrintError(err)
-    return _CloseSessionErr
-  }
+  if err != nil { errman.PrintError(err); return _CloseSessionErr }
+
   err = tx.Commit()
-  if err != nil {
-    errman.PrintError(err)
-    return _CloseSessionErr
-  }
+  if err != nil { errman.PrintError(err); return _CloseSessionErr }
+  
   return nil
 }

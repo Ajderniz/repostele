@@ -39,22 +39,18 @@ func RegisterUser(username, password string) error {
 	if err != nil { return err }
   user.TimeCreated = time.Now().Unix()
 
-  tx := _DB.MustBegin()
+  tx, err := _DB.Beginx()
+  if err != nil { errman.PrintError(err); return _RegisterErr }
+
   _, err = tx.NamedExec(
     "INSERT INTO "+_USERS+" ("+_USER_FIELDS+") " +
     "VALUES (:"+USER_USERNAME+",:"+_USER_PASS_HASH+",:"+_USER_TIME_CREATED+")",
     &user,
   )
-  if err != nil {
-    errman.PrintError(err)
-    return _RegisterErr
-  }
+  if err != nil { errman.PrintError(err); return _RegisterErr }
   
   err = tx.Commit()
-  if err != nil {
-    errman.PrintError(err)
-    return _RegisterErr
-  }
+  if err != nil { errman.PrintError(err); return _RegisterErr }
 
   return nil
 }
