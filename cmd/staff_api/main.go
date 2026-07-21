@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	errman.CheckFatal(common.InitMain("Repostele user API"))
+	errman.CheckFatal(common.InitMain("Repostele staff API"))
 }
