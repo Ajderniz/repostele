@@ -6,5 +6,5 @@ import (
 )
 
 func main() {
-	errman.CheckFatal(common.InitMain("Repostele staff API"))
+	errman.CheckFatal(common.InitMain("Repostele staff API", common.SERVER_BINARY_STAFF))
 }

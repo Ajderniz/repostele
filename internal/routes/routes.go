@@ -7,7 +7,7 @@ import (
   "github.com/ajderniz/repostele/internal/mymiddleware"
 )
 
-func Register(r *chi.Mux) {
+func RegisterUserRoutes(r *chi.Mux) {
   r.Route("/menu", func(r chi.Router) {
     r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
@@ -32,4 +32,8 @@ func Register(r *chi.Mux) {
     r.Put( "/update", controllers.UpdateOrderRefNum)
     r.Put( "/cancel", controllers.CancelOrder)
   })
+}
+
+func RegisterStaffRoutes(r *chi.Mux) {
+  
 }

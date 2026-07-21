@@ -15,18 +15,24 @@ import (
 	"github.com/ajderniz/repostele/internal/routes"
 )
 
-func InitMain(msg string) error {
+type ServerBinary int
+const (
+	SERVER_BINARY_STAFF ServerBinary = iota
+	SERVER_BINARY_USER
+)
+
+func InitMain(msg string, bin ServerBinary) error {
 	port := flag.Int("port", 8080, "Port number")
 	flag.Parse()
 
 	exe, err := os.Executable()
 	if err != nil { return err }
 	exeDir := filepath.Dir(exe)
-	if err != nil { return err }
 	err = os.Chdir(exeDir)
 	if err != nil { return err }
 
 	err = models.OpenDB()
+	if err != nil { return err }
 
 	r := chi.NewRouter()
 	r.Use(
@@ -36,7 +42,11 @@ func InitMain(msg string) error {
 		middleware.AllowContentEncoding("application/json"),
 		middleware.Throttle(20),
 	)
-	routes.Register(r)
+	if bin == SERVER_BINARY_STAFF {
+	  routes.RegisterStaffRoutes(r)
+	} else {
+	  routes.RegisterUserRoutes(r)
+	}
 
 	if msg != "" { fmt.Println(msg) }
 	fmt.Println("Listening on port ", *port)
