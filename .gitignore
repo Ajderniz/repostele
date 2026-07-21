@@ -1,3 +1,5 @@
 *.sublime-workspace
-*repostele
+web/user
+web/staff
 *.db
+.last_build

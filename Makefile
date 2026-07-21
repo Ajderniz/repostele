@@ -1,0 +1,30 @@
+USER_SRC_DIR=cmd/user_api
+USER_SRC_FILENAME=main.go
+USER_SRC=$(USER_SRC_DIR)/$(USER_SRC_FILENAME)
+
+USER_BIN_DIR=web
+USER_BIN_FILENAME=user
+USER_BIN=$(USER_BIN_DIR)/$(USER_BIN_FILENAME)
+
+STAFF_SRC_DIR=cmd/staff_api
+STAFF_SRC_FILENAME=main.go
+STAFF_SRC=$(STAFF_SRC_DIR)/$(STAFF_SRC_FILENAME)
+
+STAFF_BIN_DIR=web
+STAFF_BIN_FILENAME=staff
+STAFF_BIN=$(STAFF_BIN_DIR)/$(STAFF_BIN_FILENAME)
+
+LAST_BUILD=.last_build
+
+.PHONY: user staff run
+
+user:
+	go build -o $(USER_BIN) $(USER_SRC)
+	echo $(USER_BIN) > $(LAST_BUILD)
+
+staff:
+	go build -o $(STAFF_BIN) $(STAFF_SRC)
+	echo $(STAFF_BIN) > $(LAST_BUILD)
+
+run:
+	./$$(cat $(LAST_BUILD) 2>/dev/null)
