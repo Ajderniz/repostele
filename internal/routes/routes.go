@@ -21,7 +21,7 @@ func Register(r *chi.Mux) {
   })
   r.Route("/user", func(r chi.Router) {
     r.Use(mymiddleware.RequireAuth())
-    r.Delete("/delete", controllers.DeleteUser)
+    r.Delete("/", controllers.DeactivateUser)
   })
 
   r.Route("/order", func(r chi.Router) {

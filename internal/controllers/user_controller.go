@@ -32,46 +32,49 @@ type _UserCreds struct {
   Password string `schema:"password" validate:"required,min=4,max=16,alphanum"`
 }
 
+func getUserAndCheckPassword(r *http.Request) (models.User, int, error) {
+  creds := _UserCreds{}
+  err := bind.Form(r, &creds)
+  if err != nil { return models.User{}, http.StatusBadRequest, err }
+
+  user, err := models.GetUserFromUsername(creds.Username)
+  if err != nil { return models.User{}, http.StatusInternalServerError, err }
+
+  err = pass.CheckPasswordHash(creds.Password, user.PassHash)
+  if err != nil { return models.User{}, http.StatusUnauthorized, err }
+
+  return user, 0, nil
+}
+
 func RegisterUser(w http.ResponseWriter, r *http.Request) {
   creds := _UserCreds{}
   err := bind.Form(r, &creds)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
-  err = models.RegisterUser(creds.Username, creds.Password)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
+  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
+
+  user := models.User{}
+  user.Username = creds.Username
+  user.PassHash, err = pass.HashPassword(creds.Password)
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  user.TimeCreated = time.Now().Unix()
+
+  err = models.RegisterUser(user)
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+
   write.JSON(w, http.StatusCreated, write.H{"message": "Account registered successfully"})
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request) {
   logout(w, r) // don't check for errors
 
-  creds := _UserCreds{}
-
-  err := bind.Form(r, &creds)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
-
-  user, err := models.UserLogin(creds.Username, creds.Password)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusUnauthorized, err)
-    return
-  }
+  user, status, err := getUserAndCheckPassword(r)
+  if err != nil { write.ErrorJSON(w, status, err); return }
 
   sessionToken, err := pass.GenerateToken(32)
   csrfToken,    err := pass.GenerateToken(32)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
+  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
 
   expires := time.Now().Add(24 * time.Hour)
+
   http.SetCookie(w, &http.Cookie{
     Name:     models.SESSION_TOKEN,
     Value:    sessionToken,
@@ -92,19 +95,20 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
     Starts:       time.Now().Unix(),
     Expires:      expires.Unix(),
   })
-  if err != nil {
-    write.ErrorJSON(w, http.StatusInternalServerError, err)
-    return
-  }
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
 
-  write.JSON(w, http.StatusOK, write.H{"data": user})
+  write.JSON(w, http.StatusOK, write.H{
+    "data": write.H{
+      "username": user.Username,
+      "time_created": user.TimeCreated,
+    },
+  })
 }
 
 func UserLogout(w http.ResponseWriter, r *http.Request) {
-  if err := logout(w, r); err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
+  err := logout(w, r)
+  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
+
   http.SetCookie(w, &http.Cookie{
     Name:     models.SESSION_TOKEN,
     Value:    "",
@@ -117,9 +121,27 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
     Expires:  time.Now().Add(-time.Hour),
     HttpOnly: false,
   })
+
   write.JSON(w, http.StatusOK, write.H{"message": "Logged out successfully"})
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-  
+func DeactivateUser(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(models.USER_USERNAME).(string)
+
+  latestOrder, err := models.GetLatestOrderFromUsername(username)
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  if latestOrder.RefNum != "" &&
+     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
+     latestOrder.Status != models.ORDER_STATUS_FULFILLED {
+    write.ErrorJSON(w, http.StatusConflict, errors.New("An order is pending."))
+    return
+  }
+
+  err = logout(w, r)
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+
+  err = models.DeactivateUser(username)
+  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+
+  write.JSON(w, http.StatusOK, write.H{"message": "Account deleted successfully"})
 }

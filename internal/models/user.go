@@ -3,21 +3,15 @@ package models
 import (
 	"database/sql"
 	"errors"
-	"time"
 
 	"github.com/ajderniz/repostele/pkg/errman"
-	"github.com/ajderniz/repostele/pkg/pass"
 )
-
-type UserInfo struct {
-  Username    string `json:"username"`
-  TimeCreated int64  `json:"time_created"`
-}
 
 type User struct {
   Username     string `db:"username"`
   PassHash     string `db:"pass_hash"`
   TimeCreated  int64  `db:"time_created"`
+  Active       bool   `db:"active"`
 }
 
 const (
@@ -25,20 +19,14 @@ const (
   USER_USERNAME      = "username"
   _USER_PASS_HASH    = "pass_hash"
   _USER_TIME_CREATED = "time_created"
-  _USER_FIELDS       = USER_USERNAME+","+_USER_PASS_HASH+","+_USER_TIME_CREATED
+  _USER_ACTIVE       = "active"
+  _USER_FIELDS       = USER_USERNAME+","+_USER_PASS_HASH+","+_USER_TIME_CREATED+
+                       ","+_USER_ACTIVE
 )
 
 var _RegisterErr = errors.New("Could not create user")
 
-func RegisterUser(username, password string) error {
-	user := User{}
-	var err error
-
-	user.Username = username
-	user.PassHash, err = pass.HashPassword(password)
-	if err != nil { return err }
-  user.TimeCreated = time.Now().Unix()
-
+func RegisterUser(user User) error {
   tx, err := _DB.Beginx()
   if err != nil { errman.PrintError(err); return _RegisterErr }
 
@@ -71,11 +59,22 @@ func GetUserFromUsername(username string) (User, error) {
   return user, nil
 }
 
-func UserLogin(username, password string) (UserInfo, error) {
-	user, err := GetUserFromUsername(username)
-	if err != nil { return UserInfo{}, err }
-	if err := pass.CheckPasswordHash(password, user.PassHash); err != nil {
-		return UserInfo{}, err
-	}
-	return UserInfo{ user.Username, user.TimeCreated }, nil
+var _DeleteErr = errors.New("Could not delete user")
+
+func DeactivateUser(username string) error {
+  tx, err := _DB.Beginx()
+  if err != nil { errman.PrintError(err); return _DeleteErr }
+
+  _, err = tx.Exec(
+    "UPDATE "+_USERS+" "+
+    "SET "+_USER_ACTIVE+" = false "+
+    "WHERE "+USER_USERNAME+" = $1",
+    username,
+  )
+  if err != nil { errman.PrintError(err); return _DeleteErr }
+
+  err = tx.Commit()
+  if err != nil { errman.PrintError(err); return _DeleteErr }
+
+  return nil
 }
