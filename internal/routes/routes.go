@@ -13,19 +13,16 @@ func RegisterUserRoutes(r *chi.Mux) {
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
-  r.Post("/register", controllers.RegisterUser)
-  r.Post("/login",    controllers.UserLogin)
-  r.Route("/logout", func(r chi.Router) {
-    r.Use(mymiddleware.RequireAuth())
-    r.Post("/", controllers.UserLogout)
-  })
-  r.Route("/user", func(r chi.Router) {
-    r.Use(mymiddleware.RequireAuth())
-    r.Delete("/", controllers.DeactivateUser)
+  r.Post("/account/register", controllers.RegisterUserAccount)
+  r.Post("/account/login",    controllers.UserLogin)
+  r.Route("/account", func(r chi.Router) {
+    r.Use(mymiddleware.RequireUserAuth())
+    r.Delete("/deactivate", controllers.DeactivateUserAccount)
+    r.Post("/logout", controllers.UserLogout)
   })
 
   r.Route("/order", func(r chi.Router) {
-    r.Use(mymiddleware.RequireAuth())
+    r.Use(mymiddleware.RequireUserAuth())
     r.Post("/",       controllers.PostOrder)
     r.Get( "/",       controllers.GetOrderList)
     r.Get( "/{id}",   controllers.CheckOrderFromID)
@@ -35,5 +32,9 @@ func RegisterUserRoutes(r *chi.Mux) {
 }
 
 func RegisterStaffRoutes(r *chi.Mux) {
-  
+  r.Post("/account/register", controllers.RegisterStaffAccount)
+  r.Post("/account/login", controllers.StaffLogin)
+  r.Route("/dashboard", func(r chi.Router) {
+    r.Use(mymiddleware.RequireStaffAuth())
+  })
 }

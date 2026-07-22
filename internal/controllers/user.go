@@ -39,6 +39,7 @@ func getUserAndCheckPassword(r *http.Request) (models.User, int, error) {
 
   user, err := models.GetUserFromUsername(creds.Username)
   if err != nil { return models.User{}, http.StatusInternalServerError, err }
+  if user.Username == "" { return models.User{}, http.StatusOK, nil }
 
   err = pass.CheckPasswordHash(creds.Password, user.PassHash)
   if err != nil { return models.User{}, http.StatusUnauthorized, err }
@@ -46,7 +47,7 @@ func getUserAndCheckPassword(r *http.Request) (models.User, int, error) {
   return user, 0, nil
 }
 
-func RegisterUser(w http.ResponseWriter, r *http.Request) {
+func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
   creds := _UserCreds{}
   err := bind.Form(r, &creds)
   if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
@@ -57,7 +58,7 @@ func RegisterUser(w http.ResponseWriter, r *http.Request) {
   if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
   user.TimeCreated = time.Now().Unix()
 
-  err = models.RegisterUser(user)
+  err = models.InsertUser(user)
   if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
 
   write.JSON(w, http.StatusCreated, write.H{"message": "Account registered successfully"})
@@ -68,6 +69,10 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 
   user, status, err := getUserAndCheckPassword(r)
   if err != nil { write.ErrorJSON(w, status, err); return }
+  if user.Username == "" {
+    write.JSON(w, http.StatusOK, write.H{"message": "User not found"})
+    return
+  }
 
   sessionToken, err := pass.GenerateToken(32)
   csrfToken,    err := pass.GenerateToken(32)
@@ -125,7 +130,7 @@ func UserLogout(w http.ResponseWriter, r *http.Request) {
   write.JSON(w, http.StatusOK, write.H{"message": "Logged out successfully"})
 }
 
-func DeactivateUser(w http.ResponseWriter, r *http.Request) {
+func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
 
   latestOrder, err := models.GetLatestOrderFromUsername(username)

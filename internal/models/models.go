@@ -1,9 +1,10 @@
 package models
 
 import (
-	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
+	
+	"github.com/ajderniz/repostele/pkg/errman"
 )
 
 var _DB *sqlx.DB

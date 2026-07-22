@@ -14,7 +14,7 @@ import (
 var _AuthErr = errors.New("Unauthorized")
 var _ExpiredErr = errors.New("Session token expired")
 
-func RequireAuth() func(next http.Handler) http.Handler {
+func RequireUserAuth() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
@@ -49,6 +49,14 @@ func RequireAuth() func(next http.Handler) http.Handler {
 
       ctx := context.WithValue(r.Context(), models.USER_USERNAME, session.User)
       next.ServeHTTP(w, r.WithContext(ctx))
+    })
+  }
+}
+
+func RequireStaffAuth() func(next http.Handler) http.Handler {
+  return func(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
     })
   }
 }

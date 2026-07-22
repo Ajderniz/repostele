@@ -26,7 +26,7 @@ const (
 
 var _RegisterErr = errors.New("Could not create user")
 
-func RegisterUser(user User) error {
+func InsertUser(user User) error {
   tx, err := _DB.Beginx()
   if err != nil { errman.PrintError(err); return _RegisterErr }
 
@@ -48,12 +48,12 @@ func GetUserFromUsername(username string) (User, error) {
   err := _DB.Get(&user,
     "SELECT * "+
     "FROM "+_USERS+" "+
-    "WHERE "+USER_USERNAME+" = $1",
+    "WHERE "+USER_USERNAME+" = $1 AND "+_USER_ACTIVE+" = true",
     username,
   )
   if err != nil { 
     errman.PrintError(err)
-    if err == sql.ErrNoRows { return User{}, errors.New("User not found") }
+    if err == sql.ErrNoRows { return User{}, nil }
     return User{}, errors.New("Could not retreive user")
   }
   return user, nil

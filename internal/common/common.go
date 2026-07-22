@@ -22,7 +22,7 @@ const (
 )
 
 func InitMain(msg string, bin ServerBinary) error {
-	port := flag.Int("port", 8080, "Port number")
+	port := *flag.Int("port", 8080, "Port number")
 	flag.Parse()
 
 	exe, err := os.Executable()
@@ -49,7 +49,7 @@ func InitMain(msg string, bin ServerBinary) error {
 	}
 
 	if msg != "" { fmt.Println(msg) }
-	fmt.Println("Listening on port ", *port)
+	fmt.Println("Listening on port ", port)
 
-	return http.ListenAndServe(":" + strconv.Itoa(*port), r)
+	return http.ListenAndServe(":" + strconv.Itoa(port), r)
 }
