@@ -16,6 +16,8 @@ STAFF_BIN=$(STAFF_BIN_DIR)/$(STAFF_BIN_FILENAME)
 
 LAST_BUILD=.last_build
 
+PORT=8080
+
 .PHONY: user staff run
 
 user:
@@ -27,4 +29,4 @@ staff:
 	echo $(STAFF_BIN) > $(LAST_BUILD)
 
 run:
-	./$$(cat $(LAST_BUILD) 2>/dev/null)
+	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
