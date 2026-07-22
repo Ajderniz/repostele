@@ -9,5 +9,17 @@
     {
       "path": "/usr/lib/go"
     }
+  ],
+  "build_systems": [
+    {
+      "name": "repostele-user",
+      "cmd": ["make", "user", "run"],
+      "working_dir": ".",
+    },
+    {
+      "name": "repostele-staff",
+      "cmd": ["make", "staff", "run"],
+      "working_dir": ".",
+    },
   ]
 }
