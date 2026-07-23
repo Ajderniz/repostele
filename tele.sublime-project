@@ -14,12 +14,12 @@
     {
       "name": "repostele-user",
       "cmd": ["make", "user", "run"],
-      "working_dir": ".",
+      "working_dir": "/home/axell/Sync/work/go/src/repostele",
     },
     {
       "name": "repostele-staff",
       "cmd": ["make", "staff", "run"],
-      "working_dir": ".",
+      "working_dir": "/home/axell/Sync/work/go/src/repostele",
     },
   ]
 }
