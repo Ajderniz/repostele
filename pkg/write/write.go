@@ -7,14 +7,28 @@ import (
 
 type H map[string]any
 
+const (
+	KEY_ERR = "error"
+	KEY_MSG = "message"
+	KEY_DAT = "data"
+)
+
 func JSON(w http.ResponseWriter, status int, v any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
 	json.NewEncoder(w).Encode(v)
 }
 
-func ErrorJSON(w http.ResponseWriter, status int, err error) {
-	JSON(w, status, H{"error": err.Error()})
+func Error(w http.ResponseWriter, status int, err error) {
+	JSON(w, status, H{KEY_ERR: err.Error()})
+}
+
+func Msg(w http.ResponseWriter, msg string) {
+	JSON(w, http.StatusOK, H{KEY_MSG: msg})
+}
+
+func Data(w http.ResponseWriter, v any) {
+	JSON(w, http.StatusOK, H{KEY_DAT: v})
 }
 
 func PlainText(w http.ResponseWriter, status int, msg string) {

@@ -1,9 +1,9 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 
@@ -12,53 +12,77 @@ import (
 	"github.com/ajderniz/repostele/pkg/write"
 )
 
-type _GetItemsQuery struct {
-  Start int    `schema:"start,default:0"`
-  Limit int    `schema:"limit,default:10"`
-  Sort  string `schema:"sort,default:id"`
-  Dir   string `schema:"order,default:ASC"`
+const _ITEM_ID = "id"
+
+func PostItem(w http.ResponseWriter, r *http.Request) {
+  post := struct{
+    Name      string  `json:"name"      validate:"required"`
+    Price     float32 `json:"price"     validate:"required,gte=0"`
+    Desc      string  `json:"desc"      validate:"-"`
+    ImgPath   string  `json:"img_path"  validate:"-"`
+  }{}
+  err := bind.JSON(r, &post)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  item := models.Item{
+    Name:      post.Name,
+    Price:     post.Price,
+    TimeMod:   time.Now().Unix(),
+    Available: true,
+    Desc:      post.Desc,
+    ImgPath:   post.ImgPath,
+  }
+  err = models.InsertItem(item)
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+
+  write.Msg(w, "Item posted successfully")
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
-  query := _GetItemsQuery{}
-  err := bind.Form(r, &query)
-  if err != nil {
-    write.ErrorJSON(w, http.StatusBadRequest, err)
-    return
-  }
+  params := models.SelectParams{}
+  err := bind.Form(r, &params)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  items, err := models.GetItems(
-    query.Start, query.Limit, query.Sort, query.Dir,
-  )
-  if err != nil {
-    write.ErrorJSON(w, http.StatusInternalServerError, err)
-    return
-  }
-  if items == nil {
-    write.JSON(w, http.StatusOK, write.H{"data": "No records"})
-    return
-  }
+  items, err := models.GetItems(params)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if items == nil { write.JSON(w, http.StatusOK, _DataNoResults); return }
 
-  write.JSON(w, http.StatusOK, write.H{"data": items})
+  write.Data(w, items)
 }
 
 func GetItemFromID(w http.ResponseWriter, r *http.Request) {
-  id := chi.URLParam(r, "id")
-  if _, err := strconv.Atoi(id); err != nil { 
-    write.ErrorJSON(w, http.StatusNotAcceptable, errors.New("Bad search criteria"))
+  idStr := chi.URLParam(r, models.ITEM_ID)
+  id, err := strconv.Atoi(idStr)
+  if err != nil { 
+    write.Error(w, http.StatusBadRequest, _ErrBadSearch)
     return
   }
 
   item, err := models.GetItemFromID(id)
   if err != nil {
-    write.ErrorJSON(w, http.StatusInternalServerError, err)
+    write.Error(w, http.StatusInternalServerError, err)
     return
   }
 
   if item.Name == "" {
-    write.JSON(w, http.StatusOK, write.H{"data": "Not found"})
+    write.Data(w, _DataNoResults)
     return
   }
 
-  write.JSON(w, http.StatusOK, write.H{"data": item})
+  write.Data(w, item)
+}
+
+func UpdateItem(w http.ResponseWriter, r *http.Request) {
+  var id int
+  err := bind.FormValue(r, &id, _ITEM_ID, "required")
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  update := models.ItemUpdate{}
+  err = bind.JSON(r, &update)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  err = models.UpdateItem(id, update)
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+
+  write.Msg(w, "Item updated successfully")
 }

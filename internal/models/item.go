@@ -1,76 +1,106 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
-	"strconv"
+	"reflect"
 	"strings"
 
-	"github.com/ajderniz/repostele/pkg/errman"
 	_ "github.com/mattn/go-sqlite3"
+
+	"github.com/ajderniz/repostele/pkg/errman"
 )
 
 type Item struct {
-  Id      int    `db:"id"       schema:"id"       json:"id"       validate:"-"`
-  Name    string `db:"name"     schema:"name"     json:"name"     validate:"required"`
-  Price   int    `db:"price"    schema:"price"    json:"price"    validate:"required,gte=0"`
-  TimeMod int64  `db:"time_mod" schema:"time_mod" json:"time_mod" validate:"required,gte=0"`
-  Desc    string `db:"desc"     schema:"desc"     json:"desc"     validate:"-"`
-  ImgPath string `db:"img_path" schema:"img_path" json:"img_path" validate:"-"`
+  Id        int     `db:"id"        schema:"id"        json:"id"        validate:"-"`
+  Name      string  `db:"name"      schema:"name"      json:"name"      validate:"required"`
+  Price     float32 `db:"price"     schema:"price"     json:"price"     validate:"required,gte=0"`
+  TimeMod   int64   `db:"time_mod"  schema:"time_mod"  json:"time_mod"  validate:"required,gte=0"`
+  Available bool    `db:"available" schema:"available" json:"available" validate:"required"`
+  Desc      string  `db:"desc"      schema:"desc"      json:"desc"      validate:"-"`
+  ImgPath   string  `db:"img_path"  schema:"img_path"  json:"img_path"  validate:"-"`
 }
 
 const (
-  _ITEMS       = "items"
-  _ITEM_ID     = "id"
-  _ITEM_NAME   = "name"
-  _ITEM_PRICE  = "price"
+  _ITEMS          = "items"
+  ITEM_ID         = "id"
+  _ITEM_NAME      = "name"
+  _ITEM_PRICE     = "price"
+  _ITEM_TIME_MOD  = "time_mod"
+  _ITEM_AVAILABLE = "available"
+  _ITEM_DESC      = "desc"
+  _ITEM_IMG_PATH  = "img_path"
+  _ITEM_FIELDS = _ITEM_NAME+","+_ITEM_PRICE+","+_ITEM_TIME_MOD+","+
+                 _ITEM_AVAILABLE+","+_ITEM_DESC+","+_ITEM_IMG_PATH
 )
 
-var _SortFields = map[string]bool { 
-  _ITEM_ID:    true,
-  _ITEM_NAME:  true,
-  _ITEM_PRICE: true,
-  "mod":       true,
+var _ItemSortFields = []string { ITEM_ID, _ITEM_NAME, _ITEM_PRICE, "mod" }
+
+func InsertItem(item Item) error {
+  _, err := dbBeginNamedExecAndCommit(
+    "INSERT INTO "+_ITEMS+" ("+_ITEM_FIELDS+") "+
+    "VALUES "+"(:"+_ITEM_NAME+",:"+_ITEM_PRICE+",:"+_ITEM_TIME_MOD+",:"+
+      _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
+    &item,
+  )
+  if err != nil {
+    errman.PrintError(err);
+    return errors.New("Could not post new item")
+  }
+  return nil
 }
 
-const (
-  _SORT_DIR_ASC  string = "ASC"
-  _SORT_DIR_DESC string = "DESC"
-)
+func GetItems(params SelectParams) (items []Item, err error) {
+  err = dbSelectList(&items, "*", _ITEMS, params, _ItemSortFields)
+  return
+}
 
-func GetItems(start int, limit int, sort string, dir string) ([]Item, error) {
-  if start < 0 { start = 0 }
-  if _, exists := _SortFields[sort]; !exists { sort = _ITEM_ID }
-  dir = strings.ToUpper(dir)
-  if dir != _SORT_DIR_ASC && dir != _SORT_DIR_DESC { dir = _SORT_DIR_ASC }
+func GetItemFromID(id int) (Item, error) {
+  item := Item{}
+  err := dbGetRecord(&item, "*", _ITEMS, ITEM_ID, id)
+  if err != nil { return Item{}, errors.New("Could not retreive item") }
+  return item, nil
+}
 
-  items := []Item{}
-  err := _DB.Select(&items,
-    "SELECT * "+
-    "FROM "+_ITEMS+" "+
-    "ORDER BY "+sort+" "+dir+" "+
-    "LIMIT "+strconv.Itoa(start)+","+strconv.Itoa(limit),
+type ItemUpdate struct {
+    Name      string   `db:"name"      json:"name"`
+    Price     *float32 `db:"price"     json:"price"    validate:"gte=0"`
+    Available *bool    `db:"available" json:"available"`
+    Desc      string   `db:"desc"      json:"desc"`
+    ImgPath   string   `db:"img_path"  json:"img_path"`
+}
+
+func UpdateItem(id int, update ItemUpdate) error {
+  var setClauses []string
+  var args []any
+
+  v := reflect.ValueOf(update)
+  t := reflect.TypeFor[ItemUpdate]()
+  for i := 0; i < v.NumField(); i++ {
+    dbTag := t.Field(i).Tag.Get("db")
+    if dbTag == "" || dbTag == "-" { continue }
+
+    field := v.Field(i)
+    switch field.Kind() {
+    case reflect.Pointer: if field.IsNil() { continue }
+    case reflect.String:  if field.String() == "" { continue }
+    }
+
+    setClauses = append(setClauses, dbTag+" = ?")
+    args = append(args, field.Elem().Interface())
+  }
+  args = append(args, id)
+
+  _, err := dbBeginExecAndCommit(
+    "UPDATE "+_ITEMS+" "+
+    "SET "+strings.Join(setClauses,",")+" "+
+    "WHERE "+ITEM_ID+" = ?",
+    args,
   )
   if err != nil {
     errman.PrintError(err)
-    return nil, errors.New("Could not retreive items")
-  } 
-
-  return items, err
-}
-
-func GetItemFromID(id string) (Item, error) {
-  item := Item{}
-  err := _DB.Get(&item,
-    "SELECT * "+
-    "FROM "+_ITEMS+" "+
-    "WHERE "+_ITEM_ID+" = $1",
-    id,
-  )
-  if err != nil { 
-    errman.PrintError(err)
-    if err == sql.ErrNoRows { return Item{}, nil }
-    return Item{}, errors.New("Could not retreive item")
+    return errors.New("Could not update item")
   }
-  return item, nil
+
+  return nil
 }
+

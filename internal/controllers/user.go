@@ -7,146 +7,190 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
 )
 
-var _SessionTokenErr = errors.New("'session_token' cookie not found")
-
-func logout(w http.ResponseWriter, r *http.Request) error {
-  sessionToken, err := r.Cookie(models.SESSION_TOKEN)
-  if err != nil {
-    errman.PrintError(err)
-    return _SessionTokenErr
-  }
-  if sessionToken.Value == "" {
-    errman.PrintError(errors.New("session_token blank"))
-    return _SessionTokenErr
-  }
-  return models.CloseSession(sessionToken.Value)
-}
-
-type _UserCreds struct {
-  Username string `schema:"username" validate:"required,min=4,max=16,alphanum"`
-  Password string `schema:"password" validate:"required,min=4,max=16,alphanum"`
-}
-
-func getUserAndCheckPassword(r *http.Request) (models.User, int, error) {
-  creds := _UserCreds{}
-  err := bind.Form(r, &creds)
-  if err != nil { return models.User{}, http.StatusBadRequest, err }
-
-  user, err := models.GetUserFromUsername(creds.Username)
-  if err != nil { return models.User{}, http.StatusInternalServerError, err }
-  if user.Username == "" { return models.User{}, http.StatusOK, nil }
-
-  err = pass.CheckPasswordHash(creds.Password, user.PassHash)
-  if err != nil { return models.User{}, http.StatusUnauthorized, err }
-
-  return user, 0, nil
-}
+const _TOKEN_LENGTH = 32
 
 func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
-  creds := _UserCreds{}
-  err := bind.Form(r, &creds)
-  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
+  username, password, err := getCredsFromForm(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   user := models.User{}
-  user.Username = creds.Username
-  user.PassHash, err = pass.HashPassword(creds.Password)
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  user.Username = username
+  user.PassHash, err = pass.HashPassword(password)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
   user.TimeCreated = time.Now().Unix()
 
-  err = models.InsertUser(user)
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  err = models.InsertUserAccount(user)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
-  write.JSON(w, http.StatusCreated, write.H{"message": "Account registered successfully"})
+  write.Msg(w, _MsgAccCreated)
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request) {
-  logout(w, r) // don't check for errors
+  closeSession(w, r) // don't check for errors
 
-  user, status, err := getUserAndCheckPassword(r)
-  if err != nil { write.ErrorJSON(w, status, err); return }
-  if user.Username == "" {
-    write.JSON(w, http.StatusOK, write.H{"message": "User not found"})
-    return
-  }
+  username, password, err := getCredsFromForm(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  sessionToken, err := pass.GenerateToken(32)
-  csrfToken,    err := pass.GenerateToken(32)
-  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
+  user, err := models.GetUserFromUsername(username)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if user.Username == "" { write.Msg(w, _MsgAccNotFound); return }
 
-  expires := time.Now().Add(24 * time.Hour)
+  err = pass.CheckPasswordHash(password, user.PassHash)
+  if err != nil { write.Error(w, http.StatusUnauthorized, err); return }
 
-  http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_TOKEN,
-    Value:    sessionToken,
-    Expires:  expires,
-    HttpOnly: true,
-  })
-  http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_CSRF_TOKEN,
-    Value:    csrfToken,
-    Expires:  expires,
-    HttpOnly: false,
-  })
+  err = openSession(w, user.Username, models.SESSION_ROLE_USER)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
-  err = models.OpenSession(models.Session{
-    SessionToken: sessionToken,
-    CSRFToken:    csrfToken,
-    User:         user.Username,
-    Starts:       time.Now().Unix(),
-    Expires:      expires.Unix(),
-  })
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
-
-  write.JSON(w, http.StatusOK, write.H{
-    "data": write.H{
-      "username": user.Username,
-      "time_created": user.TimeCreated,
+  write.Data(w, write.H{
+    write.KEY_DAT: write.H{
+      models.USER_USERNAME: user.Username,
+      models.USER_TIME_CREATED: user.TimeCreated,
     },
   })
 }
 
-func UserLogout(w http.ResponseWriter, r *http.Request) {
-  err := logout(w, r)
-  if err != nil { write.ErrorJSON(w, http.StatusBadRequest, err); return }
+func UpdateUserUsername(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(_CREDS_USERNAME).(string)
+  password, newUsername, err := getNewUsernameFromForm(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_TOKEN,
-    Value:    "",
-    Expires:  time.Now().Add(-time.Hour),
-    HttpOnly: true,
-  })
-  http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_CSRF_TOKEN,
-    Value:    "",
-    Expires:  time.Now().Add(-time.Hour),
-    HttpOnly: false,
-  })
-
-  write.JSON(w, http.StatusOK, write.H{"message": "Logged out successfully"})
-}
-
-func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
-
-  latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
-  if latestOrder.RefNum != "" &&
-     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
-     latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    write.ErrorJSON(w, http.StatusConflict, errors.New("An order is pending."))
+  user, err := models.GetUserFromUsername(username)
+  if err != nil || user.Username == "" {
+    write.Error(w, http.StatusInternalServerError, err)
     return
   }
 
-  err = logout(w, r)
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  if username == newUsername {
+    write.Error(w, http.StatusConflict, _ErrSameUsername)
+    return
+  }
 
-  err = models.DeactivateUser(username)
-  if err != nil {write.ErrorJSON(w, http.StatusInternalServerError, err);return}
+  err = pass.CheckPasswordHash(password, user.PassHash)
+  if err != nil { write.Error(w, http.StatusUnauthorized, err); return }
 
-  write.JSON(w, http.StatusOK, write.H{"message": "Account deleted successfully"})
+  err = models.UpdateUserField(user.Username, _CREDS_USERNAME, newUsername)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+
+  write.Msg(w, _MsgUsernameChanged)
+}
+
+func updateUserPassword(username, oldPassword, newPassword string) (int, error){
+  if oldPassword == newPassword {return http.StatusBadRequest, _ErrSamePassword}
+
+  user, err := models.GetUserFromUsername(username)
+  if err != nil||user.Username == "" {return http.StatusInternalServerError,err}
+
+  err = pass.CheckPasswordHash(oldPassword, user.PassHash)
+  if err != nil { return http.StatusUnauthorized, err }
+
+  newHash, err := pass.HashPassword(newPassword)
+  if err != nil { return http.StatusInternalServerError, err }
+
+  err = models.UpdateUserField(username, models.USER_PASS_HASH, newHash)
+  if err != nil { return http.StatusInternalServerError, err }
+
+  return http.StatusOK, nil
+}
+
+func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
+  username := ""
+  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  oldPassword, newPassword, err := getNewPasswordFromForm(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  status, err := updateUserPassword(username, oldPassword, newPassword)
+  if err != nil { write.Error(w, status, err ); return }
+
+  write.Msg(w, _MsgPasswordChanged)
+}
+
+func UpdateUserPasswordSelf(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(_CREDS_USERNAME).(string)
+  oldPassword, newPassword, err := getNewPasswordFromForm(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  status, err := updateUserPassword(username, oldPassword, newPassword)
+  if err != nil { write.Error(w, status, err ); return }
+
+  write.Msg(w, _MsgPasswordChanged)
+}
+
+func deactivateUserAccount(w http.ResponseWriter, r *http.Request,
+                           username string) (int, error) {
+  err := closeSession(w, r)
+  if err != nil { return http.StatusInternalServerError, err }
+
+  err = models.UpdateUserField(username, models.USER_ACTIVE, false)
+  if err != nil { return http.StatusInternalServerError, err }
+
+  return http.StatusOK, nil
+}
+
+func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
+  username := ""
+  err := bind.FormValue(r, username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  status, err := deactivateUserAccount(w, r, username)
+  if err != nil { write.Error(w, status, err); return }
+
+  write.Msg(w, _MsgAccDeactivated)
+}
+
+func DeactivateUserAccountSelf(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(_CREDS_USERNAME).(string)
+  password := ""
+  err := bind.FormValue(r, &password, _CREDS_PASSWORD, _CREDS_VALIDATE)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+
+  user, err := models.GetUserFromUsername(username)
+  if err != nil || user.Username == "" {
+    write.Error(w, http.StatusInternalServerError, err)
+    return
+  }
+
+  err = pass.CheckPasswordHash(password, user.PassHash)
+  if err != nil { write.Error(w, http.StatusUnauthorized, err); return}
+
+  latestOrder, err := models.GetLatestOrderFromUsername(username)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if latestOrder.RefNum != "" &&
+     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
+     latestOrder.Status != models.ORDER_STATUS_FULFILLED {
+    write.Error(w, http.StatusConflict, errors.New("An order is pending."))
+    return
+  }
+
+  status, err := deactivateUserAccount(w, r, user.Username)
+  if err != nil { write.Error(w, status, err); return }
+
+  write.Msg(w, _MsgAccDeactivated)
+}
+
+func GetUserList(w http.ResponseWriter, r *http.Request) {
+  params := models.SelectParams{}
+  err := bind.Form(r, &params)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  users, err := models.GetUsers(params)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+
+  if users == nil { write.Data(w, _DataNoResults); return }
+  write.Data(w, users)
+}
+
+func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {
+  username := ""
+  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+
+  user, err := models.GetUserFromUsername(username)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+
+  if user.Username == "" { write.Data(w, _DataNoResults) }
+  write.Data(w, user)
 }

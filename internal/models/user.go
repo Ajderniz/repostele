@@ -1,9 +1,6 @@
 package models
 
 import (
-	"database/sql"
-	"errors"
-
 	"github.com/ajderniz/repostele/pkg/errman"
 )
 
@@ -17,64 +14,45 @@ type User struct {
 const (
   _USERS             = "users"
   USER_USERNAME      = "username"
-  _USER_PASS_HASH    = "pass_hash"
-  _USER_TIME_CREATED = "time_created"
-  _USER_ACTIVE       = "active"
-  _USER_FIELDS       = USER_USERNAME+","+_USER_PASS_HASH+","+_USER_TIME_CREATED+
-                       ","+_USER_ACTIVE
+  USER_PASS_HASH    = "pass_hash"
+  USER_TIME_CREATED = "time_created"
+  USER_ACTIVE       = "active"
+  //_USER_FIELDS       = USER_USERNAME+","+_USER_PASS_HASH+","+_USER_TIME_CREATED+
+                       //","+_USER_ACTIVE
 )
 
-var _RegisterErr = errors.New("Could not create user")
-
-func InsertUser(user User) error {
-  tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return _RegisterErr }
-
-  _, err = tx.NamedExec(
-    "INSERT INTO "+_USERS+" ("+_USER_FIELDS+") " +
-    "VALUES (:"+USER_USERNAME+",:"+_USER_PASS_HASH+",:"+_USER_TIME_CREATED+")",
-    &user,
+func InsertUserAccount(user User) error {
+  _, err := dbBeginNamedExecAndCommit(
+    "INSERT INTO "+_USERS+" ("+USER_USERNAME+","+USER_PASS_HASH+","+
+      USER_TIME_CREATED+") "+
+    "VALUES (:"+USER_USERNAME+",:"+USER_PASS_HASH+",:"+USER_TIME_CREATED+")",
+    user,
   )
-  if err != nil { errman.PrintError(err); return _RegisterErr }
-  
-  err = tx.Commit()
-  if err != nil { errman.PrintError(err); return _RegisterErr }
-
+  if err != nil { return _ErrInsertAcc }
   return nil
+}
+
+var _UserSortFields = []string{ USER_USERNAME, USER_TIME_CREATED, USER_ACTIVE }
+
+func GetUsers(params SelectParams) (users []User, err error) {
+  err = dbSelectList(&users, "*", _USERS, params, _UserSortFields)
+  return
 }
 
 func GetUserFromUsername(username string) (User, error) {
   user := User{}
-  err := _DB.Get(&user,
+  err := dbGet(&user,
     "SELECT * "+
     "FROM "+_USERS+" "+
-    "WHERE "+USER_USERNAME+" = $1 AND "+_USER_ACTIVE+" = true",
+    "WHERE "+USER_USERNAME+" = $1 AND "+USER_ACTIVE+" = true",
     username,
   )
-  if err != nil { 
-    errman.PrintError(err)
-    if err == sql.ErrNoRows { return User{}, nil }
-    return User{}, errors.New("Could not retreive user")
-  }
+  if err != nil { return User{}, _ErrGetAcc }
   return user, nil
 }
 
-var _DeleteErr = errors.New("Could not delete user")
-
-func DeactivateUser(username string) error {
-  tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return _DeleteErr }
-
-  _, err = tx.Exec(
-    "UPDATE "+_USERS+" "+
-    "SET "+_USER_ACTIVE+" = false "+
-    "WHERE "+USER_USERNAME+" = $1",
-    username,
-  )
-  if err != nil { errman.PrintError(err); return _DeleteErr }
-
-  err = tx.Commit()
-  if err != nil { errman.PrintError(err); return _DeleteErr }
-
+func UpdateUserField(username, field string, v any) error {
+  _, err := dbUpdateTableField(_USERS, USER_USERNAME, username, field, v)
+  if err != nil { errman.PrintError(err); return _ErrModAcc }
   return nil
 }
