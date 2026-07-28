@@ -10,6 +10,9 @@
       "path": "/usr/lib/go"
     }
   ],
+  "settings": {
+    "auto_complete": false,
+  },
   "build_systems": [
     {
       "name": "repostele-user",
@@ -21,5 +24,5 @@
       "cmd": ["make", "staff", "run"],
       "working_dir": "/home/axell/Sync/work/go/src/repostele",
     },
-  ]
+  ],
 }
