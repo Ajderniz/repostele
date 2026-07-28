@@ -4,7 +4,6 @@ import (
   "errors"
   "math"
   "net/http"
-  "slices"
   "strconv"
   "time"
 
@@ -90,7 +89,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  total := 0
+  var total float32
   items := models.ItemIdQuant{}
   for itemId, quant := range request.Items {
     item, err := models.GetItemFromID(itemId)
@@ -102,7 +101,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
       errman.PrintError(errors.New("Invalid item requested"))
       continue
     }
-    total += item.Price * quant
+    total += item.Price * float32(quant)
     items[item.Id] = quant
   }
   if len(items) == 0 {
