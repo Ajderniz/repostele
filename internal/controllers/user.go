@@ -14,6 +14,18 @@ import (
 const _TOKEN_LENGTH = 32
 
 func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
+  admins, err := models.GetStaffAdmins()
+  if err != nil {
+    write.Error(w, http.StatusInternalServerError, _ErrRegAcc)
+    return
+  }
+  if len(admins) <= 0 {
+    write.Error(w, http.StatusForbidden,
+      errors.New("This system is not yet initialized"),
+    )
+    return
+  }
+
   username, password, err := getCredsFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 

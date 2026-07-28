@@ -5,6 +5,7 @@ import (
 )
 
 var (
+	_ErrRegAcc = errors.New("Could not register account")
 	_ErrSameUsername = errors.New("Username already exists")
 	_ErrSamePassword = errors.New("Password is the same")
 
