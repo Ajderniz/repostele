@@ -45,7 +45,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
   items, err := models.GetItems(params)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-  if items == nil { write.JSON(w, http.StatusOK, _DataNoResults); return }
+  if len(items) <= 0 { write.Data(w, _DataNoResults); return }
 
   write.Data(w, items)
 }
