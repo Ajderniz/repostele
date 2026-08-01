@@ -73,9 +73,9 @@ func GetItemFromID(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
-  var id int
-  err := bind.FormValue(r, &id, _ITEM_ID, "required")
+  idStr, err := bind.FormValue(r, _ITEM_ID, "required,number")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  id, _ := strconv.Atoi(idStr)
 
   update := models.ItemUpdate{}
   err = bind.JSON(r, &update)

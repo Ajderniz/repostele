@@ -109,8 +109,7 @@ func updateUserPassword(username, oldPassword, newPassword string) (int, error){
 }
 
 func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
-  username := ""
-  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
@@ -143,8 +142,7 @@ func deactivateUserAccount(w http.ResponseWriter, r *http.Request,
 }
 
 func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
-  username := ""
-  err := bind.FormValue(r, username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   status, err := deactivateUserAccount(w, r, username)
@@ -155,8 +153,7 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
 
 func DeactivateUserAccountSelf(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
-  password := ""
-  err := bind.FormValue(r, &password, _CREDS_PASSWORD, _CREDS_VALIDATE)
+  password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   user, err := models.GetUserFromUsername(username)
@@ -196,8 +193,7 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {
-  username := ""
-  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   user, err := models.GetUserFromUsername(username)

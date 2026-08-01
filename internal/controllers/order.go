@@ -221,8 +221,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
     write.Error(w, http.StatusForbidden, _ErrCantModOrder)
     return
   }
-  refNum := ""
-  err = bind.FormValue(r, &refNum, models.ORDER_REF_NUM, "required,len=25")
+  refNum, err := bind.FormValue(r,models.ORDER_REF_NUM,"required,number,len=25")
   if err != nil {
     write.Error(w, http.StatusBadRequest, err)
     return
@@ -257,13 +256,13 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
-  var statusInt int
-  err := bind.FormValue(r, &statusInt, models.ORDER_STATUS, 
+  statusStr, err := bind.FormValue(r, models.ORDER_STATUS, 
     "required,number,gte=0,lte=4",
   )
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  status, _ := strconv.Atoi(statusStr)
 
-  setStatus := models.OrderStatus(statusInt)
+  setStatus := models.OrderStatus(status)
 
   order, httpStatus, err := getOrderFromIdUrlParam(r)
   if err != nil { write.Error(w, httpStatus, err); return }

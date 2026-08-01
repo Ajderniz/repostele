@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
@@ -14,10 +15,10 @@ import (
 const _TEST_KEY = "1111111111111111"
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
-  var username, password, fullName string
+  var username, password string
   username, password, err := getCredsFromForm(r)
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
-  err = bind.FormValue(r, &fullName, "full_name", "required,alphanumspace")
+  fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
 
   staff := models.Staff{}
@@ -36,8 +37,7 @@ func RegisterStaffAccountInit(w http.ResponseWriter, r *http.Request) {
   In practice, this would actually perform a product key check against a server
   or something like that
   */
-  key := ""
-  err := bind.FormValue(r, &key, "key", "required,len=16")
+  key, err := bind.FormValue(r, "key", "required,number,len=16")
   if err != nil || key != _TEST_KEY {
     write.Error(w, http.StatusUnauthorized, errors.New("Unauthorized key"))
     return
@@ -66,13 +66,12 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   staff, status, err := makeNewStaffFromForm(r)
   if err != nil { write.Error(w, status, err); return }
 
-  admin := false
-  err = bind.FormValue(r, &admin, "admin", "required")
+  adminStr, err := bind.FormValue(r, "admin", "required,boolean")
   if err != nil {
     write.Error(w, http.StatusBadRequest,errors. New("'admin' tag invalid"))
     return
   }
-  staff.Admin = admin
+  staff.Admin, _ = strconv.ParseBool(adminStr)
 
   err = models.InsertStaffAccount(staff)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
@@ -123,8 +122,7 @@ func deactivateStaffAccount(w http.ResponseWriter, r *http.Request,
 }
 
 func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
-  username := ""
-  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   status, err := deactivateStaffAccount(w, r, username)
@@ -135,8 +133,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
 
 func DeactivateStaffAccountSelf(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
-  password := ""
-  err := bind.FormValue(r, &password, _CREDS_PASSWORD, _CREDS_VALIDATE)
+  password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   staff, err := models.GetStaffFromUsername(username)
@@ -198,8 +195,7 @@ func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
 }
 
 func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
-  username := ""
-  err := bind.FormValue(r, &username, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
@@ -233,10 +229,7 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetStaffFromUsername(w http.ResponseWriter, r *http.Request){
-  username := ""
-  err := bind.FormValue(r, &username, _CREDS_USERNAME, 
-    "required,alphanum,min=4,max=16",
-  )
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   staff, err := models.GetStaffFromUsername(username)

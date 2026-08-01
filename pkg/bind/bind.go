@@ -44,12 +44,11 @@ func Form(r *http.Request, dst any) error {
 	return nil
 }
 
-func FormValue(r *http.Request, dst any, key string, validate string) error {
+func FormValue(r *http.Request, key string, validate string) (string, error) {
 	v := r.FormValue(key)
 	if err := _Validate.Var(v, validate); err != nil {
 		errman.PrintError(err)
-		return _ValidationErr
+		return "", _ValidationErr
 	}
-	dst = v
-	return nil
+	return v, nil
 }

@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
@@ -77,8 +78,7 @@ func closeSession(w http.ResponseWriter, r *http.Request) error {
 }
 
 func CloseSessionWithID(w http.ResponseWriter, r *http.Request) {
-  sessionID := ""
-  err := bind.FormValue(r, &sessionID, _SESSION_ID, "required")
+  sessionID, err := bind.FormValue(r, _SESSION_ID, "required")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   err = models.CloseSession(sessionID)
@@ -88,10 +88,11 @@ func CloseSessionWithID(w http.ResponseWriter, r *http.Request) {
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
-  users, staff := false, false
-  err := bind.FormValue(r, &users, "users", "-")
-  err  = bind.FormValue(r, &staff, "staff", "-")
+  userStr, err := bind.FormValue(r, "users", "boolean")
+  staffStr, err  := bind.FormValue(r, "staff", "boolean")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  users, _ := strconv.ParseBool(userStr)
+  staff, _ := strconv.ParseBool(staffStr)
 
   err = models.CloseAllSessions(users, staff)
   if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
