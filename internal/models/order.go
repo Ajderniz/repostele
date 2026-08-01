@@ -58,8 +58,8 @@ var (
 func updateOrderField(id int, field string, v any) error {
   _, err := dbBeginExecAndCommit(
     "UPDATE "+_ORDERS+
-    "SET $1 = $2, "+ORDER_UPDATED+" = $3 "+
-    "WHERE "+ORDER_ID+" = $4",
+    "SET ? = ?, "+ORDER_UPDATED+" = ? "+
+    "WHERE "+ORDER_ID+" = ?",
     field, v, time.Now().Unix(), id,
   )
   if err != nil { errman.PrintError(err); return _ErrUpdateOrder }
@@ -81,7 +81,7 @@ func InsertOrder(order Order) error {
   for itemId, quant := range order.Items {
     _, err := tx.Exec(
       "INSERT INTO "+_ORDER_ITEMS+" ("+ _ORDER_ITEM_FIELDS+") "+
-      "VALUES ($1, $2, $3)",
+      "VALUES (?, ?, ?)",
       order.Id, itemId, quant,
     )
     if err != nil { errman.PrintError(err); return _ErrInsertOrder }
@@ -110,7 +110,7 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
   err := _DB.Select(&ois,
     "SELECT "+_ORDER_ITEM_ITEM_ID+", "+_ORDER_ITEM_QUANT+" "+
     "FROM "+_ORDER_ITEMS+" "+
-    "WHERE "+_ORDER_ITEM_ORDER_ID+" = $1",
+    "WHERE "+_ORDER_ITEM_ORDER_ID+" = ?",
     id,
   )
   if err != nil {
@@ -140,7 +140,7 @@ func GetAllOrdersFromUsername(username string) ([]Order, error) {
   err := dbSelect(&orders,
     "SELECT * "+
     "FROM "+_ORDERS+" "+
-    "WHERE "+_ORDER_USER+" = $1"+
+    "WHERE "+_ORDER_USER+" = ?"+
     "ORDER BY "+_ORDER_TIME+" DESC",
     username,
   )
@@ -153,7 +153,7 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
   err := dbGet(&order,
     "SELECT * "+
     "FROM "+_ORDERS+" "+
-    "WHERE "+_ORDER_USER+" = $1 "+
+    "WHERE "+_ORDER_USER+" = ? "+
     "ORDER BY "+_ORDER_TIME+" DESC "+
     "LIMIT 1",
     username,

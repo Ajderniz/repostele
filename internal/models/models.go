@@ -90,9 +90,9 @@ func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
 
 func dbUpdateTableField(table, set string, v any, where string, eq any) (result sql.Result, err error) {
   result, err = dbBeginExecAndCommit(
-    "UPDATE $1 "+
-    "SET $2 = $3 "+
-    "WHERE $4 = $5",
+    "UPDATE ? "+
+    "SET ? = ? "+
+    "WHERE ? = ?",
     table, set, v, where, eq,
   )
   return
@@ -100,7 +100,7 @@ func dbUpdateTableField(table, set string, v any, where string, eq any) (result 
 
 func dbGetRecord(dst any, sel, from, where string, eq any) (err error) {
   err = dbGet(dst,
-    "SELECT $1 FROM $2 WHERE $3 = $4",
+    "SELECT ? FROM ? WHERE ? = ?",
     sel, from, where, eq,
   )
   return
@@ -112,7 +112,7 @@ func dbSelectList(dst any, sel, from string, params SelectParams, sortFields _So
   if !slices.Contains(sortFields, params.Sort) { params.Sort = sortFields[0] }
   if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
   err = dbSelect(dst,
-    "SELECT $1 FROM $2 ORDER BY $3 $4 LIMIT $5, $6",
+    "SELECT ? FROM ? ORDER BY ? ? LIMIT ?, ?",
     sel, from, params.Sort, params.Dir, params.Start, params.Limit,
   )
   return

@@ -63,7 +63,7 @@ func GetStaffFromUsername(username string) (Staff, error) {
 	err := dbGet(&staff,
 		"SELECT * "+
 		"FROM "+_STAFF+" "+
-		"WHERE "+STAFF_USERNAME+" = $1 AND "+STAFF_ACTIVE+" = true",
+		"WHERE "+STAFF_USERNAME+" = ? AND "+STAFF_ACTIVE+" = true",
 		username,
 	)
 	if err != nil { return Staff{}, _ErrGetAcc }

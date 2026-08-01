@@ -77,7 +77,7 @@ var (
 
 func CloseAllSessions(users, staff bool) error {
   query := "UPDATE "+_SESSIONS+" "+
-           "SET "+_SESSION_EXPIRES+" = $1"
+           "SET "+_SESSION_EXPIRES+" = ?"
   if users != staff {
     query += " WHERE "+_SESSION_ROLE+" = "
     if users {

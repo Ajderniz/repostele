@@ -44,7 +44,7 @@ func GetUserFromUsername(username string) (User, error) {
   err := dbGet(&user,
     "SELECT * "+
     "FROM "+_USERS+" "+
-    "WHERE "+USER_USERNAME+" = $1 AND "+USER_ACTIVE+" = true",
+    "WHERE "+USER_USERNAME+" = ? AND "+USER_ACTIVE+" = true",
     username,
   )
   if err != nil { return User{}, _ErrGetAcc }
