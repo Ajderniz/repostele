@@ -43,7 +43,7 @@ func InsertSession(session Session) error {
             ",:"+_SESSION_ROLE+",:"+_SESSION_STARTS+",:"+_SESSION_EXPIRES+")",
     &session,
   )
-  if err!=nil{errman.PrintError(err);return errors.New("Couldn't open session")}
+  if err!=nil{errman.PrintError(err);return errors.New("Could not open session")}
   return nil
 }
 
@@ -53,7 +53,7 @@ func GetSessionFromToken(sessionToken string) (Session, error) {
   if err != nil {
     errman.PrintError(err)
     if err == sql.ErrNoRows {return Session{},errors.New("Session nonexistent")}
-    return Session{}, errors.New("Could not retreive session information")
+    return Session{}, errors.New("Could not retrieve session information")
   }
   return session, nil
 }
@@ -66,7 +66,7 @@ func CloseSession(sessionToken string) error {
   _, err := dbUpdateTableField(
     _SESSIONS, _SESSION_EXPIRES, expireTime(), SESSION_TOKEN, sessionToken,
 )
-  if err != nil { return errors.New("Couldn't close session") }
+  if err != nil { return errors.New("Could not close session") }
   return nil
 }
 
@@ -89,7 +89,7 @@ func CloseAllSessions(users, staff bool) error {
   _, err := dbBeginExecAndCommit(query, expireTime())
   if err != nil {
     errman.PrintError(err)
-    return errors.New("Couldn't close all sessions")
+    return errors.New("Could not close all sessions")
   }
   return nil
 }

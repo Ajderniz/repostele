@@ -57,7 +57,7 @@ func GetItems(params SelectParams) (items []Item, err error) {
 func GetItemFromID(id int) (Item, error) {
   item := Item{}
   err := dbGetRecord(&item, "*", _ITEMS, ITEM_ID, id)
-  if err != nil { return Item{}, errors.New("Could not retreive item") }
+  if err != nil { return Item{}, errors.New("Could not retrieve item") }
   return item, nil
 }
 

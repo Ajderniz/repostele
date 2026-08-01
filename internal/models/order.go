@@ -50,7 +50,7 @@ const (
 )
 
 var (
-  _ErrGetOrders = errors.New("Could not retreive order list")
+  _ErrGetOrders = errors.New("Could not retrieve order list")
   _ErrInsertOrder = errors.New("Could not insert order")
   _ErrUpdateOrder = errors.New("Could not modify the order")
 )
@@ -115,7 +115,7 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
   )
   if err != nil {
     errman.PrintError(err)
-    return nil, errors.New("Could not retreive item list from order")
+    return nil, errors.New("Could not retrieve item list from order")
   }
 
   items := make(ItemIdQuant, len(ois))
@@ -127,7 +127,7 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
 func GetOrderFromID(id int) (Order, error) {
   order := Order{}
   err := dbGetRecord(&order, "*", _ORDERS, ORDER_ID, id)
-  if err != nil{return Order{},errors.New("Could not retreive requested order")}
+  if err != nil{return Order{},errors.New("Could not retrieve requested order")}
 
   order.Items, err = getItemsFromOrderID(id)
   if err != nil { return Order{}, err }
@@ -144,7 +144,7 @@ func GetAllOrdersFromUsername(username string) ([]Order, error) {
     "ORDER BY "+_ORDER_TIME+" DESC",
     username,
   )
-  if err != nil { return []Order{},errors.New("Could not retreive order list") }
+  if err != nil { return []Order{},errors.New("Could not retrieve order list") }
   return orders, nil
 }
 
@@ -158,7 +158,7 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
     "LIMIT 1",
     username,
   )
-  if err != nil { return Order{},errors.New("Could not retreive latest order") }
+  if err != nil { return Order{},errors.New("Could not retrieve latest order") }
   return order, nil
 }
 
@@ -170,7 +170,7 @@ func GetLatestOrderID() (int, error) {
     "ORDER BY "+ORDER_ID+" DESC "+
     "LIMIT 1",
   )
-  if err != nil { return -1, errors.New("Could not retreive latest order ID") }
+  if err != nil { return -1, errors.New("Could not retrieve latest order ID") }
   return id, nil
 }
 

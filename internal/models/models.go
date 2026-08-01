@@ -23,8 +23,8 @@ var (
   _Schema string
 
   _ErrInsertAcc = errors.New("Could not create account")
-  _ErrGetAccs = errors.New("Could not retreive accout list")
-  _ErrGetAcc = errors.New("Could not retreive accout")
+  _ErrGetAccs = errors.New("Could not retrieve accout list")
+  _ErrGetAcc = errors.New("Could not retrieve accout")
   _ErrModAcc = errors.New("Could not modify account")
 )
 
