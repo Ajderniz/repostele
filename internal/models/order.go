@@ -98,7 +98,7 @@ var _OrderSortFields = _SortFields{
 }
 
 func GetOrders(params SelectParams) (orders []Order, err error) {
-  err = dbSelectList(&orders, "*", _ORDERS, params, _OrderSortFields)
+  err = dbSelectList(&orders, _ORDERS, params, _OrderSortFields)
   return
 }
 

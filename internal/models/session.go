@@ -99,6 +99,6 @@ var _SessionSortFields = []string{
 }
 
 func GetSessions(params SelectParams) (sessions []Session, err error) {
-  err = dbSelectList(&sessions, "*", _SESSIONS, params, _SessionSortFields)
+  err = dbSelectList(&sessions, _SESSIONS, params, _SessionSortFields)
   return
 }

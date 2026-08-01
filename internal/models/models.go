@@ -58,7 +58,7 @@ func dbGet(dst any, query string, args ...any) error {
 }
 
 func dbSelect(dst any, query string, args ...any) error {
-  err := _DB.Select(&dst, query, args)
+  err := _DB.Select(dst, query, args...)
   return dbSelectErr(err)
 }
 
@@ -106,14 +106,14 @@ func dbGetRecord(dst any, sel, from, where string, eq any) (err error) {
   return
 }
 
-func dbSelectList(dst any, sel, from string, params SelectParams, sortFields _SortFields) (err error) {
+func dbSelectList(dst any, from string, params SelectParams, sortFields _SortFields) (err error) {
   if params.Start < 0 { params.Start = 0 }
   if params.Limit <= 0 { params.Limit = 99 }
   if !slices.Contains(sortFields, params.Sort) { params.Sort = sortFields[0] }
   if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
   err = dbSelect(dst,
-    "SELECT ? FROM ? ORDER BY ? ? LIMIT ?, ?",
-    sel, from, params.Sort, params.Dir, params.Start, params.Limit,
+    "SELECT * FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
+    params.Sort, params.Start, params.Limit,
   )
   return
 }

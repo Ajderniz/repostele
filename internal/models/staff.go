@@ -43,7 +43,7 @@ var _StaffSortFields = _SortFields{
 }
 
 func GetStaff(params SelectParams) (staff []Staff, err error) {
-	err = dbSelectList(&staff, "*", _STAFF, params, _StaffSortFields)
+	err = dbSelectList(&staff, _STAFF, params, _StaffSortFields)
 	return
 }
 

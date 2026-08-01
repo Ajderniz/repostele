@@ -50,7 +50,7 @@ func InsertItem(item Item) error {
 }
 
 func GetItems(params SelectParams) (items []Item, err error) {
-  err = dbSelectList(&items, "*", _ITEMS, params, _ItemSortFields)
+  err = dbSelectList(&items, _ITEMS, params, _ItemSortFields)
   return
 }
 

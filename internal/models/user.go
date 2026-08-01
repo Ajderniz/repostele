@@ -35,7 +35,7 @@ func InsertUserAccount(user User) error {
 var _UserSortFields = []string{ USER_USERNAME, USER_TIME_CREATED, USER_ACTIVE }
 
 func GetUsers(params SelectParams) (users []User, err error) {
-  err = dbSelectList(&users, "*", _USERS, params, _UserSortFields)
+  err = dbSelectList(&users, _USERS, params, _UserSortFields)
   return
 }
 
