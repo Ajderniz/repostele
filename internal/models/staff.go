@@ -32,7 +32,7 @@ func InsertStaffAccount(staff Staff) error {
 			_STAFF_FULL_NAME+","+STAFF_TIME_CREATED+","+_STAFF_ADMIN+") "+
 		"VALUES (:"+STAFF_USERNAME+",:"+STAFF_PASS_HASH+",:"+_STAFF_FULL_NAME+
 			",:"+STAFF_TIME_CREATED+",:"+_STAFF_ADMIN+")",
-		staff,
+		&staff,
 	)
 	if err != nil { return _ErrInsertAcc }
 	return nil

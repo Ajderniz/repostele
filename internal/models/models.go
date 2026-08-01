@@ -79,7 +79,7 @@ func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
   tx, err := _DB.Beginx()
   if err != nil { errman.PrintError(err); return nil, err }
 
-  result, err := tx.NamedExec(query, &v)
+  result, err := tx.NamedExec(query, v)
   if err != nil { errman.PrintError(err); return nil, err }
 
   err = tx.Commit()
