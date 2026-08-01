@@ -98,7 +98,11 @@ var _SessionSortFields = []string{
   _SESSION_USER, _SESSION_ROLE, _SESSION_STARTS, _SESSION_EXPIRES,
 }
 
-func GetSessions(params SelectParams) (sessions []Session, err error) {
-  err = dbSelectList(&sessions, _SESSIONS, params, _SessionSortFields)
-  return
+func GetSessions(params SelectParams) ([]Session, error) {
+  sessions := []Session{}
+  err := dbSelectList(&sessions, _SESSIONS, params, _SessionSortFields)
+  if err != nil {
+    return []Session{}, errors.New("Could not retrieve session list")
+  }
+  return sessions, nil
 }

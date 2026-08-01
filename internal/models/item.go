@@ -49,9 +49,11 @@ func InsertItem(item Item) error {
   return nil
 }
 
-func GetItems(params SelectParams) (items []Item, err error) {
-  err = dbSelectList(&items, _ITEMS, params, _ItemSortFields)
-  return
+func GetItems(params SelectParams) ([]Item, error) {
+  items := []Item{}
+  err := dbSelectList(&items, _ITEMS, params, _ItemSortFields)
+  if err != nil { return []Item{}, errors.New("Could not retrieve item list") }
+  return items, nil
 }
 
 func GetItemFromID(id int) (Item, error) {

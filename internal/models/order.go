@@ -97,9 +97,11 @@ var _OrderSortFields = _SortFields{
   ORDER_ID, _ORDER_USER, _ORDER_TOTAL, _ORDER_TIME, ORDER_STATUS, ORDER_UPDATED,
 }
 
-func GetOrders(params SelectParams) (orders []Order, err error) {
-  err = dbSelectList(&orders, _ORDERS, params, _OrderSortFields)
-  return
+func GetOrders(params SelectParams) ([]Order, error) {
+  orders := []Order{}
+  err := dbSelectList(&orders, _ORDERS, params, _OrderSortFields)
+  if err != nil { return []Order{}, _ErrGetOrders }
+  return orders, nil
 }
 
 func getItemsFromOrderID(id int) (ItemIdQuant, error) {

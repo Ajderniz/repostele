@@ -106,16 +106,20 @@ func dbGetRecord(dst any, sel, from, where string, eq any) (err error) {
   return
 }
 
-func dbSelectList(dst any, from string, params SelectParams, sortFields _SortFields) (err error) {
+func dbSelectList(dst any, from string, params SelectParams, sortFields _SortFields) error {
   if params.Start < 0 { params.Start = 0 }
   if params.Limit <= 0 { params.Limit = 99 }
   if !slices.Contains(sortFields, params.Sort) { params.Sort = sortFields[0] }
   if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
-  err = dbSelect(dst,
+  err := dbSelect(dst,
     "SELECT * FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
     params.Sort, params.Start, params.Limit,
   )
-  return
+  if dbSelectErr(err) != nil {
+    errman.PrintError(err)
+    return errors.New("Selection error")
+  }
+  return nil
 }
 
 func OpenDB() error {
