@@ -53,7 +53,7 @@ func dbSelectErr(err error) error {
 }
 
 func dbGet(dst any, query string, args ...any) error {
-  err := _DB.Get(&dst, query, args)
+  err := _DB.Get(dst, query, args...)
   return dbSelectErr(err)
 }
 
@@ -99,7 +99,7 @@ func dbUpdateTableField(table, set string, v any, where string, eq any) (result 
 }
 
 func dbGetRecord(dst any, sel, from, where string, eq any) (err error) {
-  err = dbGet(dst,
+  err = dbGet(&dst,
     "SELECT ? FROM ? WHERE ? = ?",
     sel, from, where, eq,
   )
