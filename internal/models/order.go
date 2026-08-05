@@ -62,7 +62,7 @@ func updateOrderField(id int, field string, v any) error {
     "WHERE "+ORDER_ID+" = ?",
     field, v, time.Now().Unix(), id,
   )
-  if err != nil { errman.PrintError(err); return _ErrUpdateOrder }
+  if err != nil { return _ErrUpdateOrder }
   return nil
 }
 
@@ -128,7 +128,7 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
 
 func GetOrderFromID(id int) (Order, error) {
   order := Order{}
-  err := dbGetRecord(&order, "*", _ORDERS, ORDER_ID, id)
+  err := dbGetRecord(&order, _ORDERS, ORDER_ID, id)
   if err != nil{return Order{},errors.New("Could not retrieve requested order")}
 
   order.Items, err = getItemsFromOrderID(id)

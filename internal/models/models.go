@@ -98,10 +98,10 @@ func dbUpdateTableField(table, set string, v any, where string, eq any) (result 
   return
 }
 
-func dbGetRecord(dst any, sel, from, where string, eq any) (err error) {
-  err = dbGet(&dst,
-    "SELECT ? FROM ? WHERE ? = ?",
-    sel, from, where, eq,
+func dbGetRecord(dst any, from, where string, eq any) (err error) {
+  err = dbGet(dst,
+    "SELECT * FROM "+from+" WHERE ? = ?",
+    where, eq,
   )
   return
 }

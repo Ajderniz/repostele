@@ -1,3 +1,8 @@
+CREATE TABLE IF NOT EXISTS "fingerprints" (
+	"id"	TEXT,
+	"expires"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "expires"),
+	PRIMARY KEY("id")
+);
 CREATE TABLE IF NOT EXISTS "items" (
 	"id"	INTEGER,
 	"name"	TEXT NOT NULL,

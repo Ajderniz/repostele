@@ -9,6 +9,7 @@ import (
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
+	"github.com/anhnmt/go-fingerprint"
 )
 
 const _TOKEN_LENGTH = 32
@@ -23,6 +24,22 @@ func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
     write.Error(w, http.StatusForbidden,
       errors.New("This system is not yet initialized"),
     )
+    return
+  }
+
+  fpid := fingerprint.NewFingerprint(r).ID
+  fp, err := models.GetFingerPrintFromID(fpid)
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if fp.Id == "" {
+    fp.Id = fpid
+    fp.Expires = time.Now().Add(time.Hour).Unix()
+
+    err = models.InsertFingerprint(fp)
+    if err != nil { write.Error(w, http.StatusInternalServerError, err); return}
+
+  } else if time.Now().Unix() < fp.Expires {
+    
+    write.Error(w, http.StatusTooManyRequests, errors.New("Too soon"))
     return
   }
 

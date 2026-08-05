@@ -42,10 +42,7 @@ func InsertItem(item Item) error {
       _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
     &item,
   )
-  if err != nil {
-    errman.PrintError(err);
-    return errors.New("Could not post new item")
-  }
+  if err != nil { return errors.New("Could not post new item") }
   return nil
 }
 
@@ -58,7 +55,7 @@ func GetItems(params SelectParams) ([]Item, error) {
 
 func GetItemFromID(id int) (Item, error) {
   item := Item{}
-  err := dbGetRecord(&item, "*", _ITEMS, ITEM_ID, id)
+  err := dbGetRecord(&item, _ITEMS, ITEM_ID, id)
   if err != nil { return Item{}, errors.New("Could not retrieve item") }
   return item, nil
 }
