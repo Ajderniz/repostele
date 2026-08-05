@@ -66,7 +66,7 @@ func dbBeginExecAndCommit(query string, args ...any) (sql.Result, error) {
   tx, err := _DB.Beginx()
   if err != nil { errman.PrintError(err); return nil, err }
 
-  result, err := tx.Exec(query, args)
+  result, err := tx.Exec(query, args...)
   if err != nil { errman.PrintError(err); return nil, err }
 
   err = tx.Commit()
@@ -90,10 +90,10 @@ func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
 
 func dbUpdateTableField(table, set string, v any, where string, eq any) (result sql.Result, err error) {
   result, err = dbBeginExecAndCommit(
-    "UPDATE ? "+
-    "SET ? = ? "+
+    "UPDATE "+table+" "+
+    "SET "+set+" = ? "+
     "WHERE ? = ?",
-    table, set, v, where, eq,
+    v, where, eq,
   )
   return
 }
