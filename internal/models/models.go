@@ -43,6 +43,13 @@ type SelectParams struct {
   Dir   SortDir `schema:"dir,deafult:asc"`
 }
 
+func (params SelectParams) Fix(fields _SortFields) {
+  if params.Start < 0 { params.Start = 0 }
+  if params.Limit <= 0 { params.Limit = 99 }
+  if !slices.Contains(fields, params.Sort) { params.Sort = fields[0] }
+  if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
+}
+
 func dbSelectErr(err error) error {
   if err != nil {
     if err == sql.ErrNoRows{ return nil }
@@ -92,27 +99,16 @@ func dbUpdateTableField(table, set string, v any, where string, eq any) (result 
   result, err = dbBeginExecAndCommit(
     "UPDATE "+table+" "+
     "SET "+set+" = ? "+
-    "WHERE ? = ?",
-    v, where, eq,
+    "WHERE "+where+" = ?",
+    v, eq,
   )
   return
 }
 
-func dbGetRecord(dst any, from, where string, eq any) (err error) {
-  err = dbGet(dst,
-    "SELECT * FROM "+from+" WHERE ? = ?",
-    where, eq,
-  )
-  return
-}
-
-func dbSelectList(dst any, from string, params SelectParams, sortFields _SortFields) error {
-  if params.Start < 0 { params.Start = 0 }
-  if params.Limit <= 0 { params.Limit = 99 }
-  if !slices.Contains(sortFields, params.Sort) { params.Sort = sortFields[0] }
-  if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
+func dbSelectList(dst any, sel, from string, params SelectParams, sortFields _SortFields) error {
+  params.Fix(sortFields)
   err := dbSelect(dst,
-    "SELECT * FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
+    "SELECT "+sel+" FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
     params.Sort, params.Start, params.Limit,
   )
   if dbSelectErr(err) != nil {

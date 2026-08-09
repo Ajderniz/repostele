@@ -5,12 +5,12 @@ import (
 )
 
 type Staff struct {
-	Username    string `db:"username"`
+	Username    string `db:"username"     json:"username"`
 	PassHash    string `db:"pass_hash"`
-	FullName    string `db:"full_name"`
-	TimeCreated int64  `db:"time_created"`
-	Active      bool   `db:"active"`
-	Admin       bool   `db:"admin"`
+	FullName    string `db:"full_name"    json:"full_name"`
+	TimeCreated int64  `db:"time_created" json:"time_created"`
+	Active      bool   `db:"active"       json:"active"`
+	Admin       bool   `db:"admin"        json:"admin"`
 }
 
 const (
@@ -21,9 +21,9 @@ const (
 	STAFF_TIME_CREATED = "time_created"
 	STAFF_ACTIVE       = "active"
 	_STAFF_ADMIN        = "admin"
-	//_STAFF_FIELDS       = _STAFF_USERNAME+","+_STAFF_PASS_HASH+","+
-	                      //_STAFF_FULL_NAME+","+_STAFF_TIME_CREATED+","+
-	                      //_STAFF_ACTIVE+","+_STAFF_ADMIN
+	_STAFF_FIELDS       = STAFF_USERNAME+","+/*_STAFF_PASS_HASH+","+*/
+	                      _STAFF_FULL_NAME+","+STAFF_TIME_CREATED+","+
+	                      STAFF_ACTIVE+","+_STAFF_ADMIN
 )
 
 func InsertStaffAccount(staff Staff) error {
@@ -34,7 +34,7 @@ func InsertStaffAccount(staff Staff) error {
 			",:"+STAFF_TIME_CREATED+",:"+_STAFF_ADMIN+")",
 		&staff,
 	)
-	if err != nil { return _ErrInsertAcc }
+  if err != nil { return _ErrInsertAcc }
 	return nil
 }
 
@@ -44,8 +44,8 @@ var _StaffSortFields = _SortFields{
 
 func GetStaff(params SelectParams) ([]Staff, error) {
 	staff := []Staff{}
-	err := dbSelectList(&staff, _STAFF, params, _StaffSortFields)
-	if err != nil { return []Staff{},_ErrGetAcc}
+	err := dbSelectList(&staff, _STAFF_FIELDS, _STAFF, params, _StaffSortFields)
+	if err != nil { return []Staff{}, _ErrGetAcc }
 	return staff, nil
 }
 
@@ -53,7 +53,7 @@ func GetStaffAdmins() ([]Staff, error) {
 	admins := []Staff{}
 	err := dbSelect(&admins,
 		"SELECT * "+
-		"FROM "+_STAFF+
+		"FROM "+_STAFF+" "+
 		"WHERE "+_STAFF_ADMIN+" = true AND "+STAFF_ACTIVE+" = true",
 	)
 	if err != nil { return []Staff{}, _ErrGetAccs }

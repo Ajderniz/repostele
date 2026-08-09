@@ -15,7 +15,11 @@ import (
 
 var _ErrSessionToken = errors.New("'session_token' cookie not found")
 
-const _SESSION_ID = "session_id"
+const (
+  _TOKEN_LENGTH = 32
+  SESSION_ID    = "session-id"
+  _CSRF_TOKEN   = "csrf-token"
+)
 
 func openSession(w http.ResponseWriter, username string, role models.SessionRole) error {
   sessionToken, err := pass.GenerateToken(_TOKEN_LENGTH)
@@ -25,13 +29,13 @@ func openSession(w http.ResponseWriter, username string, role models.SessionRole
   expires := time.Now().Add(24 * time.Hour)
 
   http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_TOKEN,
+    Name:     SESSION_ID,
     Value:    sessionToken,
     Expires:  expires,
     HttpOnly: true,
   })
   http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_CSRF_TOKEN,
+    Name:     _CSRF_TOKEN,
     Value:    csrfToken,
     Expires:  expires,
     HttpOnly: false,
@@ -48,7 +52,7 @@ func openSession(w http.ResponseWriter, username string, role models.SessionRole
 }
 
 func closeSession(w http.ResponseWriter, r *http.Request) error {
-  sessionID, err := r.Cookie(_SESSION_ID)
+  sessionID, err := r.Cookie(SESSION_ID)
   if err != nil {
     errman.PrintError(err)
     return _ErrSessionToken
@@ -58,17 +62,17 @@ func closeSession(w http.ResponseWriter, r *http.Request) error {
     return _ErrSessionToken
   }
 
-  err = models.CloseSession(sessionID.Value)
+  err = models.CloseSessionForUsername(sessionID.Value)
   if err != nil { return err }
 
   http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_TOKEN,
+    Name:     SESSION_ID,
     Value:    "",
     Expires:  time.Now().Add(-time.Hour),
     HttpOnly: true,
   })
   http.SetCookie(w, &http.Cookie{
-    Name:     models.SESSION_CSRF_TOKEN,
+    Name:     _CSRF_TOKEN,
     Value:    "",
     Expires:  time.Now().Add(-time.Hour),
     HttpOnly: false,
@@ -77,11 +81,11 @@ func closeSession(w http.ResponseWriter, r *http.Request) error {
   return nil
 }
 
-func CloseSessionWithID(w http.ResponseWriter, r *http.Request) {
-  sessionID, err := bind.FormValue(r, _SESSION_ID, "required")
+func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
+  sessionID, err := bind.URLParam(r, _CREDS_USERNAME, "required")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  err = models.CloseSession(sessionID)
+  err = models.CloseSessionForUsername(sessionID)
   if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
   write.Msg(w, "Session closed successfully")
@@ -106,14 +110,14 @@ func Logout(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgLoggedOut)
 }
 
-func GetSessions(w http.ResponseWriter, r *http.Request) {
+func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  sessions, err := models.GetSessions(params)
+  sessions, err := models.GetActiveSessions(params)
   if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
-  if sessions == nil { write.Data(w, _DataNoResults); return }
+  if len(sessions) <= 0 { write.Data(w, _DataNoResults); return }
   write.Data(w, sessions)
 }

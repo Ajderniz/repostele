@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ajderniz/repostele/pkg/errman"
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/schema"
 )
@@ -44,8 +45,17 @@ func Form(r *http.Request, dst any) error {
 	return nil
 }
 
-func FormValue(r *http.Request, key string, validate string) (string, error) {
+func FormValue(r *http.Request, key, validate string) (string, error) {
 	v := r.FormValue(key)
+	if err := _Validate.Var(v, validate); err != nil {
+		errman.PrintError(err)
+		return "", _ValidationErr
+	}
+	return v, nil
+}
+
+func URLParam(r *http.Request, key, validate string) (string, error) {
+	v := chi.URLParam(r, key)
 	if err := _Validate.Var(v, validate); err != nil {
 		errman.PrintError(err)
 		return "", _ValidationErr

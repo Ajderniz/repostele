@@ -18,10 +18,10 @@ const (
 type Session struct {
   SessionToken string      `db:"session_token"`
   CSRFToken    string      `db:"csrf_token"`
-  User         string      `db:"user"`
-  Role         SessionRole `db:"role"`
-  Starts       int64       `db:"starts"`
-  Expires      int64       `db:"expires"`
+  User         string      `db:"user"          json:"user"`
+  Role         SessionRole `db:"role"          json:"role"`
+  Starts       int64       `db:"starts"        json:"starts"`
+  Expires      int64       `db:"expires"       json:"expires"`
 }
 
 const (
@@ -49,7 +49,7 @@ func InsertSession(session Session) error {
 
 func GetSessionFromToken(sessionToken string) (Session, error) {
   session := Session{}
-  err := dbGetRecord(&session, _SESSIONS, SESSION_TOKEN, sessionToken)
+  err := dbGet(&session, "SELECT * FROM "+_SESSIONS+" WHERE "+SESSION_TOKEN+" = ?", sessionToken)
   if err != nil {
     errman.PrintError(err)
     if err == sql.ErrNoRows {return Session{},errors.New("Session nonexistent")}
@@ -62,10 +62,10 @@ func expireTime() int64 {
   return time.Now().Add(-time.Hour).Unix()
 }
 
-func CloseSession(sessionToken string) error {
+func CloseSessionForUsername(username string) error {
   _, err := dbUpdateTableField(
-    _SESSIONS, _SESSION_EXPIRES, expireTime(), SESSION_TOKEN, sessionToken,
-)
+    _SESSIONS, _SESSION_EXPIRES, expireTime(), _SESSION_USER, username,
+  )
   if err != nil { return errors.New("Could not close session") }
   return nil
 }
@@ -95,10 +95,18 @@ var _SessionSortFields = []string{
   _SESSION_USER, _SESSION_ROLE, _SESSION_STARTS, _SESSION_EXPIRES,
 }
 
-func GetSessions(params SelectParams) ([]Session, error) {
+func GetActiveSessions(params SelectParams) ([]Session, error) {
+  params.Fix(_SessionSortFields)
   sessions := []Session{}
-  err := dbSelectList(&sessions, _SESSIONS, params, _SessionSortFields)
-  if err != nil {
+  err := dbSelect(&sessions,
+    "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+_SESSION_STARTS+","+
+              _SESSION_EXPIRES+" "+
+    "FROM "+_SESSIONS+" "+
+    "WHERE ? < "+_SESSION_EXPIRES,
+    time.Now().Unix(),
+  )
+  if dbSelectErr(err) != nil {
+    errman.PrintError(err)
     return []Session{}, errors.New("Could not retrieve session list")
   }
   return sessions, nil

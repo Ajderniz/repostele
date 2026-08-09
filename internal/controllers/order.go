@@ -154,7 +154,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
 
   orders, err := models.GetOrders(params)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-  if orders == nil { write.Data(w, _DataNoResults); return }
+  if len(orders) <= 0 { write.Data(w, _DataNoResults); return }
 
   write.Data(w, orders)
 }

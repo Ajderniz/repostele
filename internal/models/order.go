@@ -99,7 +99,7 @@ var _OrderSortFields = _SortFields{
 
 func GetOrders(params SelectParams) ([]Order, error) {
   orders := []Order{}
-  err := dbSelectList(&orders, _ORDERS, params, _OrderSortFields)
+  err := dbSelectList(&orders, "*", _ORDERS, params, _OrderSortFields)
   if err != nil { return []Order{}, _ErrGetOrders }
   return orders, nil
 }
@@ -128,7 +128,12 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
 
 func GetOrderFromID(id int) (Order, error) {
   order := Order{}
-  err := dbGetRecord(&order, _ORDERS, ORDER_ID, id)
+  err := dbGet(&order,
+    "SELECT * "+
+    "FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_ID+" = ?",
+    id,
+  )
   if err != nil{return Order{},errors.New("Could not retrieve requested order")}
 
   order.Items, err = getItemsFromOrderID(id)

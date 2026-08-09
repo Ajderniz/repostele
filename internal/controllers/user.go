@@ -9,37 +9,14 @@ import (
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
-	"github.com/anhnmt/go-fingerprint"
 )
 
-const _TOKEN_LENGTH = 32
-
 func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
-  admins, err := models.GetStaffAdmins()
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, _ErrRegAcc)
-    return
-  }
-  if len(admins) <= 0 {
+  fp := r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
+  if _MAX_REG_ACCS <= fp.AccsCreated {
     write.Error(w, http.StatusForbidden,
-      errors.New("This system is not yet initialized"),
+      errors.New("Account creation limit reached"),
     )
-    return
-  }
-
-  fpid := fingerprint.NewFingerprint(r).ID
-  fp, err := models.GetFingerPrintFromID(fpid)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
-  if fp.Id == "" {
-    fp.Id = fpid
-    fp.Expires = time.Now().Add(time.Hour).Unix()
-
-    err = models.InsertFingerprint(fp)
-    if err != nil { write.Error(w, http.StatusInternalServerError, err); return}
-
-  } else if time.Now().Unix() < fp.Expires {
-    
-    write.Error(w, http.StatusTooManyRequests, errors.New("Too soon"))
     return
   }
 
@@ -52,13 +29,16 @@ func RegisterUserAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
   user.TimeCreated = time.Now().Unix()
 
-  err = models.InsertUserAccount(user)
+  err = models.InsertUserAccount(user, fp)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   write.Msg(w, _MsgAccCreated)
 }
 
 func UserLogin(w http.ResponseWriter, r *http.Request) {
+  fp, err := checkLoginAttempts(w, r)
+  if err != nil { write.Error(w, http.StatusForbidden, err); return }
+
   closeSession(w, r) // don't check for errors
 
   username, password, err := getCredsFromForm(r)
@@ -69,7 +49,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
   if user.Username == "" { write.Msg(w, _MsgAccNotFound); return }
 
   err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil { write.Error(w, http.StatusUnauthorized, err); return }
+  if err != nil { failLogin(w, fp); return }
 
   err = openSession(w, user.Username, models.SESSION_ROLE_USER)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
@@ -80,31 +60,6 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
       models.USER_TIME_CREATED: user.TimeCreated,
     },
   })
-}
-
-func UpdateUserUsername(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
-  password, newUsername, err := getNewUsernameFromForm(r)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-
-  user, err := models.GetUserFromUsername(username)
-  if err != nil || user.Username == "" {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-
-  if username == newUsername {
-    write.Error(w, http.StatusConflict, _ErrSameUsername)
-    return
-  }
-
-  err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil { write.Error(w, http.StatusUnauthorized, err); return }
-
-  err = models.UpdateUserField(user.Username, _CREDS_USERNAME, newUsername)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-
-  write.Msg(w, _MsgUsernameChanged)
 }
 
 func updateUserPassword(username, oldPassword, newPassword string) (int, error){
@@ -136,7 +91,7 @@ func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgPasswordChanged)
 }
 
-func UpdateUserPasswordSelf(w http.ResponseWriter, r *http.Request) {
+func SelfUpdateUserPassword(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
@@ -168,7 +123,7 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgAccDeactivated)
 }
 
-func DeactivateUserAccountSelf(w http.ResponseWriter, r *http.Request) {
+func SelfDeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
@@ -205,17 +160,18 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
   users, err := models.GetUsers(params)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
-  if users == nil { write.Data(w, _DataNoResults); return }
+  if len(users) <= 0 { write.Data(w, _DataNoResults); return }
   write.Data(w, users)
 }
 
 func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil {write.Error(w, http.StatusInternalServerError, err); return }
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if err != nil {write.Error(w, http.StatusInternalServerError, err); return }
 
-  if user.Username == "" { write.Data(w, _DataNoResults) }
+  if user.Username == "" { write.Data(w, _DataNoResults); return }
+  user.PassHash = ""
   write.Data(w, user)
 }

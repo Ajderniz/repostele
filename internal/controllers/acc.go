@@ -2,10 +2,18 @@ package controllers
 
 import (
 	"errors"
+	"net/http"
+
+	"github.com/ajderniz/repostele/internal/models"
+)
+
+const (
+  _MAX_REG_ACCS = 1
+  _MAX_FAILED_LOGINS = 3
 )
 
 var (
-	_ErrRegAcc = errors.New("Could not register account")
+	_ErrAlreadyInit  = errors.New("Already initialized")
 	_ErrSameUsername = errors.New("Username already exists")
 	_ErrSamePassword = errors.New("Password is the same")
 
@@ -16,3 +24,20 @@ var (
 	_MsgUsernameChanged = "Username changed successfully"
 	_MsgPasswordChanged = "Passowrd changed successfully"
 )
+
+func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Fingerprint, err error) {
+  fp = r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
+  if _MAX_FAILED_LOGINS <= fp.FailedLogins {
+    err = errors.New("Max login attempts reached")
+  }
+  return 
+}
+
+func failLogin(w http.ResponseWriter, fp models.Fingerprint) {
+	// already a fail, so don't check for errors
+  models.UpdateFingerprintField(
+    fp.FpId, models.FINGERPRINT_FAILED_LOGINS, fp.FailedLogins + 1,
+  )
+  w.WriteHeader(http.StatusUnauthorized)
+}
+	

@@ -8,6 +8,7 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
+	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
 )
@@ -32,22 +33,19 @@ func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
   return staff, http.StatusOK, nil
 }
 
-func RegisterStaffAccountInit(w http.ResponseWriter, r *http.Request) {
-  /*
-  In practice, this would actually perform a product key check against a server
-  or something like that
-  */
-  key, err := bind.FormValue(r, "key", "required,number,len=16")
-  if err != nil || key != _TEST_KEY {
-    write.Error(w, http.StatusUnauthorized, errors.New("Unauthorized key"))
-    return
-  }
-
+func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
   list, err := models.GetStaff(models.SelectParams{
     Start: 0, Limit: 1, Sort: models.USER_USERNAME, Dir: models.SORT_DIR_ASC,
   })
   if 1 <= len(list) {
-    write.Error(w, http.StatusForbidden, errors.New("Already initialized"))
+    errman.PrintError(_ErrAlreadyInit)
+    write.Error(w, http.StatusForbidden, _ErrAlreadyInit)
+    return
+  }
+
+  key, err := bind.FormValue(r, "key", "required,number,len=16")
+  if err != nil || key != _TEST_KEY {
+    w.WriteHeader(http.StatusUnauthorized)
     return
   }
 
@@ -57,7 +55,7 @@ func RegisterStaffAccountInit(w http.ResponseWriter, r *http.Request) {
   staff.Admin = true
 
   err = models.InsertStaffAccount(staff)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
   write.Msg(w, _MsgAccCreated)
 }
@@ -80,26 +78,27 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func StaffLogin(w http.ResponseWriter, r *http.Request) {
+  fp, err := checkLoginAttempts(w, r)
+  if err != nil { write.Error(w, http.StatusForbidden, err); return }
+
   closeSession(w, r)
 
   username, password, err := getCredsFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-	  
+
   staff, err := models.GetStaffFromUsername(username)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
   if staff.Username == "" { write.Msg(w, _MsgAccNotFound); return }
 
   err = pass.CheckPasswordHash(password, staff.PassHash)
-  if err != nil { write.Error(w, http.StatusUnauthorized, err); return }
+  if err != nil { failLogin(w, fp); return }
 
   err = openSession(w, staff.Username, models.SESSION_ROLE_STAFF)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   write.Data(w, write.H{
-    write.KEY_DAT: write.H{
-      models.STAFF_USERNAME: staff.Username,
-      models.STAFF_TIME_CREATED: staff.TimeCreated,
-    },
+    models.STAFF_USERNAME: staff.Username,
+    models.STAFF_TIME_CREATED: staff.TimeCreated,
   })
 }
 
@@ -131,7 +130,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgAccDeactivated)
 }
 
-func DeactivateStaffAccountSelf(w http.ResponseWriter, r *http.Request) {
+func SelfDeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
@@ -149,31 +148,6 @@ func DeactivateStaffAccountSelf(w http.ResponseWriter, r *http.Request) {
   if err != nil { write.Error(w, status, err); return }
 
   write.Msg(w, _MsgAccDeactivated)
-}
-
-func UpdateStaffUsername(w http.ResponseWriter, r *http.Request) {
-  oldUsername := r.Context().Value(_CREDS_USERNAME).(string)
-  password, newUsername, err := getNewUsernameFromForm(r)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-
-  if oldUsername == newUsername{ 
-    write.Error(w, http.StatusBadRequest, _ErrSameUsername)
-    return
-  }
-
-  staff, err := models.GetStaffFromUsername(oldUsername)
-  if err != nil || staff.Username == "" {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-
-  err = pass.CheckPasswordHash(password, staff.PassHash)
-  if err != nil {write.Error(w, http.StatusUnauthorized, err);return}
-
-  err =models.UpdateStaffField(staff.Username,models.STAFF_USERNAME,newUsername)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-
-  write.Msg(w, _MsgUsernameChanged)
 }
 
 func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
@@ -205,7 +179,7 @@ func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgPasswordChanged)
 }
 
-func UpdateStaffPasswordSelf(w http.ResponseWriter, r *http.Request) {
+func SelfUpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
@@ -225,16 +199,18 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
   if err != nil {write.Error(w, http.StatusInternalServerError,err); return}
 
   if staff == nil { write.Data(w, _DataNoResults); return }
+
   write.Data(w, staff)
 }
 
-func GetStaffFromUsername(w http.ResponseWriter, r *http.Request){
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+func GetStaffFromUsername(w http.ResponseWriter, r *http.Request) {
+  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
   staff, err := models.GetStaffFromUsername(username)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   if staff.Username == "" { write.Data(w, _DataNoResults); return }
+  staff.PassHash = ""
   write.Data(w, staff)
 }
