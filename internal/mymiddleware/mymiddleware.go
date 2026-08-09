@@ -3,7 +3,6 @@ package mymiddleware
 import (
 	"context"
 	"errors"
-	"log"
 	"net/http"
 	"time"
 
