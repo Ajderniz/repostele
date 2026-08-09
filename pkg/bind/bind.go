@@ -47,7 +47,7 @@ func Form(r *http.Request, dst any) error {
 
 func FormValue(r *http.Request, key, validate string) (string, error) {
 	v := r.FormValue(key)
-	if err := _Validate.Var(v, validate); err != nil {
+	if err := _Validate.VarWithKey(key, v, validate); err != nil {
 		errman.PrintError(err)
 		return "", _ValidationErr
 	}
@@ -56,7 +56,7 @@ func FormValue(r *http.Request, key, validate string) (string, error) {
 
 func URLParam(r *http.Request, key, validate string) (string, error) {
 	v := chi.URLParam(r, key)
-	if err := _Validate.Var(v, validate); err != nil {
+	if err := _Validate.VarWithKey(key, v, validate); err != nil {
 		errman.PrintError(err)
 		return "", _ValidationErr
 	}
