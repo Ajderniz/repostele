@@ -32,7 +32,7 @@ func JSON(r *http.Request, dst any) error {
 func Form(r *http.Request, dst any) error {
 	if err := r.ParseForm(); err != nil { 
 		errman.PrintError(err)
-		return errors.New("Parsing errror")
+		return errors.New("Parsing error")
 	}
 	if err := _Decoder.Decode(dst, r.Form); err != nil {
 		errman.PrintError(err)
