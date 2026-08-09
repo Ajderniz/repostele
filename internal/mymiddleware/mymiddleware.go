@@ -26,7 +26,7 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
     return models.Session{}, http.StatusUnauthorized, _ErrAuth
   }
 
-  session, err := models.GetSessionFromToken(sessionCookie.Value)
+  session, err := models.GetSessionFromID(sessionCookie.Value)
   if err != nil {
     errman.PrintError(err)
     return models.Session{}, http.StatusInternalServerError, _ErrGetSession

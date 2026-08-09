@@ -26,6 +26,7 @@ var (
   _ErrGetAccs = errors.New("Could not retrieve accout list")
   _ErrGetAcc = errors.New("Could not retrieve accout")
   _ErrModAcc = errors.New("Could not modify account")
+  _ErrCloseSession = errors.New("Could not close session")
 )
 
 type SortDir string

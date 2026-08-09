@@ -47,7 +47,7 @@ func InsertSession(session Session) error {
   return nil
 }
 
-func GetSessionFromToken(sessionToken string) (Session, error) {
+func GetSessionFromID(sessionToken string) (Session, error) {
   session := Session{}
   err := dbGet(&session, "SELECT * FROM "+_SESSIONS+" WHERE "+SESSION_TOKEN+" = ?", sessionToken)
   if err != nil {
@@ -58,15 +58,19 @@ func GetSessionFromToken(sessionToken string) (Session, error) {
   return session, nil
 }
 
-func expireTime() int64 {
-  return time.Now().Add(-time.Hour).Unix()
+func CloseSession(sessionID string) error {
+  _, err := dbUpdateTableField(
+    _SESSIONS, _SESSION_EXPIRES, time.Now().Unix(), SESSION_TOKEN, sessionID,
+  )
+  if err != nil { return _ErrCloseSession }
+  return nil
 }
 
 func CloseSessionForUsername(username string) error {
   _, err := dbUpdateTableField(
-    _SESSIONS, _SESSION_EXPIRES, expireTime(), _SESSION_USER, username,
+    _SESSIONS, _SESSION_EXPIRES, time.Now().Unix(), _SESSION_USER, username,
   )
-  if err != nil { return errors.New("Could not close session") }
+  if err != nil { return _ErrCloseSession }
   return nil
 }
 
@@ -86,7 +90,7 @@ func CloseAllSessions(users, staff bool) error {
       query += _SessionRoleStaffStr
     }
   }
-  _, err := dbBeginExecAndCommit(query, expireTime())
+  _, err := dbBeginExecAndCommit(query, time.Now().Unix())
   if err != nil { return errors.New("Could not close all sessions") }
   return nil
 }

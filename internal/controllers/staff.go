@@ -72,7 +72,7 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   staff.Admin, _ = strconv.ParseBool(adminStr)
 
   err = models.InsertStaffAccount(staff)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
   
   write.Msg(w, _MsgAccCreated)
 }
@@ -81,7 +81,11 @@ func StaffLogin(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { write.Error(w, http.StatusForbidden, err); return }
 
-  closeSession(w, r)
+  sid, err := getSessionIDFromCookie(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  err = checkSessionClosed(sid)
+  if err != nil { write.Msg(w, err.Error()); return }
 
   username, password, err := getCredsFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
@@ -111,7 +115,10 @@ func deactivateStaffAccount(w http.ResponseWriter, r *http.Request,
            errors.New("At least one admin account is required to be active")
   }
 
-  err = closeSession(w, r)
+  sid, err := getSessionIDFromCookie(r)
+  if err != nil { return http.StatusBadRequest, err }
+
+  err = closeSession(w, sid)
   if err != nil { return http.StatusInternalServerError, err }
 
   err = models.UpdateStaffField(username, models.STAFF_ACTIVE, false)

@@ -13,7 +13,7 @@ import (
 	"github.com/ajderniz/repostele/pkg/write"
 )
 
-var _ErrSessionToken = errors.New("'session_token' cookie not found")
+var _ErrSessionID = errors.New("'"+SESSION_ID+"' blank")
 
 const (
   _TOKEN_LENGTH = 32
@@ -51,18 +51,21 @@ func openSession(w http.ResponseWriter, username string, role models.SessionRole
   })
 }
 
-func closeSession(w http.ResponseWriter, r *http.Request) error {
-  sessionID, err := r.Cookie(SESSION_ID)
+func getSessionIDFromCookie(r *http.Request) (string, error) {
+  sid, err := r.Cookie(SESSION_ID)
   if err != nil {
     errman.PrintError(err)
-    return _ErrSessionToken
+    return "", _ErrSessionID
   }
-  if sessionID.Value == "" {
-    errman.PrintError(errors.New("session_token blank"))
-    return _ErrSessionToken
+  if sid.Value == "" {
+    errman.PrintError(_ErrSessionID)
+    return "", _ErrSessionID
   }
+  return sid.Value, nil
+}
 
-  err = models.CloseSessionForUsername(sessionID.Value)
+func closeSession(w http.ResponseWriter, sid string) error {
+  err := models.CloseSession(sid)
   if err != nil { return err }
 
   http.SetCookie(w, &http.Cookie{
@@ -81,11 +84,21 @@ func closeSession(w http.ResponseWriter, r *http.Request) error {
   return nil
 }
 
+func checkSessionClosed(sid string) error {
+  session, err := models.GetSessionFromID(sid)
+  if err != nil { return err }
+
+  if time.Now().Unix() < session.Expires {
+    return errors.New("Session already open")
+  }
+  return nil
+}
+
 func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
-  sessionID, err := bind.URLParam(r, _CREDS_USERNAME, "required")
+  username, err := bind.URLParam(r, _CREDS_USERNAME, "required")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  err = models.CloseSessionForUsername(sessionID)
+  err = models.CloseSessionForUsername(username)
   if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
   write.Msg(w, "Session closed successfully")
@@ -105,7 +118,10 @@ func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-  err := closeSession(w, r)
+  sid, err := getSessionIDFromCookie(r)
+  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
+  err = closeSession(w, sid)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
   write.Msg(w, _MsgLoggedOut)
 }
