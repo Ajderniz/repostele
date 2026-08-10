@@ -69,7 +69,7 @@ func GetUserFromUsername(username string) (User, error) {
 }
 
 func UpdateUserField(username, field string, v any) error {
-  _, err := dbUpdateTableField(_USERS, USER_USERNAME, username, field, v)
+  _, err := dbUpdateTableField(_USERS, field, v, USER_USERNAME, username)
   if err != nil { errman.PrintError(err); return _ErrModAcc }
   return nil
 }

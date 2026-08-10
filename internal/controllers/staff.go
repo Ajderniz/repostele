@@ -100,7 +100,7 @@ func StaffLogin(w http.ResponseWriter, r *http.Request) {
     sessionID.Value,
     fp.Id,
   )
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
   write.Data(w, write.H{
     models.STAFF_USERNAME: staff.Username,
@@ -108,8 +108,12 @@ func StaffLogin(w http.ResponseWriter, r *http.Request) {
   })
 }
 
-func deactivateStaffAccount(w http.ResponseWriter, r *http.Request,
-                            username string) (int, error) {
+func deactivateStaffAccount(
+  w http.ResponseWriter,
+  r *http.Request,
+  username string,
+) (int, error) {
+  
   admins, err := models.GetStaffAdmins()
   if err != nil { return http.StatusInternalServerError, err }
   if len(admins) <= 1 { 

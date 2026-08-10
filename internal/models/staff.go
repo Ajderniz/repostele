@@ -73,7 +73,7 @@ func GetStaffFromUsername(username string) (Staff, error) {
 }
 
 func UpdateStaffField(username, field string, v any) error {
-	_, err := dbUpdateTableField(_STAFF, STAFF_USERNAME, username, field, v)
+	_, err := dbUpdateTableField(_STAFF, field, v, STAFF_USERNAME, username)
   if err != nil { errman.PrintError(err); return _ErrModAcc }
   return nil
 }
