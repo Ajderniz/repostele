@@ -38,4 +38,4 @@ run:
 	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
 
 clean:
-	rm -f $(USER_BIN) $(STAFF_BIN) $(DATA_DB)
+	rm -rf $(BIN_DIR)
