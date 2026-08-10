@@ -14,7 +14,7 @@ import (
 	"github.com/ajderniz/repostele/pkg/errman"
 )
 
-const _DB_FILEPATH = "./assets/data.db"
+const _DB_FILEPATH = "./data.db"
 
 var (
   _DB *sqlx.DB

@@ -1,5 +1,3 @@
 *.sublime-workspace
-web/user
-web/staff
-*.db
+bin
 .last_build
