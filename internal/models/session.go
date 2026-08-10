@@ -48,17 +48,17 @@ func InsertSession(session Session, fingerprintID string) error {
             ",:"+_SESSION_ROLE+",:"+_SESSION_STARTS+",:"+_SESSION_EXPIRES+")",
     &session,
   )
-  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
 
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" SET "+_FINGERPRINT_USER+" = ? "+
     "WHERE "+FINGERPRINT_ID+" = ?",
     session.User, fingerprintID,
   )
-  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
 
   err = tx.Commit()
-  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
 
   return nil
 }

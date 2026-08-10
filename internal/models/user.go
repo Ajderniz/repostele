@@ -31,7 +31,7 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "VALUES (:"+USER_USERNAME+",:"+USER_PASS_HASH+",:"+USER_TIME_CREATED+")",
     &user,
   )
-  if err != nil { errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
 
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" "+
@@ -39,10 +39,10 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "WHERE "+FINGERPRINT_ID+" = ?",
     fp.AccsCreated + 1, fp.Id,
   )
-  if err != nil { errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
 
   err = tx.Commit()
-  if err != nil { errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
 
   return nil
 }

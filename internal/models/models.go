@@ -48,7 +48,9 @@ func (params SelectParams) Fix(fields _SortFields) {
   if params.Start < 0 { params.Start = 0 }
   if params.Limit <= 0 { params.Limit = 99 }
   if !slices.Contains(fields, params.Sort) { params.Sort = fields[0] }
-  if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { params.Dir = SORT_DIR_ASC }
+  if params.Dir != SORT_DIR_ASC && params.Dir != SORT_DIR_DESC { 
+    params.Dir = SORT_DIR_ASC 
+  }
 }
 
 func dbSelectErr(err error) error {
@@ -75,10 +77,10 @@ func dbBeginExecAndCommit(query string, args ...any) (sql.Result, error) {
   if err != nil { errman.PrintError(err); return nil, err }
 
   result, err := tx.Exec(query, args...)
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
 
   err = tx.Commit()
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
 
   return result, nil
 }
@@ -88,15 +90,21 @@ func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
   if err != nil { errman.PrintError(err); return nil, err }
 
   result, err := tx.NamedExec(query, v)
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
 
   err = tx.Commit()
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
 
   return result, nil
 }
 
-func dbUpdateTableField(table, set string, v any, where string, eq any) (result sql.Result, err error) {
+func dbUpdateTableField(
+  table, set string, 
+  v any, 
+  where string, 
+  eq any,
+) (result sql.Result, err error) {
+
   result, err = dbBeginExecAndCommit(
     "UPDATE "+table+" "+
     "SET "+set+" = ? "+
@@ -106,7 +114,13 @@ func dbUpdateTableField(table, set string, v any, where string, eq any) (result 
   return
 }
 
-func dbSelectList(dst any, sel, from string, params SelectParams, sortFields _SortFields) error {
+func dbSelectList(
+  dst any, 
+  sel, from string, 
+  params SelectParams, 
+  sortFields _SortFields,
+) error {
+
   params.Fix(sortFields)
   err := dbSelect(dst,
     "SELECT "+sel+" FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
@@ -135,11 +149,11 @@ func OpenDB() error {
 
       for _, s := range schema {
         _, err = _DB.Exec(s)
-        if err != nil { return err }
+        if err != nil { tx.Rollback(); return err }
       }
 
       err = tx.Commit()
-      if err != nil { return err }
+      if err != nil { tx.Rollback(); return err }
 
     } else { 
       return err 

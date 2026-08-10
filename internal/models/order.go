@@ -76,7 +76,7 @@ func InsertOrder(order Order) error {
             ORDER_REF_NUM+",:"+_ORDER_TIME+",:"+ORDER_STATUS+")",
     &order,
   )
-  if err != nil { errman.PrintError(err); return _ErrInsertOrder }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertOrder}
 
   for itemId, quant := range order.Items {
     _, err := tx.Exec(
@@ -84,11 +84,11 @@ func InsertOrder(order Order) error {
       "VALUES (?, ?, ?)",
       order.Id, itemId, quant,
     )
-    if err != nil { errman.PrintError(err); return _ErrInsertOrder }
+    if err != nil {tx.Rollback(); errman.PrintError(err);return _ErrInsertOrder}
   }
 
   err = tx.Commit()
-  if err != nil { errman.PrintError(err); return _ErrInsertOrder }
+  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertOrder}
 
   return nil
 }

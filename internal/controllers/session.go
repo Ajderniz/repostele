@@ -24,7 +24,7 @@ func openSession(
   w http.ResponseWriter,
   username string,
   role models.SessionRole,
-  fingerprintID string,
+  sessionID, fingerprintID string,
 ) error {
 
   sessionToken, err := pass.GenerateToken(_TOKEN_LENGTH)
@@ -38,6 +38,10 @@ func openSession(
 
   if otherSession.SessionToken != "" {
     err = closeSession(w, otherSession.SessionToken)
+    if err != nil { return err }
+  }
+  if sessionID != "" {
+    err = closeSession(w, sessionID)
     if err != nil { return err }
   }
 

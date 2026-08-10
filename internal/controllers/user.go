@@ -49,7 +49,15 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
   err = pass.CheckPasswordHash(password, user.PassHash)
   if err != nil { failLogin(w, fp); return }
 
-  err = openSession(w, user.Username, models.SESSION_ROLE_USER, fp.Id)
+  sessionID, _ := r.Cookie(SESSION_ID)
+
+  err = openSession(
+    w,
+    user.Username,
+    models.SESSION_ROLE_USER,
+    sessionID.Value,
+    fp.Id,
+  )
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   write.Data(w, write.H{
