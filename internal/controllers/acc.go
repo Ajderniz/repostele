@@ -16,6 +16,7 @@ var (
 	_ErrAlreadyInit  = errors.New("Already initialized")
 	_ErrSameUsername = errors.New("Username already exists")
 	_ErrSamePassword = errors.New("Password is the same")
+  _ErrGetAcc = errors.New("Could not retrieve account information")
 
 	_MsgAccNotFound = "Account not found"
   _MsgAccCreated = "Account registered successfully"
@@ -36,7 +37,7 @@ func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Finge
 func failLogin(w http.ResponseWriter, fp models.Fingerprint) {
 	// already a fail, so don't check for errors
   models.UpdateFingerprintField(
-    fp.FpId, models.FINGERPRINT_FAILED_LOGINS, fp.FailedLogins + 1,
+    fp.Id, models.FINGERPRINT_FAILED_LOGINS, fp.FailedLogins + 1,
   )
   w.WriteHeader(http.StatusUnauthorized)
 }

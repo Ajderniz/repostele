@@ -36,25 +36,58 @@ const (
                       ","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES
 )
 
-func InsertSession(session Session) error {
-  _, err := dbBeginNamedExecAndCommit(
+var _ErrOpenSession = errors.New("Could not open a new session")
+
+func InsertSession(session Session, fingerprintID string) error {
+  tx, err := _DB.Beginx()
+  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+
+  _, err = tx.NamedExec(
     "INSERT INTO "+_SESSIONS+" ("+_SESSION_FIELDS+") "+
     "VALUES(:"+SESSION_TOKEN+",:"+SESSION_CSRF_TOKEN+",:"+_SESSION_USER+
             ",:"+_SESSION_ROLE+",:"+_SESSION_STARTS+",:"+_SESSION_EXPIRES+")",
     &session,
   )
-  if err!=nil{ return errors.New("Could not open session") }
+  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+
+  _, err = tx.Exec(
+    "UPDATE "+_FINGERPRINTS+" SET "+_FINGERPRINT_USER+" = ? "+
+    "WHERE "+FINGERPRINT_ID+" = ?",
+    session.User, fingerprintID,
+  )
+  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+
+  err = tx.Commit()
+  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+
   return nil
 }
 
-func GetSessionFromID(sessionToken string) (Session, error) {
+func GetSessionFromID(sid string) (Session, error) {
   session := Session{}
-  err := dbGet(&session, "SELECT * FROM "+_SESSIONS+" WHERE "+SESSION_TOKEN+" = ?", sessionToken)
+  err := dbGet(&session,
+    "SELECT * FROM "+_SESSIONS+" WHERE "+SESSION_TOKEN+" = ?",
+    sid,
+  )
   if err != nil {
     errman.PrintError(err)
     if err == sql.ErrNoRows {return Session{},errors.New("Session nonexistent")}
     return Session{}, errors.New("Could not retrieve session information")
   }
+  return session, nil
+}
+
+func GetLatestOpenSessionFromUsername(username string) (Session, error) {
+  session := Session{}
+  err := dbGet(&session,
+    "SELECT * "+
+    "FROM "+_SESSIONS+" "+
+    "WHERE "+_SESSION_USER+" = ? AND ? < "+_SESSION_EXPIRES+" "+
+    "ORDER BY "+_SESSION_EXPIRES+" DESC "+
+    "LIMIT 1",
+    username, time.Now().Unix(),
+  )
+  if dbSelectErr(err) != nil { return Session{}, err }
   return session, nil
 }
 

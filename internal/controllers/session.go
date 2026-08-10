@@ -8,7 +8,6 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
 )
@@ -21,12 +20,26 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
-func openSession(w http.ResponseWriter, username string, role models.SessionRole) error {
+func openSession(
+  w http.ResponseWriter,
+  username string,
+  role models.SessionRole,
+  fingerprintID string,
+) error {
+
   sessionToken, err := pass.GenerateToken(_TOKEN_LENGTH)
   csrfToken,    err := pass.GenerateToken(_TOKEN_LENGTH)
   if err != nil { return err }
 
   expires := time.Now().Add(24 * time.Hour)
+
+  otherSession, err := models.GetLatestOpenSessionFromUsername(username)
+  if err != nil { return err }
+
+  if otherSession.SessionToken != "" {
+    err = closeSession(w, otherSession.SessionToken)
+    if err != nil { return err }
+  }
 
   http.SetCookie(w, &http.Cookie{
     Name:     SESSION_ID,
@@ -41,27 +54,17 @@ func openSession(w http.ResponseWriter, username string, role models.SessionRole
     HttpOnly: false,
   })
 
-  return models.InsertSession(models.Session{
-    SessionToken: sessionToken,
-    CSRFToken:    csrfToken,
-    User:         username,
-    Role:         role,
-    Starts:       time.Now().Unix(),
-    Expires:      expires.Unix(),
-  })
-}
-
-func getSessionIDFromCookie(r *http.Request) (string, error) {
-  sid, err := r.Cookie(SESSION_ID)
-  if err != nil {
-    errman.PrintError(err)
-    return "", _ErrSessionID
-  }
-  if sid.Value == "" {
-    errman.PrintError(_ErrSessionID)
-    return "", _ErrSessionID
-  }
-  return sid.Value, nil
+  return models.InsertSession(
+    models.Session{
+      SessionToken: sessionToken,
+      CSRFToken:    csrfToken,
+      User:         username,
+      Role:         role,
+      Starts:       time.Now().Unix(),
+      Expires:      expires.Unix(),
+    },
+    fingerprintID,
+  )
 }
 
 func closeSession(w http.ResponseWriter, sid string) error {
@@ -71,26 +74,16 @@ func closeSession(w http.ResponseWriter, sid string) error {
   http.SetCookie(w, &http.Cookie{
     Name:     SESSION_ID,
     Value:    "",
-    Expires:  time.Now().Add(-time.Hour),
+    Expires:  time.Now(),
     HttpOnly: true,
   })
   http.SetCookie(w, &http.Cookie{
     Name:     _CSRF_TOKEN,
     Value:    "",
-    Expires:  time.Now().Add(-time.Hour),
+    Expires:  time.Now(),
     HttpOnly: false,
   })
 
-  return nil
-}
-
-func checkSessionClosed(sid string) error {
-  session, err := models.GetSessionFromID(sid)
-  if err != nil { return err }
-
-  if time.Now().Unix() < session.Expires {
-    return errors.New("Session already open")
-  }
   return nil
 }
 
@@ -108,20 +101,23 @@ func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
   userStr, err := bind.FormValue(r, "users", "boolean")
   staffStr, err  := bind.FormValue(r, "staff", "boolean")
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+
   users, _ := strconv.ParseBool(userStr)
   staff, _ := strconv.ParseBool(staffStr)
 
-  err = models.CloseAllSessions(users, staff)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if users || staff {
+    err = models.CloseAllSessions(users, staff)
+    if err != nil { write.Error(w, http.StatusInternalServerError, err);return }
+  }
 
   write.Msg(w, "All requested sessions closed successfully")
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
-  sid, err := getSessionIDFromCookie(r)
+  sid, err := r.Cookie(SESSION_ID)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  err = closeSession(w, sid)
+  err = closeSession(w, sid.Value)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
   write.Msg(w, _MsgLoggedOut)
 }

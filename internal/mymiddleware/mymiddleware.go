@@ -131,8 +131,8 @@ func GetFingerprint() func(next http.Handler) http.Handler {
         return
       }
 
-      if fp.FpId == "" {
-        fp.FpId           = id
+      if fp.Id == "" {
+        fp.Id           = id
         fp.Expires      = time.Now().Add(time.Hour).Unix()
         fp.FailedLogins = 0
         fp.AccsCreated  = 0

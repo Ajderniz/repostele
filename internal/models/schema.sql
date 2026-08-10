@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS "fingerprints" (
-	"id"	INTEGER,
-	"fp_id"	TEXT NOT NULL DEFAULT '',
+	"id"	TEXT,
+	"user"	TEXT,
 	"expires"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "expires"),
 	"failed_logins"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "failed_logins"),
 	"accs_created"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "accs_created"),
-	PRIMARY KEY("id")
+	PRIMARY KEY("id"),
+	FOREIGN KEY("user") REFERENCES "sessions"("user")
 );
 CREATE TABLE IF NOT EXISTS "items" (
 	"id"	INTEGER,

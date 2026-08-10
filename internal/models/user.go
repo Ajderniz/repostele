@@ -36,8 +36,8 @@ func InsertUserAccount(user User, fp Fingerprint) error {
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" "+
     "SET "+FINGERPRINT_ACCS_CREATED+" = ?"+
-    "WHERE "+FINGERPRINT_FP_ID+" = ?",
-    fp.AccsCreated + 1, fp.FpId,
+    "WHERE "+FINGERPRINT_ID+" = ?",
+    fp.AccsCreated + 1, fp.Id,
   )
   if err != nil { errman.PrintError(err); return _ErrInsertAcc }
 

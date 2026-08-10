@@ -24,7 +24,7 @@ func RegisterUserRoutes(r *chi.Mux) {
   r.Route("/logout", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireUserAuth())
-    r.Post("/", controllers.Logout)
+    r.Put("/", controllers.Logout)
   })
 
   r.Route("/account", func(r chi.Router) {
@@ -62,7 +62,7 @@ func RegisterStaffRoutes(r *chi.Mux) {
   r.Route("/logout", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireStaffAuth())
-    r.Post("/", controllers.Logout)
+    r.Put("/", controllers.Logout)
   })
 
   r.Route("/account", func(r chi.Router) {

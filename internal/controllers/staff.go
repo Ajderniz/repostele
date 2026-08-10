@@ -81,12 +81,6 @@ func StaffLogin(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { write.Error(w, http.StatusForbidden, err); return }
 
-  sid, err := getSessionIDFromCookie(r)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-
-  err = checkSessionClosed(sid)
-  if err != nil { write.Msg(w, err.Error()); return }
-
   username, password, err := getCredsFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
@@ -97,7 +91,7 @@ func StaffLogin(w http.ResponseWriter, r *http.Request) {
   err = pass.CheckPasswordHash(password, staff.PassHash)
   if err != nil { failLogin(w, fp); return }
 
-  err = openSession(w, staff.Username, models.SESSION_ROLE_STAFF)
+  err = openSession(w, staff.Username, models.SESSION_ROLE_STAFF, fp.Id)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   write.Data(w, write.H{
@@ -115,10 +109,10 @@ func deactivateStaffAccount(w http.ResponseWriter, r *http.Request,
            errors.New("At least one admin account is required to be active")
   }
 
-  sid, err := getSessionIDFromCookie(r)
+  sid, err := r.Cookie(SESSION_ID)
   if err != nil { return http.StatusBadRequest, err }
 
-  err = closeSession(w, sid)
+  err = closeSession(w, sid.Value)
   if err != nil { return http.StatusInternalServerError, err }
 
   err = models.UpdateStaffField(username, models.STAFF_ACTIVE, false)

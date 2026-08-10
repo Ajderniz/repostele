@@ -39,12 +39,6 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { write.Error(w, http.StatusForbidden, err); return }
 
-  sid, err := getSessionIDFromCookie(r)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-
-  err = checkSessionClosed(sid)
-  if err != nil { write.Msg(w, err.Error()); return }
-
   username, password, err := getCredsFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
@@ -55,7 +49,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
   err = pass.CheckPasswordHash(password, user.PassHash)
   if err != nil { failLogin(w, fp); return }
 
-  err = openSession(w, user.Username, models.SESSION_ROLE_USER)
+  err = openSession(w, user.Username, models.SESSION_ROLE_USER, fp.Id)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
   write.Data(w, write.H{
@@ -109,10 +103,10 @@ func SelfUpdateUserPassword(w http.ResponseWriter, r *http.Request) {
 func deactivateUserAccount(w http.ResponseWriter, r *http.Request,
                            username string) (int, error) {
 
-  sid, err := getSessionIDFromCookie(r)
+  sid, err := r.Cookie(SESSION_ID)
   if err != nil { return http.StatusBadRequest, err }
 
-  err = closeSession(w, sid)
+  err = closeSession(w, sid.Value)
   if err != nil { return http.StatusInternalServerError, err }
 
   err = models.UpdateUserField(username, models.USER_ACTIVE, false)

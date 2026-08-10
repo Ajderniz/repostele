@@ -6,8 +6,8 @@ import (
 )
 
 type Fingerprint struct {
-	Id           int    `db:"id"`
-	FpId         string `db:"fp_id"`
+	Id           string `db:"id"`
+	User         string `db:"user"`
 	Expires      int64  `db:"expires"`
 	FailedLogins int    `db:"failed_logins"`
 	AccsCreated  int    `db:"accs_created"`
@@ -16,12 +16,12 @@ type Fingerprint struct {
 const (
 	FINGERPRINT = "fingerprint"
 	_FINGERPRINTS = "fingerprints"
-	//_FINGERPRINTS_ID = "id"
-	FINGERPRINT_FP_ID = "fp_id"
+	FINGERPRINT_ID = "id"
+	_FINGERPRINT_USER = "user"
 	_FINGERPRINT_EXPIRES = "expires"
 	FINGERPRINT_FAILED_LOGINS = "failed_logins"
 	FINGERPRINT_ACCS_CREATED = "accs_created"
-	_FINGERPRINT_FIELDS = /*_FINGERPRINTS_ID+","+*/FINGERPRINT_FP_ID+","+
+	_FINGERPRINT_FIELDS = FINGERPRINT_ID+","+_FINGERPRINT_USER+","+
 												_FINGERPRINT_EXPIRES+","+FINGERPRINT_FAILED_LOGINS+","+
 												FINGERPRINT_ACCS_CREATED
 )
@@ -29,9 +29,8 @@ const (
 func InsertFingerprint(fg Fingerprint) (error) {
 	_, err := dbBeginNamedExecAndCommit(
 		"INSERT INTO "+_FINGERPRINTS+" ("+_FINGERPRINT_FIELDS+") "+
-		"VALUES (:"/*+_FINGERPRINTS_ID+",:"*/+FINGERPRINT_FP_ID+",:"+
-			_FINGERPRINT_EXPIRES+",:"+FINGERPRINT_FAILED_LOGINS+",:"+
-			FINGERPRINT_ACCS_CREATED+")",
+		"VALUES (:"+FINGERPRINT_ID+",:"+_FINGERPRINT_USER+",:"+_FINGERPRINT_EXPIRES+
+			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+")",
 		&fg,
 	)
 	if err != nil { return errors.New("Could not save fingerprint") }
@@ -43,7 +42,9 @@ func GetFingerPrintFromID(id string) (Fingerprint, error) {
 	err := dbGet(
 		&fg,
 		"SELECT * FROM "+_FINGERPRINTS+" "+
-		"WHERE "+FINGERPRINT_FP_ID+" = ? AND ? < "+_FINGERPRINT_EXPIRES,
+		"WHERE "+FINGERPRINT_ID+" = ? AND ? < "+_FINGERPRINT_EXPIRES+" "+
+		"ORDER BY "+_FINGERPRINT_EXPIRES+" DESC "+
+		"LIMIT 1",
 		id, time.Now().Unix(),
 	)
 	if err != nil {
@@ -53,7 +54,7 @@ func GetFingerPrintFromID(id string) (Fingerprint, error) {
 }
 
 func UpdateFingerprintField(id, field string, v any) error {
-	_, err := dbUpdateTableField(_FINGERPRINTS, field, v, FINGERPRINT_FP_ID, id)
+	_, err := dbUpdateTableField(_FINGERPRINTS, field, v, FINGERPRINT_ID, id)
 	if err != nil { return errors.New("Could not update fingerprint") }
 	return nil
 }
