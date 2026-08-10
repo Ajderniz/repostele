@@ -11,6 +11,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
+	root "github.com/ajderniz/repostele"
 	"github.com/ajderniz/repostele/pkg/errman"
 )
 
@@ -18,9 +19,6 @@ const _DB_FILEPATH = "./data.db"
 
 var (
   _DB *sqlx.DB
-
-  //go:embed schema.sql
-  _Schema string
 
   _ErrInsertAcc = errors.New("Could not create account")
   _ErrGetAccs = errors.New("Could not retrieve accout list")
@@ -142,7 +140,10 @@ func OpenDB() error {
   if err != nil {
     if errors.Is(err, os.ErrNotExist) {
 
-      schema := strings.Split(_Schema, ";")
+      schemaStr, err := root.FS.ReadFile("web/schema.sql")
+      if err != nil { return err }
+
+      schema := strings.Split(string(schemaStr), ";")
 
       tx, err := _DB.Beginx()
       if err != nil { return err }
