@@ -1,10 +1,9 @@
 package models
 
 import (
-  "errors"
-  "time"
-
-  "github.com/ajderniz/repostele/pkg/errman"
+	"errors"
+	"log/slog"
+	"time"
 )
 
 type OrderStatus int
@@ -68,7 +67,7 @@ func updateOrderField(id int, field string, v any) error {
 
 func InsertOrder(order Order) error {
   tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return _ErrInsertOrder }
+  if err != nil { slog.Error(err.Error()); return _ErrInsertOrder }
 
   _, err = tx.NamedExec(
     "INSERT INTO "+_ORDERS+" "+
@@ -76,7 +75,7 @@ func InsertOrder(order Order) error {
             ORDER_REF_NUM+",:"+_ORDER_TIME+",:"+ORDER_STATUS+")",
     &order,
   )
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertOrder}
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertOrder}
 
   for itemId, quant := range order.Items {
     _, err := tx.Exec(
@@ -84,11 +83,11 @@ func InsertOrder(order Order) error {
       "VALUES (?, ?, ?)",
       order.Id, itemId, quant,
     )
-    if err != nil {tx.Rollback(); errman.PrintError(err);return _ErrInsertOrder}
+    if err != nil {tx.Rollback(); slog.Error(err.Error());return _ErrInsertOrder}
   }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertOrder}
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertOrder}
 
   return nil
 }
@@ -116,7 +115,7 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
     id,
   )
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return nil, errors.New("Could not retrieve item list from order")
   }
 

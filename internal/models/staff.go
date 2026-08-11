@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/ajderniz/repostele/pkg/errman"
-)
+import "log/slog"
 
 type Staff struct {
 	Username    string `db:"username"     json:"username"`
@@ -74,6 +72,6 @@ func GetStaffFromUsername(username string) (Staff, error) {
 
 func UpdateStaffField(username, field string, v any) error {
 	_, err := dbUpdateTableField(_STAFF, field, v, STAFF_USERNAME, username)
-  if err != nil { errman.PrintError(err); return _ErrModAcc }
+  if err != nil { slog.Error(err.Error()); return _ErrModAcc }
   return nil
 }

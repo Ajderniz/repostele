@@ -3,12 +3,12 @@ package mymiddleware
 import (
 	"context"
 	"errors"
+	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
-	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/ajderniz/repostele/pkg/write"
 	"github.com/anhnmt/go-fingerprint"
 )
@@ -22,34 +22,34 @@ var (
 func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, error){
   sessionCookie, err := r.Cookie(controllers.SESSION_ID)
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return models.Session{}, http.StatusUnauthorized, _ErrAuth
   }
 
   session, err := models.GetSessionFromID(sessionCookie.Value)
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return models.Session{}, http.StatusInternalServerError, _ErrGetSession
   }
   if session.SessionToken == "" {
-    errman.PrintError(_ErrGetSession)
+    slog.Error(_ErrGetSession.Error())
     return models.Session{}, http.StatusInternalServerError, _ErrGetSession 
   }
 
   if r.Method != http.MethodGet && r.Method != http.MethodHead {
     csrf := r.Header.Get("X-CSRF-Token")
     if csrf == "" {
-      errman.PrintError(errors.New("'csrf-token' not found"))
+      slog.Error("'csrf-token' not found")
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
     if csrf != session.CSRFToken {
-      errman.PrintError(errors.New("Invalid CSRF token"))
+      slog.Error("Invalid CSRF token")
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
   }
 
   if session.Expires <= time.Now().Unix() {
-    errman.PrintError(_ErrExpired)
+    slog.Error(_ErrExpired.Error())
     return models.Session{}, http.StatusUnauthorized, _ErrExpired
   }
 
@@ -109,7 +109,7 @@ func CheckInit() func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       admins, err := models.GetStaffAdmins()
       if err != nil || len(admins) <= 0 {
-        errman.PrintError(errors.New("System not initialized"))
+        slog.Error("System not initialized")
         w.WriteHeader(http.StatusForbidden)
         return
       }
@@ -126,7 +126,7 @@ func GetFingerprint() func(next http.Handler) http.Handler {
 
       fp, err := models.GetFingerPrintFromID(id)
       if err != nil {
-        errman.PrintError(err)
+        slog.Error(err.Error())
         w.WriteHeader(http.StatusInternalServerError)
         return
       }
@@ -138,7 +138,7 @@ func GetFingerprint() func(next http.Handler) http.Handler {
         fp.AccsCreated  = 0
         err = models.InsertFingerprint(fp)
         if err != nil {
-          errman.PrintError(err)
+          slog.Error(err.Error())
           w.WriteHeader(http.StatusInternalServerError)
           return
         }

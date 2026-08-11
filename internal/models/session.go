@@ -1,12 +1,11 @@
 package models
 
 import (
-  "database/sql"
-  "errors"
-  "strconv"
-  "time"
-
-  "github.com/ajderniz/repostele/pkg/errman"
+	"database/sql"
+	"errors"
+	"log/slog"
+	"strconv"
+	"time"
 )
 
 type SessionRole int
@@ -40,7 +39,7 @@ var _ErrOpenSession = errors.New("Could not open a new session")
 
 func InsertSession(session Session, fingerprintID string) error {
   tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return _ErrOpenSession }
+  if err != nil { slog.Error(err.Error()); return _ErrOpenSession }
 
   _, err = tx.NamedExec(
     "INSERT INTO "+_SESSIONS+" ("+_SESSION_FIELDS+") "+
@@ -48,17 +47,17 @@ func InsertSession(session Session, fingerprintID string) error {
             ",:"+_SESSION_ROLE+",:"+_SESSION_STARTS+",:"+_SESSION_EXPIRES+")",
     &session,
   )
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrOpenSession}
 
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" SET "+_FINGERPRINT_USER+" = ? "+
     "WHERE "+FINGERPRINT_ID+" = ?",
     session.User, fingerprintID,
   )
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrOpenSession}
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrOpenSession}
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrOpenSession}
 
   return nil
 }
@@ -70,7 +69,7 @@ func GetSessionFromID(sid string) (Session, error) {
     sid,
   )
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     if err == sql.ErrNoRows {return Session{},errors.New("Session nonexistent")}
     return Session{}, errors.New("Could not retrieve session information")
   }
@@ -143,7 +142,7 @@ func GetActiveSessions(params SelectParams) ([]Session, error) {
     time.Now().Unix(),
   )
   if dbSelectErr(err) != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return []Session{}, errors.New("Could not retrieve session list")
   }
   return sessions, nil

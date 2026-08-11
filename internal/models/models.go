@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	_ "embed"
 	"errors"
+	"log/slog"
 	"os"
 	"slices"
 	"strings"
@@ -12,7 +13,6 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 
 	root "github.com/ajderniz/repostele"
-	"github.com/ajderniz/repostele/pkg/errman"
 )
 
 const _DB_FILEPATH = "./data.db"
@@ -54,7 +54,7 @@ func (params SelectParams) Fix(fields _SortFields) {
 func dbSelectErr(err error) error {
   if err != nil {
     if err == sql.ErrNoRows{ return nil }
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return err
   }
   return nil
@@ -72,26 +72,26 @@ func dbSelect(dst any, query string, args ...any) error {
 
 func dbBeginExecAndCommit(query string, args ...any) (sql.Result, error) {
   tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { slog.Error(err.Error()); return nil, err }
 
   result, err := tx.Exec(query, args...)
-  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
 
   return result, nil
 }
 
 func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
   tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return nil, err }
+  if err != nil { slog.Error(err.Error()); return nil, err }
 
   result, err := tx.NamedExec(query, v)
-  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); errman.PrintError(err); return nil, err }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
 
   return result, nil
 }
@@ -125,7 +125,7 @@ func dbSelectList(
     params.Sort, params.Start, params.Limit,
   )
   if dbSelectErr(err) != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return errors.New("Selection error")
   }
   return nil

@@ -2,11 +2,12 @@ package common
 
 import (
 	"flag"
-	"fmt"
+	"log/slog"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -25,11 +26,24 @@ func InitMain(msg string, bin ServerBinary) error {
 	port := flag.Int("port", 8080, "Port number")
 	flag.Parse()
 
-	exe, err := os.Executable()
+	exePath, err := os.Executable()
 	if err != nil { return err }
-	exeDir := filepath.Dir(exe)
+	exeDir := filepath.Dir(exePath)
 	err = os.Chdir(exeDir)
 	if err != nil { return err }
+
+	exeBase := filepath.Base(exePath)
+	logFile, err := os.OpenFile(
+		exeBase+"."+time.Now().Format("060102_150405")+".log",
+		os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
+		0644,
+	)
+	if err != nil { return err }
+	logger := slog.New(slog.NewMultiHandler(
+		slog.NewTextHandler(os.Stdout, nil),
+		slog.NewTextHandler(logFile, nil),
+	))
+	slog.SetDefault(logger)
 
 	err = models.OpenDB()
 	if err != nil { return err }
@@ -48,8 +62,8 @@ func InitMain(msg string, bin ServerBinary) error {
 	  routes.RegisterUserRoutes(r)
 	}
 
-	if msg != "" { fmt.Println(msg) }
-	fmt.Println("Listening on port ", *port)
+	if msg != "" { slog.Info(msg) }
+	slog.Info("Listening", slog.Int("port", *port))
 
 	return http.ListenAndServe(":" + strconv.Itoa(*port), r)
 }

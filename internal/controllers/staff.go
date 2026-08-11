@@ -2,13 +2,13 @@ package controllers
 
 import (
 	"errors"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/errman"
 	"github.com/ajderniz/repostele/pkg/pass"
 	"github.com/ajderniz/repostele/pkg/write"
 )
@@ -38,7 +38,7 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
     Start: 0, Limit: 1, Sort: models.USER_USERNAME, Dir: models.SORT_DIR_ASC,
   })
   if 1 <= len(list) {
-    errman.PrintError(_ErrAlreadyInit)
+    slog.Error(_ErrAlreadyInit.Error())
     write.Error(w, http.StatusForbidden, _ErrAlreadyInit)
     return
   }

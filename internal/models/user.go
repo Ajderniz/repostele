@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/ajderniz/repostele/pkg/errman"
-)
+import "log/slog"
 
 type User struct {
   Username     string `db:"username"     json:"username"`
@@ -23,7 +21,7 @@ const (
 
 func InsertUserAccount(user User, fp Fingerprint) error {
   tx, err := _DB.Beginx()
-  if err != nil { errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { slog.Error(err.Error()); return _ErrInsertAcc }
 
   _, err = tx.NamedExec(
     "INSERT INTO "+_USERS+" ("+USER_USERNAME+","+USER_PASS_HASH+","+
@@ -31,7 +29,7 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "VALUES (:"+USER_USERNAME+",:"+USER_PASS_HASH+",:"+USER_TIME_CREATED+")",
     &user,
   )
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
 
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" "+
@@ -39,10 +37,10 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "WHERE "+FINGERPRINT_ID+" = ?",
     fp.AccsCreated + 1, fp.Id,
   )
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); errman.PrintError(err); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
 
   return nil
 }
@@ -70,6 +68,6 @@ func GetUserFromUsername(username string) (User, error) {
 
 func UpdateUserField(username, field string, v any) error {
   _, err := dbUpdateTableField(_USERS, field, v, USER_USERNAME, username)
-  if err != nil { errman.PrintError(err); return _ErrModAcc }
+  if err != nil { slog.Error(err.Error()); return _ErrModAcc }
   return nil
 }

@@ -2,12 +2,11 @@ package models
 
 import (
 	"errors"
+	"log/slog"
 	"reflect"
 	"strings"
 
 	_ "github.com/mattn/go-sqlite3"
-
-	"github.com/ajderniz/repostele/pkg/errman"
 )
 
 type Item struct {
@@ -101,7 +100,7 @@ func UpdateItem(id int, update ItemUpdate) error {
     args,
   )
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     return errors.New("Could not update item")
   }
 

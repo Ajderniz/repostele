@@ -1,18 +1,18 @@
 package controllers
 
 import (
-  "errors"
-  "math"
-  "net/http"
-  "strconv"
-  "time"
+	"errors"
+	"log/slog"
+	"math"
+	"net/http"
+	"strconv"
+	"time"
 
-  "github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5"
 
-  "github.com/ajderniz/repostele/internal/models"
-  "github.com/ajderniz/repostele/pkg/bind"
-  "github.com/ajderniz/repostele/pkg/errman"
-  "github.com/ajderniz/repostele/pkg/write"
+	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/pkg/bind"
+	"github.com/ajderniz/repostele/pkg/write"
 )
 
 const (
@@ -94,18 +94,18 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   for itemId, quant := range request.Items {
     item, err := models.GetItemFromID(itemId)
     if err != nil  {
-      errman.PrintError(err)
+      slog.Error(err.Error())
       continue
     }
     if item.Name == "" {
-      errman.PrintError(errors.New("Invalid item requested"))
+      slog.Error("Invalid item requested")
       continue
     }
     total += item.Price * float32(quant)
     items[item.Id] = quant
   }
   if len(items) == 0 {
-    errman.PrintError(_ErrNoItems)
+    slog.Error(_ErrNoItems.Error())
     write.Error(w, http.StatusBadRequest, _ErrNoItems)
     return
   }
@@ -118,7 +118,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   }
 
   if _ORDER_COUNTER_MAX - 1 < _OrderCounter {
-    errman.PrintError(_ErrOrderIDMax)
+    slog.Error(_ErrOrderIDMax.Error())
     write.Error(w, http.StatusInternalServerError, _ErrOrderIDMax)
   }
 
@@ -190,7 +190,7 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   idStr := chi.URLParam(r, models.ORDER_ID)
   id, err := strconv.Atoi(idStr);
   if err != nil {
-    errman.PrintError(err)
+    slog.Error(err.Error())
     write.Error(w, http.StatusBadRequest, errors.New("Invalid order ID"))
   }
 

@@ -1,10 +1,12 @@
 package main
 
 import (
+	"log"
+
 	"github.com/ajderniz/repostele/internal/common"
-	"github.com/ajderniz/repostele/pkg/errman"
 )
 
 func main() {
-	errman.CheckFatal(common.InitMain("Repostele user API", common.SERVER_BINARY_USER))
+	err := common.InitMain("Repostele staff API", common.SERVER_BINARY_USER)
+	if err != nil { log.Fatal("FATAL: "+err.Error()) }
 }
