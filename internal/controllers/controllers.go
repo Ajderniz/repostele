@@ -52,7 +52,3 @@ func ServeInit(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }
-
-func ServeInitForm(w http.ResponseWriter, r *http.Request) {
-	http.ServeFileFS(w, r, root.FS, HTMDIR+"/staff-register-form.html")
-}

@@ -72,7 +72,6 @@ func RegisterStaffRoutes(r *chi.Mux) error {
   r.Get( "/",     controllers.HandleRootStaff)
   r.Route("/init", func(r chi.Router){
     r.Get( "/",     controllers.ServeInit)
-    r.Get( "/form", controllers.ServeInitForm)
     r.Post("/",     controllers.InitMainStaffAccount)
   })
 
