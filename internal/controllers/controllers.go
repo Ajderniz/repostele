@@ -8,9 +8,10 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ajderniz/repostele/internal/models"
-	"github.com/ajderniz/repostele/web"
 	"github.com/go-chi/chi/v5"
+	
+	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/static"
 )
 
 type _TplData struct {
@@ -26,7 +27,7 @@ var (
 
 	_ErrBadSearch = errors.New("Bad search criteria")
 
-	_Tpl = tpl.Must(tpl.ParseFS(web.FS, web.HTMDIR+"/*"))
+	_Tpl = tpl.Must(tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 )
 
 func HandleRootUser(w http.ResponseWriter, r *http.Request) {
@@ -46,7 +47,7 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "true" || path == "" {
 		http.NotFound(w, r); return
 	}
-	http.ServeFileFS(w, r, web.FS, web.HXDIR+"/"+path)
+	http.ServeFileFS(w, r, static.FS, static.HXDIR+"/"+path)
 }
 
 var _SectionsCheckSessionStaff = []string{ "init", "menu", "login" }

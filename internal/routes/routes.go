@@ -8,25 +8,23 @@ import (
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/mymiddleware"
-	"github.com/ajderniz/repostele/web"
+	"github.com/ajderniz/repostele/static"
 )
 
-const (
-  SECT_INIT      = "init"
-  SECT_MENU      = "menu"
-  SECT_REGISTER  = "register"
-  SECT_LOGIN     = "login"
-  SECT_LOGOUT    = "logout"
-  SECT_ACCOUNT   = "account"
-  SECT_ORDER     = "order"
-  SECT_DASHBOARD = "dashboard"
-)
+const _DYNDIR = "dyn"
 
 func setupFileServer(r *chi.Mux) error {
-  sub, err := fs.Sub(web.FS, web.PUBLIC)
+  sub, err := fs.Sub(static.FS, static.PUBLIC)
   if err != nil { return err }
-  fileServer := http.FileServerFS(sub)
-  r.Handle("/*", fileServer)
+  r.Handle("/*", http.FileServerFS(sub))
+  r.Handle(
+    "/"+_DYNDIR+"/*",
+    http.StripPrefix(
+      "/"+_DYNDIR,
+      http.FileServer(http.Dir(_DYNDIR)),
+    ),
+  )
+  r.Get("/"+static.HXDIR+"/{path}", controllers.ServeHTMX)
   return nil
 }
 
@@ -35,8 +33,6 @@ func RegisterUserRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
   
-  r.Get("/"+web.HXDIR+"/{path}", controllers.ServeHTMX)
-
   r.Get("/", controllers.HandleRootUser)
 
   r.Route("/menu", func(r chi.Router) {
@@ -82,8 +78,6 @@ func RegisterStaffRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
 
-  r.Get("/"+web.HXDIR+"/{path}", controllers.ServeHTMX)
-
   r.Get( "/",     controllers.HandleRootStaff)
   r.Route("/init", func(r chi.Router){
     r.Get( "/",     controllers.ServeTemplateStaff)
@@ -92,7 +86,8 @@ func RegisterStaffRoutes(r *chi.Mux) error {
 
   r.Route("/menu", func(r chi.Router) {
     r.Use(mymiddleware.CheckInitStaff())
-    r.Get("/",          controllers.GetItems)
+    r.Get("/",          controllers.ServeTemplateStaff)
+    //r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
