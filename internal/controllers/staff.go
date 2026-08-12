@@ -16,15 +16,21 @@ import (
 const _TEST_KEY = "1111111111111111"
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
-  var username, password string
-  username, password, err := getCredsFromForm(r)
+  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
+  password1, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { return models.Staff{}, http.StatusBadRequest, err }
+  password2, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil || password1 != password2 {
+    return models.Staff{}, http.StatusBadRequest, err
+  }
   fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
 
+
   staff := models.Staff{}
   staff.Username = username
-  staff.PassHash, err = pass.HashPassword(password)
+  staff.PassHash, err = pass.HashPassword(password1)
   if err != nil { return models.Staff{}, http.StatusInternalServerError, err }
   staff.FullName = fullName
   staff.TimeCreated = time.Now().Unix()

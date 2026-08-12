@@ -75,3 +75,8 @@ func UpdateStaffField(username, field string, v any) error {
   if err != nil { slog.Error(err.Error()); return _ErrModAcc }
   return nil
 }
+
+func CheckInit() bool {
+	admins, err := GetStaffAdmins()
+	return err == nil && 0 < len(admins)
+}
