@@ -3,7 +3,7 @@ package root
 import "embed"
 
 const (
-  HTMDIR = "public/html"
+  HTMDIR = "html"
   PUBLIC = "public"
 )
 

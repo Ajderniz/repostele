@@ -104,12 +104,24 @@ func RequireAdminAuth() func(next http.Handler) http.Handler {
   }
 }
 
-func CheckInitPage() func(next http.Handler) http.Handler {
+func CheckInitUser() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       if !models.CheckInit(){
         slog.Error("System not initialized")
         w.WriteHeader(http.StatusForbidden)
+        return
+      }
+      next.ServeHTTP(w, r)
+    })
+  }
+}
+
+func CheckInitStaff() func(next http.Handler) http.Handler {
+  return func(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+      if !models.CheckInit(){
+        http.Redirect(w, r, "/init", http.StatusPermanentRedirect)
         return
       }
       next.ServeHTTP(w, r)

@@ -18,11 +18,15 @@ const _TEST_KEY = "1111111111111111"
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
-  password1, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  password1, err := bind.FormValue(r, _CREDS_PASSWORD+"-1", _CREDS_VALIDATE)
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }
-  password2, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil || password1 != password2 {
+  password2, err := bind.FormValue(r, _CREDS_PASSWORD+"-2", _CREDS_VALIDATE)
+  if err != nil {
     return models.Staff{}, http.StatusBadRequest, err
+  }
+  if password1 != password2 {
+    slog.Error("BAD BAD BAD")
+    return models.Staff{}, http.StatusBadRequest, errors.New("Password missmatch")
   }
   fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
   if err != nil { return models.Staff{}, http.StatusBadRequest, err }

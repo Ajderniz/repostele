@@ -8,6 +8,7 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	root "github.com/ajderniz/repostele/web"
+	"github.com/go-chi/chi/v5"
 )
 
 type _TplData struct {
@@ -43,6 +44,14 @@ func HandleRootStaff(w http.ResponseWriter, r *http.Request) {
 	} else {
 		http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
 	}
+}
+
+func ServeHTMX(w http.ResponseWriter, r *http.Request) {
+	path := chi.URLParam(r, "path")
+	if r.Header.Get("HX-Request") != "true" || path == "" {
+		http.NotFound(w, r); return
+	}
+	http.ServeFileFS(w, r, root.FS, "htmx/"+path)
 }
 
 func ServeInit(w http.ResponseWriter, r *http.Request) {

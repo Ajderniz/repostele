@@ -23,36 +23,38 @@ func RegisterUserRoutes(r *chi.Mux) error {
 
   err := setupFileServer(r)
   if err != nil { return err }
+  
+  r.Get("/htmx/{path}", controllers.ServeHTMX)
 
   r.Get("/", controllers.HandleRootUser)
 
   r.Route("/menu", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitUser())
     r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
   r.Route("/", func(r chi.Router){
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitUser())
     r.Use(mymiddleware.GetFingerprint())
     r.Post("/register", controllers.RegisterUserAccount)
     r.Post("/login",    controllers.UserLogin)
   })
   r.Route("/logout", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitUser())
     r.Use(mymiddleware.RequireUserAuth())
     r.Patch("/", controllers.Logout)
   })
 
   r.Route("/account", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitUser())
     r.Use(mymiddleware.RequireUserAuth())
     r.Patch("/deactivate", controllers.SelfDeactivateUserAccount)
     r.Patch("/password",   controllers.SelfUpdateUserPassword)
   })
 
   r.Route("/order", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitUser())
     r.Use(mymiddleware.RequireUserAuth())
     r.Post( "/",       controllers.PostOrder)
     r.Get(  "/",       controllers.GetUserOrderList)
@@ -69,6 +71,8 @@ func RegisterStaffRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
 
+  r.Get("/htmx/{path}", controllers.ServeHTMX)
+
   r.Get( "/",     controllers.HandleRootStaff)
   r.Route("/init", func(r chi.Router){
     r.Get( "/",     controllers.ServeInit)
@@ -76,31 +80,31 @@ func RegisterStaffRoutes(r *chi.Mux) error {
   })
 
   r.Route("/menu", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitStaff())
     r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
   r.Route("/login", func(r chi.Router){
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitStaff())
     r.Use(mymiddleware.GetFingerprint())
     r.Post("/", controllers.StaffLogin)
   })
   r.Route("/logout", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitStaff())
     r.Use(mymiddleware.RequireStaffAuth())
     r.Patch("/", controllers.Logout)
   })
 
   r.Route("/account", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitStaff())
     r.Use(mymiddleware.RequireStaffAuth())
     r.Patch("/deactivate", controllers.SelfDeactivateStaffAccount)
     r.Patch("/password",   controllers.SelfUpdateStaffPassword)
   })
 
   r.Route("/dashboard", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInitPage())
+    r.Use(mymiddleware.CheckInitStaff())
     r.Use(mymiddleware.RequireStaffAuth())
 
     r.Route("/orders", func(r chi.Router) {
