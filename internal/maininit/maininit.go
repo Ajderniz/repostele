@@ -24,6 +24,8 @@ const (
 	SERVER_BINARY_USER
 )
 
+const _LOG_DIR = "log"
+
 func InitMain(msg string, bin ServerBinary) error {
 	port := flag.Int("port", 8080, "Port number")
 	flag.Parse()
@@ -34,9 +36,10 @@ func InitMain(msg string, bin ServerBinary) error {
 	err = os.Chdir(exeDir)
 	if err != nil { return err }
 
+	os.MkdirAll(_LOG_DIR, os.ModePerm)
 	exeBase := filepath.Base(exePath)
 	logFile, err := os.OpenFile(
-		exeBase+"."+time.Now().Format("060102_150405")+".log",
+		_LOG_DIR+"/"+exeBase+"."+time.Now().Format("060102150405")+".log",
 		os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 		0644,
 	)
