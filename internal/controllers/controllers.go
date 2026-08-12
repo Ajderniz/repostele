@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
-	root "github.com/ajderniz/repostele/web"
+	"github.com/ajderniz/repostele/web"
 	"github.com/go-chi/chi/v5"
 )
 
@@ -17,7 +17,7 @@ type _TplData struct {
 }
 
 const (
-	HTMDIR  = root.HTMDIR
+	HTMDIR  = web.HTMDIR
   HTMBASE = HTMDIR+"/base.html"
 )
 
@@ -27,11 +27,15 @@ var (
 	_ErrBadSearch = errors.New("Bad search criteria")
 
 	_TplInit *tpl.Template
+	_TplMenu *tpl.Template
 )
 
 func ParseTemplates() {
-	_TplInit = tpl.Must(tpl.ParseFS(root.FS, HTMBASE))
-	tpl.Must(_TplInit.ParseFS(root.FS, HTMDIR+"/init-main.html"))
+	_TplInit = tpl.Must(tpl.ParseFS(web.FS, HTMBASE))
+	tpl.Must(_TplInit.ParseFS(web.FS, HTMDIR+"/init-main.html"))
+
+	//_TplMenu = tpl.Must(tpl.ParseFS(web.FS, HTMBASE))
+	//tpl.Must(_TplMenu.ParseFS(web.FS, HTMDIR+"/menu-main.html"))
 }
 
 func HandleRootUser(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +55,7 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "true" || path == "" {
 		http.NotFound(w, r); return
 	}
-	http.ServeFileFS(w, r, root.FS, "htmx/"+path)
+	http.ServeFileFS(w, r, web.FS, "htmx/"+path)
 }
 
 func ServeInit(w http.ResponseWriter, r *http.Request) {

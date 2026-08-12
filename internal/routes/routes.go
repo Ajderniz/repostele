@@ -8,11 +8,11 @@ import (
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/mymiddleware"
-	root "github.com/ajderniz/repostele/web"
+	"github.com/ajderniz/repostele/web"
 )
 
 func setupFileServer(r *chi.Mux) error {
-  sub, err := fs.Sub(root.FS, root.PUBLIC)
+  sub, err := fs.Sub(web.FS, web.PUBLIC)
   if err != nil { return err }
   fileServer := http.FileServerFS(sub)
   r.Handle("/*", fileServer)
