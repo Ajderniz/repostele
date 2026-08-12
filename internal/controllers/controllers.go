@@ -5,6 +5,8 @@ import (
 	tpl "html/template"
 	"log/slog"
 	"net/http"
+	"slices"
+	"strings"
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/web"
@@ -12,31 +14,20 @@ import (
 )
 
 type _TplData struct {
-	Title  string
-	Server string
+	Title    string
+	Server   string
+	MainTpl  string
+	Init     bool
+	LoggedIn bool
 }
-
-const (
-	HTMDIR  = web.HTMDIR
-  HTMBASE = HTMDIR+"/base.html"
-)
 
 var (
   _DataNoResults = "No results found"
 
 	_ErrBadSearch = errors.New("Bad search criteria")
 
-	_TplInit *tpl.Template
-	_TplMenu *tpl.Template
+	_Tpl = tpl.Must(tpl.ParseFS(web.FS, web.HTMDIR+"/*"))
 )
-
-func ParseTemplates() {
-	_TplInit = tpl.Must(tpl.ParseFS(web.FS, HTMBASE))
-	tpl.Must(_TplInit.ParseFS(web.FS, HTMDIR+"/init-main.html"))
-
-	//_TplMenu = tpl.Must(tpl.ParseFS(web.FS, HTMBASE))
-	//tpl.Must(_TplMenu.ParseFS(web.FS, HTMDIR+"/menu-main.html"))
-}
 
 func HandleRootUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
@@ -55,11 +46,35 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "true" || path == "" {
 		http.NotFound(w, r); return
 	}
-	http.ServeFileFS(w, r, web.FS, "htmx/"+path)
+	http.ServeFileFS(w, r, web.FS, web.HXDIR+"/"+path)
 }
 
-func ServeInit(w http.ResponseWriter, r *http.Request) {
-	err := _TplInit.Execute(w, _TplData{Title: "Init", Server: "Staff"})
+var _SectionsCheckSessionStaff = []string{ "init", "menu", "login" }
+
+func ServeTemplateStaff(w http.ResponseWriter, r *http.Request) {
+	section := strings.SplitN(r.URL.Path, "/", 2)[1]
+
+	init := true
+	if section == "init" {
+		if models.CheckInit() {
+			http.Redirect(w, r, "/menu", http.StatusMovedPermanently)
+			return
+		}
+		init = false
+	}
+
+	loggedIn := true
+	if slices.Contains(_SectionsCheckSessionStaff, section) {
+		loggedIn = checkSession(r)
+	}
+
+	err := _Tpl.Execute(w, _TplData{
+		Title: strings.Title(section), 
+		Server: "Staff", 
+		MainTpl: section, 
+		Init: init, 
+		LoggedIn: loggedIn,
+	})
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)

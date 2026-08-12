@@ -11,6 +11,17 @@ import (
 	"github.com/ajderniz/repostele/web"
 )
 
+const (
+  SECT_INIT      = "init"
+  SECT_MENU      = "menu"
+  SECT_REGISTER  = "register"
+  SECT_LOGIN     = "login"
+  SECT_LOGOUT    = "logout"
+  SECT_ACCOUNT   = "account"
+  SECT_ORDER     = "order"
+  SECT_DASHBOARD = "dashboard"
+)
+
 func setupFileServer(r *chi.Mux) error {
   sub, err := fs.Sub(web.FS, web.PUBLIC)
   if err != nil { return err }
@@ -24,7 +35,7 @@ func RegisterUserRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
   
-  r.Get("/htmx/{path}", controllers.ServeHTMX)
+  r.Get("/"+web.HXDIR+"/{path}", controllers.ServeHTMX)
 
   r.Get("/", controllers.HandleRootUser)
 
@@ -71,11 +82,11 @@ func RegisterStaffRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
 
-  r.Get("/htmx/{path}", controllers.ServeHTMX)
+  r.Get("/"+web.HXDIR+"/{path}", controllers.ServeHTMX)
 
   r.Get( "/",     controllers.HandleRootStaff)
   r.Route("/init", func(r chi.Router){
-    r.Get( "/",     controllers.ServeInit)
+    r.Get( "/",     controllers.ServeTemplateStaff)
     r.Post("/",     controllers.InitMainStaffAccount)
   })
 

@@ -143,12 +143,10 @@ func OpenDB() error {
       schemaStr, err := web.FS.ReadFile("schema.sql")
       if err != nil { return err }
 
-      schema := strings.Split(string(schemaStr), ";")
-
       tx, err := _DB.Beginx()
       if err != nil { return err }
 
-      for _, s := range schema {
+      for s := range strings.SplitSeq(string(schemaStr), ";") {
         _, err = _DB.Exec(s)
         if err != nil { tx.Rollback(); return err }
       }

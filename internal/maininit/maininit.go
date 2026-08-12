@@ -13,7 +13,6 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
 
-	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/internal/routes"
 )
@@ -49,8 +48,6 @@ func InitMain(msg string, bin ServerBinary) error {
 		slog.NewTextHandler(logFile, nil),
 	))
 	slog.SetDefault(logger)
-
-	controllers.ParseTemplates()
 
 	err = models.OpenDB()
 	if err != nil { return err }

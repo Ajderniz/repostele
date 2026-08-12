@@ -1,18 +1,15 @@
+CMD_DIR=cmd
 BIN_DIR=bin
+PUB_DIR=web/public
 
-USER_SRC_DIR=cmd/user_api
-USER_SRC_FILENAME=main.go
-USER_SRC=$(USER_SRC_DIR)/$(USER_SRC_FILENAME)
+USER_SRC=$(CMD_DIR)/user_api/main.go
+USER_BIN=$(BIN_DIR)/user
 
-USER_BIN_FILENAME=user
-USER_BIN=$(BIN_DIR)/$(USER_BIN_FILENAME)
+STAFF_SRC=$(CMD_DIR)/staff_api/main.go
+STAFF_BIN=$(BIN_DIR)/staff
 
-STAFF_SRC_DIR=cmd/staff_api
-STAFF_SRC_FILENAME=main.go
-STAFF_SRC=$(STAFF_SRC_DIR)/$(STAFF_SRC_FILENAME)
-
-STAFF_BIN_FILENAME=staff
-STAFF_BIN=$(BIN_DIR)/$(STAFF_BIN_FILENAME)
+STYLE_SRC=$(PUB_DIR)/style.scss
+STYLE_DST=$(PUB_DIR)/style.css
 
 DATA_DB=$(BIN_DIR)/data.db
 
@@ -22,7 +19,7 @@ PORT=8080
 
 .PHONY: run clean
 
-all: user staff
+all: style.css user staff
 
 user:
 	mkdir -p $(BIN_DIR)
@@ -34,8 +31,12 @@ staff:
 	go build -o $(STAFF_BIN) $(STAFF_SRC)
 	echo $(STAFF_BIN) > $(LAST_BUILD)
 
+style.css:
+	sass $(STYLE_SRC) $(STYLE_DST)
+
 run:
 	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
 
 clean:
 	rm -rf $(BIN_DIR)
+	rm -rf $(STYLE_DST)

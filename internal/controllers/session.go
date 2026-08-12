@@ -20,6 +20,11 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
+func checkSession(r *http.Request) bool {
+  _, err := r.Cookie(SESSION_ID)
+  return err != nil
+}
+
 func openSession(
   w http.ResponseWriter,
   username string,

@@ -4,13 +4,31 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{.Title}} | Repostele {{.Server}}</title>
+  <link rel="stylesheet" type="text/css" href="/style.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="/htmx.min.js"></script>
 </head>
 <body>
   <header>Repostele</header>
+  <nav>
+    {{if .Init}}
+      {{if .LoggedIn}}
+
+      <button id="login-logout" type="submit" ,formaction="/logout">
+        Salir
+      </button>
+
+      {{else}}
+
+      <a href="/login" id="login-logout">Acceder</a>
+
+      {{end}}
+    {{end}}
+  </nav>
   <main>
-    {{template "main" .}}
+    {{ if eq .MainTpl "init" }}
+      {{template "init-main" .}}
+    {{ end }}
   </main>
   <footer>Footer</footer>
 </body>

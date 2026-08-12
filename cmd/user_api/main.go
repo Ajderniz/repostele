@@ -7,6 +7,6 @@ import (
 )
 
 func main() {
-	err := maininit.InitMain("Repostele: App del personal", maininit.SERVER_BINARY_USER)
+	err := maininit.InitMain("Repostele: App de cliente", maininit.SERVER_BINARY_USER)
 	if err != nil { log.Fatal("FATAL: "+err.Error()) }
 }

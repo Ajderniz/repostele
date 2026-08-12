@@ -4,6 +4,7 @@ import "embed"
 
 const (
   HTMDIR = "html"
+  HXDIR  = "htmx"
   PUBLIC = "public"
 )
 

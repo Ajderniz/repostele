@@ -1,87 +1,84 @@
 <form method="post" action="/init">
-  <fieldset>
-    <legend>Init</legend>
-    <table>
-      <tr>
-        <th><label for="key">Clave de activación</label></th>
-        <td>
-          <input
-          type="text"
-          id="key"
-          name="key"
-          pattern="[0-9]{16}"
-          placeholder="1111-2222-3333-4444"
-          title="Código de 16 dígitos"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <th><label for="username">Nombre de usuario</label></th>
-        <td>
-          <input
-          type="text"
-          id="username"
-          name="username"
-          minlength="4"
-          maxlength="16"
-          pattern="[a-zA-Z0-9]+"
-          placeholder="usuario"
-          title="4-16 caracteres alfanuméricos"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <th><label for="password-1">Contraseña</label></th>
-        <td>
-          <input
-          type="password"
-          id="password-1"
-          name="password-1"
-          minlength="4"
-          maxlength="16"
-          pattern="[a-zA-Z0-9]+"
-          placeholder="●●●●●●●●●●●●●●●●"
-          title="4-16 caracteres alfanuméricos"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <th><label for="password-2">Contraseña (otra vez)</label></th>
-        <td>
-          <input
-          type="password"
-          id="password-2"
-          name="password-2"
-          minlength="4"
-          maxlength="16"
-          pattern="[a-zA-Z0-9]+"
-          placeholder="●●●●●●●●●●●●●●●●"
-          title="4-16 caracteres alfanuméricos"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <th><label for="full-name">Nombre completo</label></th>
-        <td>
-          <input
-          type="text"
-          id="full-name"
-          name="full-name"
-          pattern="[a-zA-Z0-9\ ]+"
-          placeholder="Nemo Omen"
-          title="Caracteres alfanuméricos y espacios"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><input type="submit" value="Enviar"></td>
-      </tr>
-    </table>
-  </fieldset>
+  <table>
+    <tr>
+      <th><label for="key">Clave de activación</label></th>
+      <td>
+        <input
+        type="text"
+        id="key"
+        name="key"
+        pattern="[0-9]{16}"
+        placeholder="1111-2222-3333-4444"
+        title="Código de 16 dígitos"
+        required
+        >
+      </td>
+    </tr>
+    <tr>
+      <th><label for="username">Nombre de usuario</label></th>
+      <td>
+        <input
+        type="text"
+        id="username"
+        name="username"
+        minlength="4"
+        maxlength="16"
+        pattern="[a-zA-Z0-9]+"
+        placeholder="usuario"
+        title="4-16 caracteres alfanuméricos"
+        required
+        >
+      </td>
+    </tr>
+    <tr>
+      <th><label for="password-1">Contraseña</label></th>
+      <td>
+        <input
+        type="password"
+        id="password-1"
+        name="password-1"
+        minlength="4"
+        maxlength="16"
+        pattern="[a-zA-Z0-9]+"
+        placeholder="●●●●●●●●●●●●●●●●"
+        title="4-16 caracteres alfanuméricos"
+        required
+        >
+      </td>
+    </tr>
+    <tr>
+      <th><label for="password-2">Contraseña (otra vez)</label></th>
+      <td>
+        <input
+        type="password"
+        id="password-2"
+        name="password-2"
+        minlength="4"
+        maxlength="16"
+        pattern="[a-zA-Z0-9]+"
+        placeholder="●●●●●●●●●●●●●●●●"
+        title="4-16 caracteres alfanuméricos"
+        required
+        >
+      </td>
+    </tr>
+    <tr>
+      <th><label for="full-name">Nombre completo</label></th>
+      <td>
+        <input
+        type="text"
+        id="full-name"
+        name="full-name"
+        pattern="[a-zA-Z0-9\ ]+"
+        placeholder="Nemo Omen"
+        title="Caracteres alfanuméricos y espacios"
+        required
+        >
+      </td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><input type="submit" value="Enviar"></td>
+    </tr>
+  </table>
 </form>
