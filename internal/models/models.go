@@ -12,7 +12,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 
-	root "github.com/ajderniz/repostele"
+	root "github.com/ajderniz/repostele/web"
 )
 
 const _DB_FILEPATH = "./data.db"
@@ -140,7 +140,7 @@ func OpenDB() error {
   if err != nil {
     if errors.Is(err, os.ErrNotExist) {
 
-      schemaStr, err := root.FS.ReadFile("web/schema.sql")
+      schemaStr, err := root.FS.ReadFile("schema.sql")
       if err != nil { return err }
 
       schema := strings.Split(string(schemaStr), ";")

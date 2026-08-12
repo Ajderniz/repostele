@@ -6,8 +6,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	root "github.com/ajderniz/repostele"
 	"github.com/ajderniz/repostele/internal/models"
+	root "github.com/ajderniz/repostele/web"
 )
 
 type _TplData struct {
@@ -16,7 +16,6 @@ type _TplData struct {
 }
 
 const (
-	ROOT    = root.ROOT
 	HTMDIR  = root.HTMDIR
   HTMBASE = HTMDIR+"/base.html"
 )
@@ -46,10 +45,6 @@ func HandleRootStaff(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func ServeScript(w http.ResponseWriter, r *http.Request) {
-	http.ServeFileFS(w, r, root.FS, ROOT+"/htmx.min.js")
-}
-
 func ServeInit(w http.ResponseWriter, r *http.Request) {
 	err := _TplInit.Execute(w, _TplData{Title: "Init", Server: "Staff"})
 	if err != nil {
@@ -59,6 +54,5 @@ func ServeInit(w http.ResponseWriter, r *http.Request) {
 }
 
 func ServeInitForm(w http.ResponseWriter, r *http.Request) {
-	http.ServeFileFS(w, r, root.FS, HTMDIR+"/init-form.html")
+	http.ServeFileFS(w, r, root.FS, HTMDIR+"/staff-register-form.html")
 }
-

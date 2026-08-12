@@ -70,10 +70,11 @@ func InitMain(msg string, bin ServerBinary) error {
 	)
 	
 	if bin == SERVER_BINARY_STAFF {
-	  routes.RegisterStaffRoutes(r)
+	  err = routes.RegisterStaffRoutes(r)
 	} else {
-	  routes.RegisterUserRoutes(r)
+	  err = routes.RegisterUserRoutes(r)
 	}
+	if err != nil { return err }
 
 	if msg != "" { slog.Info(msg) }
 	slog.Info("Listening", slog.Int("port", *port))

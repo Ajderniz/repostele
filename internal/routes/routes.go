@@ -1,16 +1,29 @@
 package routes
 
 import (
+	"io/fs"
+	"net/http"
+
 	"github.com/go-chi/chi/v5"
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/mymiddleware"
+	root "github.com/ajderniz/repostele/web"
 )
 
-func RegisterUserRoutes(r *chi.Mux) {
+func setupFileServer(r *chi.Mux) error {
+  sub, err := fs.Sub(root.FS, root.PUBLIC)
+  if err != nil { return err }
+  fileServer := http.FileServerFS(sub)
+  r.Handle("/*", fileServer)
+  return nil
+}
 
-  r.Get( "/htmx.min.js", controllers.ServeScript)
-  
+func RegisterUserRoutes(r *chi.Mux) error {
+
+  err := setupFileServer(r)
+  if err != nil { return err }
+
   r.Get("/", controllers.HandleRootUser)
 
   r.Route("/menu", func(r chi.Router) {
@@ -47,12 +60,15 @@ func RegisterUserRoutes(r *chi.Mux) {
     r.Patch("/update", controllers.UpdateUserOrderRefNum)
     r.Patch("/cancel", controllers.CancelUserOrder)
   })
+
+  return nil
 }
 
-func RegisterStaffRoutes(r *chi.Mux) {
+func RegisterStaffRoutes(r *chi.Mux) error {
 
-  r.Get( "/htmx.min.js", controllers.ServeScript)
-  
+  err := setupFileServer(r)
+  if err != nil { return err }
+
   r.Get( "/",     controllers.HandleRootStaff)
   r.Route("/init", func(r chi.Router){
     r.Get( "/",     controllers.ServeInit)
@@ -124,4 +140,6 @@ func RegisterStaffRoutes(r *chi.Mux) {
       })
     })
   })
+
+  return nil
 }
