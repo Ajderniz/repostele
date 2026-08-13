@@ -1,3 +1,5 @@
+//go:build STAFF
+
 package controllers
 
 import (
@@ -25,7 +27,6 @@ func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
     return models.Staff{}, http.StatusBadRequest, err
   }
   if password1 != password2 {
-    slog.Error("BAD BAD BAD")
     return models.Staff{}, http.StatusBadRequest, errors.New("Password missmatch")
   }
   fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
@@ -87,7 +88,7 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgAccCreated)
 }
 
-func StaffLogin(w http.ResponseWriter, r *http.Request) {
+func Login(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { write.Error(w, http.StatusForbidden, err); return }
 
@@ -153,7 +154,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgAccDeactivated)
 }
 
-func SelfDeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
+func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
@@ -202,7 +203,7 @@ func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, _MsgPasswordChanged)
 }
 
-func SelfUpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
+func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
@@ -221,7 +222,7 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
   staff, err := models.GetStaff(params)
   if err != nil {write.Error(w, http.StatusInternalServerError,err); return}
 
-  if staff == nil { write.Data(w, _DataNoResults); return }
+  if staff == nil { write.Data(w, _MsgNoResults); return }
 
   write.Data(w, staff)
 }
@@ -233,7 +234,7 @@ func GetStaffFromUsername(w http.ResponseWriter, r *http.Request) {
   staff, err := models.GetStaffFromUsername(username)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
 
-  if staff.Username == "" { write.Data(w, _DataNoResults); return }
+  if staff.Username == "" { write.Data(w, _MsgNoResults); return }
   staff.PassHash = ""
   write.Data(w, staff)
 }

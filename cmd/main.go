@@ -1,7 +1,8 @@
-package maininit
+package main
 
 import (
 	"flag"
+	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -14,27 +15,22 @@ import (
 	"github.com/go-chi/httplog/v3"
 
 	"github.com/ajderniz/repostele/internal/controllers"
+	"github.com/ajderniz/repostele/internal/mainbuild"
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/internal/routes"
 )
 
-type ServerBinary int
-const (
-	SERVER_BINARY_STAFF ServerBinary = iota
-	SERVER_BINARY_USER
-)
-
 const _LOG_DIR = "log"
 
-func InitMain(msg string, bin ServerBinary) error {
+func main() {
 	port := flag.Int("port", 8080, "Port number")
 	flag.Parse()
 
 	exePath, err := os.Executable()
-	if err != nil { return err }
+	if err != nil { log.Fatal(err.Error()) }
 	exeDir := filepath.Dir(exePath)
 	err = os.Chdir(exeDir)
-	if err != nil { return err }
+	if err != nil { log.Fatal(err.Error()) }
 
 	os.MkdirAll(_LOG_DIR, os.ModePerm)
 	exeBase := filepath.Base(exePath)
@@ -43,7 +39,8 @@ func InitMain(msg string, bin ServerBinary) error {
 		os.O_CREATE|os.O_TRUNC|os.O_WRONLY,
 		0644,
 	)
-	if err != nil { return err }
+	if err != nil { log.Fatal(err.Error()) }
+
 	logger := slog.New(slog.NewMultiHandler(
 		slog.NewTextHandler(os.Stdout, nil),
 		slog.NewTextHandler(logFile, nil),
@@ -51,17 +48,17 @@ func InitMain(msg string, bin ServerBinary) error {
 	slog.SetDefault(logger)
 
 	err = models.OpenDB()
-	if err != nil { return err }
+	if err != nil { log.Fatal(err.Error()) }
 
 	r := chi.NewRouter()
 
-	logFormat := httplog.SchemaECS.Concise(true)
+	chiLogFormat := httplog.SchemaECS.Concise(true)
 	r.Use(
 		httplog.RequestLogger(
 			logger,
 			&httplog.Options{
 				Level: slog.LevelInfo,
-				Schema: logFormat,
+				Schema: chiLogFormat,
 				RecoverPanics: true,
 			},
 		),
@@ -72,15 +69,12 @@ func InitMain(msg string, bin ServerBinary) error {
 
 	controllers.InitTemplate()
 
-	if bin == SERVER_BINARY_STAFF {
-	  err = routes.RegisterStaffRoutes(r)
-	} else {
-	  err = routes.RegisterUserRoutes(r)
-	}
-	if err != nil { return err }
+  err = routes.RegisterRoutes(r)
+	if err != nil { log.Fatal(err.Error()) }
 
-	if msg != "" { slog.Info(msg) }
+	slog.Info("Repostele: "+mainbuild.INIT_MSG)
 	slog.Info("Listening", slog.Int("port", *port))
 
-	return http.ListenAndServe(":" + strconv.Itoa(*port), r)
+	err = http.ListenAndServe(":" + strconv.Itoa(*port), r)
+	if err != nil { log.Fatal(err.Error()) }
 }

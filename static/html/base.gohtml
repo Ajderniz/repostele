@@ -24,7 +24,13 @@
     {{end}}
   </nav>
   <main>
-    {{CallTemplate .MainName .MainData}}
+    {{with .Err}}
+      <div id="err-msg">
+        <p>{{.}}</p>
+      </div>
+    {{else}}
+      {{CallTemplate .MainName .MainData}}
+    {{end}}
   </main>
   <footer>Footer</footer>
 </body>

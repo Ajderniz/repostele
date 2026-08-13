@@ -154,7 +154,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
 
   orders, err := models.GetOrders(params)
   if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-  if len(orders) <= 0 { write.Data(w, _DataNoResults); return }
+  if len(orders) <= 0 { write.Data(w, _MsgNoResults); return }
 
   write.Data(w, orders)
 }
@@ -171,7 +171,7 @@ func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {
 func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
   order, status, err := getOrderFromIdUrlParam(r)
   if err != nil { write.Error(w, status, err); return }
-  if order.RefNum == "" { write.Data(w, _DataNoResults); return }
+  if order.RefNum == "" { write.Data(w, _MsgNoResults); return }
   write.Data(w, order)
 }
 
@@ -182,7 +182,7 @@ func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
     write.Error(w, http.StatusInternalServerError, err)
     return
   }
-  if len(orders) == 0 { write.Data(w, _DataNoResults); return }
+  if len(orders) == 0 { write.Data(w, _MsgNoResults); return }
   write.Data(w, orders)
 }
 
@@ -199,10 +199,10 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
     write.Error(w, http.StatusInternalServerError, err)
     return
   }
-  if order.User == "" { write.Data(w, _DataNoResults); return }
+  if order.User == "" { write.Data(w, _MsgNoResults); return }
 
   username := r.Context().Value(models.USER_USERNAME).(string)
-  if username != order.User { write.Data(w, _DataNoResults); return }
+  if username != order.User { write.Data(w, _MsgNoResults); return }
 
   write.Data(w, order)
 }

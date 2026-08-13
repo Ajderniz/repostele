@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -39,42 +38,35 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, "Item posted successfully")
 }
 
-type _MenuData struct {
-  Items []models.Item
-  Msg   string
-}
-
 func GetItems(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
 
-  var data _MenuData
+  var data _MainData
 
-  data.Items, err = models.GetItems(params)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
-  if len(data.Items) <= 0 { data.Msg = _DataNoResults }
+  data.Data, err = models.GetItems(params)
+  if err != nil{http.Error(w,err.Error(),http.StatusInternalServerError);return}
+  if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgNoResults }
 
-  ctx := context.WithValue(r.Context(), _MAIN_DATA, data)
-  ServeTemplateStaff(w, r.WithContext(ctx))
+  serveMainTplWithData(w, r, data)
 }
 
 func GetItemFromID(w http.ResponseWriter, r *http.Request) {
+  var data _MainData
+
   idStr := chi.URLParam(r, models.ITEM_ID)
   id, err := strconv.Atoi(idStr)
-  if err != nil { 
-    write.Error(w, http.StatusBadRequest, _ErrBadSearch)
-    return
-  }
+  if err != nil { data.Msg = _MsgNoResults }
 
   item, err := models.GetItemFromID(id)
   if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
+    http.Error(w, err.Error(), http.StatusInternalServerError)
     return
   }
 
   if item.Name == "" {
-    write.Data(w, _DataNoResults)
+    write.Data(w, _MsgNoResults)
     return
   }
 

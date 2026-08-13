@@ -139,6 +139,6 @@ func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   sessions, err := models.GetActiveSessions(params)
   if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
 
-  if len(sessions) <= 0 { write.Data(w, _DataNoResults); return }
+  if len(sessions) <= 0 { write.Data(w, _MsgNoResults); return }
   write.Data(w, sessions)
 }

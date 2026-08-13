@@ -1,11 +1,9 @@
-CMD_DIR=cmd
 BIN_DIR=bin
 PUB_DIR=static/public
 
-USER_SRC=$(CMD_DIR)/user_api/main.go
-USER_BIN=$(BIN_DIR)/user
+MAIN_SRC=cmd/main.go
 
-STAFF_SRC=$(CMD_DIR)/staff_api/main.go
+USER_BIN=$(BIN_DIR)/user
 STAFF_BIN=$(BIN_DIR)/staff
 
 STYLE_SRC=$(PUB_DIR)/style.scss
@@ -23,12 +21,12 @@ all: style.css user staff
 
 user:
 	mkdir -p $(BIN_DIR)
-	go build -o $(USER_BIN) $(USER_SRC)
+	go build -tags=USER -o $(USER_BIN) $(MAIN_SRC)
 	echo $(USER_BIN) > $(LAST_BUILD)
 
 staff:
 	mkdir -p $(BIN_DIR)
-	go build -o $(STAFF_BIN) $(STAFF_SRC)
+	go build -tags=STAFF -o $(STAFF_BIN) $(MAIN_SRC)
 	echo $(STAFF_BIN) > $(LAST_BUILD)
 
 style.css:

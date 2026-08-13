@@ -12,7 +12,15 @@
   ],
   "settings": {
     "auto_complete": false,
+    "LSP": {
+      "gopls": {
+        "settings": {
+          "gopls.buildFlags": ["-tags=STAFF"],
+        },
+      }
+    }
   },
+
   "build_systems": [
     {
       "name": "repostele-user",

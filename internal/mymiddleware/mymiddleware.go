@@ -56,33 +56,6 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
   return session, http.StatusOK, nil
 }
 
-func RequireUserAuth() func(next http.Handler) http.Handler {
-  return func(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      session, status, err := getSession(w, r)
-      if err != nil { 
-        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
-        write.Error(w, status, err); return
-      }
-      ctx := context.WithValue(r.Context(), models.USER_USERNAME, session.User)
-      next.ServeHTTP(w, r.WithContext(ctx))
-    })
-  }
-}
-
-func RequireStaffAuth() func(next http.Handler) http.Handler {
-  return func(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      session, status, err := getSession(w, r)
-      if err != nil { 
-        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
-        write.Error(w, status, err); return
-      }
-      ctx := context.WithValue(r.Context(), models.STAFF_USERNAME, session.User)
-      next.ServeHTTP(w, r.WithContext(ctx))
-    })
-  }
-}
 
 // Called AFTER staff authentication for the '/staff' path
 func RequireAdminAuth() func(next http.Handler) http.Handler {
@@ -99,31 +72,6 @@ func RequireAdminAuth() func(next http.Handler) http.Handler {
         return
       }
       if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }
-      next.ServeHTTP(w, r)
-    })
-  }
-}
-
-func CheckInitUser() func(next http.Handler) http.Handler {
-  return func(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      if !models.CheckInit() {
-        slog.Error("System not initialized")
-        w.WriteHeader(http.StatusForbidden)
-        return
-      }
-      next.ServeHTTP(w, r)
-    })
-  }
-}
-
-func CheckInitStaff() func(next http.Handler) http.Handler {
-  return func(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      if !models.CheckInit(){
-        http.Redirect(w, r, "/init", http.StatusPermanentRedirect)
-        return
-      }
       next.ServeHTTP(w, r)
     })
   }

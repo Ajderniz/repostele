@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"bytes"
+	"context"
 	"errors"
 	tpl "html/template"
 	"log/slog"
@@ -11,11 +12,16 @@ import (
 
 	"github.com/go-chi/chi/v5"
 
-	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/static"
 )
 
 const _MAIN_DATA = "main_data"
+const _MAIN_ERR = "main_err"
+
+type _MainData struct {
+	Data any
+	Msg  string
+}
 
 type _TplData struct {
 	Title    string
@@ -23,15 +29,16 @@ type _TplData struct {
 	Init     bool
 	LoggedIn bool
 	MainName string
-	MainData any
+	MainData _MainData
+	Err      string
 }
 
 var (
-  _DataNoResults = "No results found"
+  _MsgNoResults = "No results found"
 
 	_ErrBadSearch = errors.New("Bad search criteria")
 
-	_Tpl = tpl.New("base")
+	_Tpl *tpl.Template
 )
 
 func callTemplate(name string, data any) (tpl.HTML, error) {
@@ -41,22 +48,9 @@ func callTemplate(name string, data any) (tpl.HTML, error) {
 }
 
 func InitTemplate() {
-	tpl.Must(
-		_Tpl.Funcs(
-			tpl.FuncMap{"CallTemplate": callTemplate}).ParseFS(
-				static.FS, static.HTMDIR+"/*"))
-}
-
-func HandleRootUser(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
-}
-
-func HandleRootStaff(w http.ResponseWriter, r *http.Request) {
-	if !models.CheckInit() {
-		http.Redirect(w, r, "/init", http.StatusPermanentRedirect)
-	} else {
-		http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
-	}
+	_Tpl = tpl.New("base")
+	_Tpl.Funcs(tpl.FuncMap{"CallTemplate": callTemplate})
+	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 }
 
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
@@ -69,33 +63,45 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 
 var _SectionsCheckSessionStaff = []string{ "init", "menu", "login" }
 
-func ServeTemplateStaff(w http.ResponseWriter, r *http.Request) {
+func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	section := strings.SplitN(r.URL.Path, "/", 2)[1]
 
-	init := true
-	if section == "init" {
-		if models.CheckInit() {
-			http.Redirect(w, r, "/menu", http.StatusMovedPermanently)
-			return
-		}
-		init = false
-	}
+	init, redirect := checkInit(w, r, section)
+	if redirect { return }
 
 	loggedIn := true
 	if slices.Contains(_SectionsCheckSessionStaff, section) {
 		loggedIn = checkSession(r)
 	}
 
+	dataAny := r.Context().Value(_MAIN_DATA)
+	var data _MainData
+	if dataAny != nil { data = dataAny.(_MainData) }
+
+	errAny := r.Context().Value(_MAIN_ERR)
+	var errStr string
+	if errAny != nil { errStr = errAny.(string) }
+
 	err := _Tpl.Execute(w, _TplData{
 		Title: strings.Title(section), 
-		Server: "Staff", 
+		Server: _SERVER_NAME,
 		Init: init, 
 		LoggedIn: loggedIn,
 		MainName: section+"-main",
-		MainData: r.Context().Value("main_data"),
+		MainData: data,
+		Err: errStr,
 	})
 	if err != nil {
 		slog.Error(err.Error())
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
+}
+
+func serveMainTplWithData(
+  w http.ResponseWriter,
+  r *http.Request,
+  data any,
+) {
+  ctx := context.WithValue(r.Context(), _MAIN_DATA, data)
+  ServeMainTemplate(w, r.WithContext(ctx))
 }
