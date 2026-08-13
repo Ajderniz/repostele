@@ -1,6 +1,6 @@
 CMD_DIR=cmd
 BIN_DIR=bin
-PUB_DIR=web/public
+PUB_DIR=static/public
 
 USER_SRC=$(CMD_DIR)/user_api/main.go
 USER_BIN=$(BIN_DIR)/user
