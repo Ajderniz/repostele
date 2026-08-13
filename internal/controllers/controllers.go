@@ -15,8 +15,11 @@ import (
 	"github.com/ajderniz/repostele/static"
 )
 
-const _MAIN_DATA = "main_data"
-const _MAIN_ERR = "main_err"
+const (
+	_STATUS    = "ctx_status"
+	_ERR       = "ctx_err"
+	_MAIN_DATA = "main_data"
+)
 
 type _MainData struct {
 	Data any
@@ -78,18 +81,21 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	var data _MainData
 	if dataAny != nil { data = dataAny.(_MainData) }
 
-	errAny := r.Context().Value(_MAIN_ERR)
-	var errStr string
-	if errAny != nil { errStr = errAny.(string) }
+	errAny := r.Context().Value(_ERR)
+	var err error
+	if errAny != nil { err = errAny.(error) }
 
-	err := _Tpl.Execute(w, _TplData{
+	statusAny := r.Context().Value(_STATUS)
+	if statusAny != nil { w.WriteHeader(statusAny.(int)) }
+
+	err = _Tpl.Execute(w, _TplData{
 		Title: strings.Title(section), 
 		Server: _SERVER_NAME,
 		Init: init, 
 		LoggedIn: loggedIn,
 		MainName: section+"-main",
 		MainData: data,
-		Err: errStr,
+		Err: err.Error(),
 	})
 	if err != nil {
 		slog.Error(err.Error())
@@ -97,11 +103,15 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveMainTplWithData(
-  w http.ResponseWriter,
-  r *http.Request,
-  data any,
+func serveMainTpl(
+  w      http.ResponseWriter,
+  r      *http.Request,
+  data   *_MainData,
+  status int,
+  err    error,
 ) {
   ctx := context.WithValue(r.Context(), _MAIN_DATA, data)
+  ctx =  context.WithValue(ctx, _STATUS, status)
+  ctx =  context.WithValue(ctx, _ERR, err)
   ServeMainTemplate(w, r.WithContext(ctx))
 }

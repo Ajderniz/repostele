@@ -41,36 +41,43 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
 func GetItems(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil { http.Error(w, err.Error(), http.StatusBadRequest); return }
+  if err != nil {
+    serveMainTpl(w, r, nil, http.StatusBadRequest, _ErrBadSearch)
+    return
+  }
 
   var data _MainData
 
   data.Data, err = models.GetItems(params)
-  if err != nil{http.Error(w,err.Error(),http.StatusInternalServerError);return}
+  if err != nil{
+    serveMainTpl(w, r, nil, http.StatusInternalServerError, err)
+    return
+  }
   if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgNoResults }
 
-  serveMainTplWithData(w, r, data)
+  serveMainTpl(w, r, &data, http.StatusOK, nil)
 }
 
 func GetItemFromID(w http.ResponseWriter, r *http.Request) {
-  var data _MainData
-
   idStr := chi.URLParam(r, models.ITEM_ID)
   id, err := strconv.Atoi(idStr)
-  if err != nil { data.Msg = _MsgNoResults }
+  if err != nil {
+    serveMainTpl(w, r, &_MainData{Msg:_MsgNoResults}, http.StatusOK, nil)
+    return
+  }
 
   item, err := models.GetItemFromID(id)
   if err != nil {
-    http.Error(w, err.Error(), http.StatusInternalServerError)
+    serveMainTpl(w, r, nil, http.StatusInternalServerError, err)
     return
   }
 
   if item.Name == "" {
-    write.Data(w, _MsgNoResults)
+    serveMainTpl(w, r, &_MainData{Msg:_MsgNoResults}, http.StatusOK, nil)
     return
   }
 
-  write.Data(w, item)
+  serveMainTpl(w, r, &_MainData{Data:item}, http.StatusOK, nil)
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
