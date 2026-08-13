@@ -13,6 +13,7 @@ import (
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v3"
 
+	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/internal/routes"
 )
@@ -68,7 +69,9 @@ func InitMain(msg string, bin ServerBinary) error {
 		middleware.AllowContentEncoding("application/json"),
 		middleware.Throttle(20),
 	)
-	
+
+	controllers.InitTemplate()
+
 	if bin == SERVER_BINARY_STAFF {
 	  err = routes.RegisterStaffRoutes(r)
 	} else {

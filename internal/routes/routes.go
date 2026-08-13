@@ -86,8 +86,7 @@ func RegisterStaffRoutes(r *chi.Mux) error {
 
   r.Route("/menu", func(r chi.Router) {
     r.Use(mymiddleware.CheckInitStaff())
-    r.Get("/",          controllers.ServeTemplateStaff)
-    //r.Get("/",          controllers.GetItems)
+    r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
 

@@ -1,3 +1,5 @@
+{{define "base"}}
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -13,23 +15,19 @@
   <nav>
     {{if .Init}}
       {{if .LoggedIn}}
-
-      <button id="login-logout" type="submit" ,formaction="/logout">
+      <button id="login-logout" type="submit" formaction="/logout">
         Salir
       </button>
-
       {{else}}
-
       <a href="/login" id="login-logout">Acceder</a>
-
       {{end}}
     {{end}}
   </nav>
   <main>
-    {{ if eq .MainTpl "init" }}
-      {{template "init-main" .}}
-    {{ end }}
+    {{CallTemplate .MainName .MainData}}
   </main>
   <footer>Footer</footer>
 </body>
 </html>
+
+{{end}}

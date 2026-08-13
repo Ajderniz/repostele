@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"time"
@@ -38,16 +39,24 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   write.Msg(w, "Item posted successfully")
 }
 
+type _MenuData struct {
+  Items []models.Item
+  Msg   string
+}
+
 func GetItems(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
   if err != nil { write.Error(w, http.StatusBadRequest, err); return }
 
-  items, err := models.GetItems(params)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-  if len(items) <= 0 { write.Data(w, _DataNoResults); return }
+  var data _MenuData
 
-  write.Data(w, items)
+  data.Items, err = models.GetItems(params)
+  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if len(data.Items) <= 0 { data.Msg = _DataNoResults }
+
+  ctx := context.WithValue(r.Context(), _MAIN_DATA, data)
+  ServeTemplateStaff(w, r.WithContext(ctx))
 }
 
 func GetItemFromID(w http.ResponseWriter, r *http.Request) {

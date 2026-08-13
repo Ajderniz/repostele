@@ -1,0 +1,25 @@
+{{define "menu-main"}}
+
+<article>
+  <h2>Menú</h2>
+  <div id="menu-item-list">
+    {{with .Items}}
+      {{range .}}
+        {{if .Available}}
+        <div class="menu-item">
+          <h3>{{.Name}}</h3>
+          <div><span>₡{{.Price}}</span></div>
+          {{if .ImgPath}}
+          <img src="/dyn/img/{{.ImgPath}}" alt="{{.Name}}">
+          {{end}}
+          <p>{{.Desc}}</p>
+        </div>
+        {{end}}
+      {{end}}
+    {{else}}
+      <p>{{.Msg}}</p>
+    {{end}}
+  </div>
+</article>
+
+{{end}}

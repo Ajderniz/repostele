@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"errors"
 	tpl "html/template"
 	"log/slog"
@@ -9,17 +10,20 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
-	
+
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/static"
 )
 
+const _MAIN_DATA = "main_data"
+
 type _TplData struct {
 	Title    string
 	Server   string
-	MainTpl  string
 	Init     bool
 	LoggedIn bool
+	MainName string
+	MainData any
 }
 
 var (
@@ -27,8 +31,21 @@ var (
 
 	_ErrBadSearch = errors.New("Bad search criteria")
 
-	_Tpl = tpl.Must(tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
+	_Tpl = tpl.New("base")
 )
+
+func callTemplate(name string, data any) (tpl.HTML, error) {
+	buf := bytes.NewBuffer([]byte{})
+	err := _Tpl.ExecuteTemplate(buf, name, data)
+	return tpl.HTML(buf.String()), err
+}
+
+func InitTemplate() {
+	tpl.Must(
+		_Tpl.Funcs(
+			tpl.FuncMap{"CallTemplate": callTemplate}).ParseFS(
+				static.FS, static.HTMDIR+"/*"))
+}
 
 func HandleRootUser(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
@@ -72,9 +89,10 @@ func ServeTemplateStaff(w http.ResponseWriter, r *http.Request) {
 	err := _Tpl.Execute(w, _TplData{
 		Title: strings.Title(section), 
 		Server: "Staff", 
-		MainTpl: section, 
 		Init: init, 
 		LoggedIn: loggedIn,
+		MainName: section+"-main",
+		MainData: r.Context().Value("main_data"),
 	})
 	if err != nil {
 		slog.Error(err.Error())
