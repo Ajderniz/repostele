@@ -27,7 +27,8 @@ func OpenDB() error {
       if err != nil { return err }
 
       for s := range strings.SplitSeq(string(schemaStr), ";") {
-        _, err = _DB.Exec(s)
+        if s == "" { continue }
+        _, err = tx.Exec(s)
         if err != nil { tx.Rollback(); return err }
       }
 

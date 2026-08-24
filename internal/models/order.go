@@ -56,10 +56,10 @@ var (
 
 func updateOrderField(id int, field string, v any) error {
   _, err := dbBeginExecAndCommit(
-    "UPDATE "+_ORDERS+
-    "SET ? = ?, "+ORDER_UPDATED+" = ? "+
+    "UPDATE "+_ORDERS+" "+
+    "SET "+field+" = ?, "+ORDER_UPDATED+" = ? "+
     "WHERE "+ORDER_ID+" = ?",
-    field, v, time.Now().Unix(), id,
+    v, time.Now().Unix(), id,
   )
   if err != nil { return _ErrUpdateOrder }
   return nil
@@ -70,7 +70,8 @@ func InsertOrder(order Order) error {
   if err != nil { slog.Error(err.Error()); return _ErrInsertOrder }
 
   _, err = tx.NamedExec(
-    "INSERT INTO "+_ORDERS+" "+
+    "INSERT INTO "+_ORDERS+" ("+ ORDER_ID+","+_ORDER_USER+","+_ORDER_TOTAL+","+
+      ORDER_REF_NUM+","+_ORDER_TIME+","+ORDER_STATUS+") "+
     "VALUES (:"+ORDER_ID+",:"+_ORDER_USER+",:"+_ORDER_TOTAL+",:"+
             ORDER_REF_NUM+",:"+_ORDER_TIME+",:"+ORDER_STATUS+")",
     &order,

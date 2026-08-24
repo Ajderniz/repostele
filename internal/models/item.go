@@ -32,7 +32,7 @@ const (
                  _ITEM_AVAILABLE+","+_ITEM_DESC+","+_ITEM_IMG_PATH
 )
 
-var _ItemSortFields = []string { ITEM_ID, _ITEM_NAME, _ITEM_PRICE, "mod" }
+var _ItemSortFields = []string { ITEM_ID, _ITEM_NAME, _ITEM_PRICE, _ITEM_TIME_MOD }
 
 func InsertItem(item Item) error {
   _, err := dbBeginNamedExecAndCommit(
@@ -83,13 +83,20 @@ func UpdateItem(id int, update ItemUpdate) error {
     if dbTag == "" || dbTag == "-" { continue }
 
     field := v.Field(i)
+    var val any
     switch field.Kind() {
-    case reflect.Pointer: if field.IsNil() { continue }
-    case reflect.String:  if field.String() == "" { continue }
+    case reflect.Pointer:
+      if field.IsNil() { continue }
+      val = field.Elem().Interface()
+    case reflect.String:
+      if field.String() == "" { continue }
+      val = field.Interface()
+    default:
+      val = field.Interface()
     }
 
     setClauses = append(setClauses, dbTag+" = ?")
-    args = append(args, field.Elem().Interface())
+    args = append(args, val)
   }
   args = append(args, id)
 
@@ -97,7 +104,7 @@ func UpdateItem(id int, update ItemUpdate) error {
     "UPDATE "+_ITEMS+" "+
     "SET "+strings.Join(setClauses,",")+" "+
     "WHERE "+ITEM_ID+" = ?",
-    args,
+    args...,
   )
   if err != nil {
     slog.Error(err.Error())

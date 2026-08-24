@@ -1,0 +1,17 @@
+{{define "main-dashboard"}}
+
+<article>
+  <h2>Panel</h2>
+  {{with .}}
+    {{template "div-msg" .Msg}}
+  {{else}}
+    <nav>
+      <button hx-get="htmx/form-create-item" hx-target="#dashboard-content" hx-swap="innerHTML">
+        Crear nuevo item
+      </button>
+    </nav>
+    <div id="dashboard-content"></div>
+  {{end}}
+</article>
+
+{{end}}

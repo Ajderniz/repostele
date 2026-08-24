@@ -117,8 +117,9 @@ func dbSelectList(
 
   params.Fix(sortFields)
   err := dbSelect(dst,
-    "SELECT "+sel+" FROM "+from+" ORDER BY ? "+string(params.Dir)+" LIMIT ?, ?",
-    params.Sort, params.Start, params.Limit,
+    "SELECT "+sel+" FROM "+from+" ORDER BY "+params.Sort+" "+string(params.Dir)+
+    " LIMIT ?, ?",
+    params.Start, params.Limit,
   )
   if dbSelectErr(err) != nil {
     slog.Error(err.Error())

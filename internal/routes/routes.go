@@ -10,7 +10,7 @@ import (
   "github.com/ajderniz/repostele/static"
 )
 
-const _DYNDIR = "dyn"
+const _DYNDIR = static.DYNDIR
 
 func setupFileServer(r *chi.Mux) error {
   sub, err := fs.Sub(static.FS, static.PUBLIC)

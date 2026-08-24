@@ -9,27 +9,46 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
+  "github.com/ajderniz/repostele/pkg/upload"
+  "github.com/ajderniz/repostele/static"
 )
 
-const _ITEM_ID = "id"
+const (
+  _ITEM_ID = "id"
+  _MAX_UPLOAD_MEM = 10 << 20 // 10 MiB, incl. non-file form fields
+)
 
 func PostItem(w http.ResponseWriter, r *http.Request) {
-  post := struct{
-    Name      string  `json:"name"      validate:"required"`
-    Price     float32 `json:"price"     validate:"required,gte=0"`
-    Desc      string  `json:"desc"      validate:"-"`
-    ImgPath   string  `json:"img_path"  validate:"-"`
-  }{}
-  err := bind.JSON(r, &post)
+  err := r.ParseMultipartForm(_MAX_UPLOAD_MEM)
   if err != nil { serveBadRequest(w, r, err); return }
 
+  name, err := bind.FormValue(r, "name", "required")
+  if err != nil { serveBadRequest(w, r, err); return }
+
+  priceStr, err := bind.FormValue(r, "price", "required,numeric")
+  if err != nil { serveBadRequest(w, r, err); return }
+  price, err := strconv.ParseFloat(priceStr, 32)
+  if err != nil { serveBadRequest(w, r, err); return }
+
+  desc := r.FormValue("desc")
+
+  imgPath := ""
+  file, header, err := r.FormFile("img")
+  if err == nil {
+    filename, err := upload.SaveImage(file, header, static.IMGDIR)
+    if err != nil { serveBadRequest(w, r, err); return }
+    imgPath = "/" + static.IMGDIR + "/" + filename
+  } else if err != http.ErrMissingFile {
+    serveBadRequest(w, r, err); return
+  }
+
   item := models.Item{
-    Name:      post.Name,
-    Price:     post.Price,
+    Name:      name,
+    Price:     float32(price),
     TimeMod:   time.Now().Unix(),
     Available: true,
-    Desc:      post.Desc,
-    ImgPath:   post.ImgPath,
+    Desc:      desc,
+    ImgPath:   imgPath,
   }
   err = models.InsertItem(item)
   if err != nil { serveInternalErr(w, r); return }

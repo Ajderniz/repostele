@@ -49,6 +49,8 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireAuth())
 
+    r.Get("/", controllers.ServeMainTemplate)
+
     r.Route("/orders", func(r chi.Router) {
       r.Get(  "/",            controllers.GetAllOrders)
       r.Get(  "/{id}",        controllers.GetOrderFromID)
