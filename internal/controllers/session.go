@@ -9,7 +9,6 @@ import (
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
-	"github.com/ajderniz/repostele/pkg/write"
 )
 
 var _ErrSessionID = errors.New("'"+SESSION_ID+"' blank")
@@ -22,7 +21,7 @@ const (
 
 func checkSession(r *http.Request) bool {
   _, err := r.Cookie(SESSION_ID)
-  return err != nil
+  return err == nil
 }
 
 func openSession(
@@ -98,47 +97,45 @@ func closeSession(w http.ResponseWriter, sid string) error {
 
 func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   username, err := bind.URLParam(r, _CREDS_USERNAME, "required")
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   err = models.CloseSessionForUsername(username)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil { serveInternalErr(w, r); return }
 
-  write.Msg(w, "Session closed successfully")
+  serveMsg(w, r, "Session closed successfully")
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
   userStr, err := bind.FormValue(r, "users", "boolean")
   staffStr, err  := bind.FormValue(r, "staff", "boolean")
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   users, _ := strconv.ParseBool(userStr)
   staff, _ := strconv.ParseBool(staffStr)
 
   if users || staff {
     err = models.CloseAllSessions(users, staff)
-    if err != nil { write.Error(w, http.StatusInternalServerError, err);return }
+    if err != nil { serveInternalErr(w, r); return }
   }
-
-  write.Msg(w, "All requested sessions closed successfully")
+  serveMsg(w, r, "All requested sessions closed successfully")
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
   sid, err := r.Cookie(SESSION_ID)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-
+  if err != nil { serveBadRequest(w, r, err); return }
   err = closeSession(w, sid.Value)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
-  write.Msg(w, _MsgLoggedOut)
+  if err != nil { serveBadRequest(w, r, err); return }
+  serveMsg(w, r, _MsgLoggedOut)
 }
 
 func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   sessions, err := models.GetActiveSessions(params)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil { serveInternalErr(w, r); return }
 
-  if len(sessions) <= 0 { write.Data(w, _MsgNoResults); return }
-  write.Data(w, sessions)
+  if len(sessions) <= 0 { serveNoResults(w, r); return }
+  serveData(w, r, sessions)
 }

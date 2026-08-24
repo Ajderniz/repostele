@@ -18,7 +18,7 @@ func checkInit(
 	init = true
 	if section == "init" {
 		if models.CheckInit() {
-			http.Redirect(w, r, "/menu", http.StatusMovedPermanently)
+			http.Redirect(w, r, "/menu", MovedPermanently)
 			redirect = true
 			return
 		}
@@ -29,8 +29,8 @@ func checkInit(
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
 	if !models.CheckInit() {
-		http.Redirect(w, r, "/init", http.StatusPermanentRedirect)
+		http.Redirect(w, r, "/init", PermanentRedirect)
 	} else {
-		http.Redirect(w, r, "/menu", http.StatusPermanentRedirect)
+		http.Redirect(w, r, "/menu", PermanentRedirect)
 	}
 }

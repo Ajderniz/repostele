@@ -13,6 +13,7 @@ const (
 )
 
 var (
+	_ErrBadCreds = errors.New("Bad credentials")
 	_ErrAlreadyInit  = errors.New("Already initialized")
 	_ErrSameUsername = errors.New("Username already exists")
 	_ErrSamePassword = errors.New("Password is the same")
@@ -20,6 +21,7 @@ var (
 
 	_MsgAccNotFound = "Account not found"
   _MsgAccCreated = "Account registered successfully"
+	_MsgLoggedIn = "Logged in successfully"
 	_MsgLoggedOut = "Logged out successfully"
 	_MsgAccDeactivated = "Account deactivated successfully"
 	_MsgUsernameChanged = "Username changed successfully"
@@ -34,11 +36,10 @@ func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Finge
   return 
 }
 
-func failLogin(w http.ResponseWriter, fp models.Fingerprint) {
+func failLogin(w http.ResponseWriter, r *http.Request, fp models.Fingerprint) {
 	// already a fail, so don't check for errors
   models.UpdateFingerprintField(
     fp.Id, models.FINGERPRINT_FAILED_LOGINS, fp.FailedLogins + 1,
   )
-  w.WriteHeader(http.StatusUnauthorized)
+  serveResponse(w, r, nil, Unauthorized, _ErrBadCreds)
 }
-	

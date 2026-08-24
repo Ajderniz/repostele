@@ -6,83 +6,85 @@ import (
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
-	"github.com/ajderniz/repostele/pkg/write"
 )
 
 func updateUserPassword(username, oldPassword, newPassword string) (int, error){
-  if oldPassword == newPassword {return http.StatusBadRequest, _ErrSamePassword}
+  if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil||user.Username == "" {return http.StatusInternalServerError,err}
+  if err != nil||user.Username == "" {return InternalServerError,err}
 
   err = pass.CheckPasswordHash(oldPassword, user.PassHash)
-  if err != nil { return http.StatusUnauthorized, err }
+  if err != nil { return Unauthorized, err }
 
   newHash, err := pass.HashPassword(newPassword)
-  if err != nil { return http.StatusInternalServerError, err }
+  if err != nil { return InternalServerError, err }
 
   err = models.UpdateUserField(username, models.USER_PASS_HASH, newHash)
-  if err != nil { return http.StatusInternalServerError, err }
+  if err != nil { return InternalServerError, err }
 
-  return http.StatusOK, nil
+  return OK, nil
 }
 
 func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   status, err := updateUserPassword(username, oldPassword, newPassword)
-  if err != nil { write.Error(w, status, err ); return }
+  if err != nil { serveErr(w, r, status, err); return }
 
-  write.Msg(w, _MsgPasswordChanged)
+  serveMsg(w, r, _MsgPasswordChanged)
 }
 
-func deactivateUserAccount(w http.ResponseWriter, r *http.Request,
-                           username string) (int, error) {
+func deactivateUserAccount(
+  w http.ResponseWriter,
+  r *http.Request,
+  username string,
+) (int, error) {
 
   sid, err := r.Cookie(SESSION_ID)
-  if err != nil { return http.StatusBadRequest, err }
+  if err != nil { return BadRequest, err }
 
   err = closeSession(w, sid.Value)
-  if err != nil { return http.StatusInternalServerError, err }
+  if err != nil { return InternalServerError, err }
 
   err = models.UpdateUserField(username, models.USER_ACTIVE, false)
-  if err != nil { return http.StatusInternalServerError, err }
+  if err != nil { return InternalServerError, err }
 
-  return http.StatusOK, nil
+  return OK, nil
 }
 
 func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   status, err := deactivateUserAccount(w, r, username)
-  if err != nil { write.Error(w, status, err); return }
+  if err != nil { serveErr(w, r, status, err); return }
 
-  write.Msg(w, _MsgAccDeactivated)
+  serveResponse(w, r, &_MainData{Msg:_MsgAccDeactivated}, OK, nil)
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   users, err := models.GetUsers(params)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
+  if err != nil { serveInternalErr(w, r); return }
 
-  if len(users) <= 0 { write.Data(w, _MsgNoResults); return }
-  write.Data(w, users)
+  if len(users) <= 0 { serveNoResults(w, r); return }
+  serveData(w, r, users)
 }
 
 func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {
   username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil { serveInternalErr(w, r); return }
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil { serveInternalErr(w, r); return }
 
-  if user.Username == "" { write.Data(w, _MsgNoResults); return }
+  if user.Username == "" { serveNoResults(w, r); return }
   user.PassHash = ""
-  write.Data(w, user)
+  serveData(w, r, user)
 }

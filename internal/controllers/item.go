@@ -9,7 +9,6 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/write"
 )
 
 const _ITEM_ID = "id"
@@ -22,7 +21,7 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     ImgPath   string  `json:"img_path"  validate:"-"`
   }{}
   err := bind.JSON(r, &post)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   item := models.Item{
     Name:      post.Name,
@@ -33,64 +32,54 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     ImgPath:   post.ImgPath,
   }
   err = models.InsertItem(item)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil { serveInternalErr(w, r); return }
 
-  write.Msg(w, "Item posted successfully")
+  serveResponse(
+    w, r, &_MainData{Msg: "Item posted succesfully"}, Created, nil,
+  )
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil {
-    serveMainTpl(w, r, nil, http.StatusBadRequest, _ErrBadSearch)
-    return
-  }
+  if err != nil { serveBadRequest(w, r, _ErrBadSearch); return }
 
   var data _MainData
 
   data.Data, err = models.GetItems(params)
-  if err != nil{
-    serveMainTpl(w, r, nil, http.StatusInternalServerError, err)
-    return
-  }
-  if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgNoResults }
+  if err != nil{ serveInternalErr(w, r); return }
+  if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgEmpty }
 
-  serveMainTpl(w, r, &data, http.StatusOK, nil)
+  serveResponse(w, r, &data, OK, nil)
 }
 
 func GetItemFromID(w http.ResponseWriter, r *http.Request) {
   idStr := chi.URLParam(r, models.ITEM_ID)
   id, err := strconv.Atoi(idStr)
-  if err != nil {
-    serveMainTpl(w, r, &_MainData{Msg:_MsgNoResults}, http.StatusOK, nil)
-    return
-  }
+  if err != nil { serveNoResults(w, r); return }
 
   item, err := models.GetItemFromID(id)
-  if err != nil {
-    serveMainTpl(w, r, nil, http.StatusInternalServerError, err)
-    return
-  }
+  if err != nil { serveInternalErr(w, r); return }
 
-  if item.Name == "" {
-    serveMainTpl(w, r, &_MainData{Msg:_MsgNoResults}, http.StatusOK, nil)
-    return
-  }
+  if item.Name == "" { serveNoResults(w, r); return }
 
-  serveMainTpl(w, r, &_MainData{Data:item}, http.StatusOK, nil)
+  serveData(w, r, item)
 }
 
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
   idStr, err := bind.FormValue(r, _ITEM_ID, "required,number")
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
   id, _ := strconv.Atoi(idStr)
 
   update := models.ItemUpdate{}
   err = bind.JSON(r, &update)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
 
   err = models.UpdateItem(id, update)
-  if err != nil { write.Error(w, http.StatusInternalServerError, err); return }
+  if err != nil {
+    serveResponse(w, r, nil, InternalServerError, err)
+    return
+  }
 
-  write.Msg(w, "Item updated successfully")
+  serveMsg(w, r, "Item updated successfully")
 }

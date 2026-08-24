@@ -9,7 +9,6 @@ import (
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
-	"github.com/ajderniz/repostele/pkg/write"
 	"github.com/anhnmt/go-fingerprint"
 )
 
@@ -63,14 +62,8 @@ func RequireAdminAuth() func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       username := r.Context().Value(models.STAFF_USERNAME).(string)
       staff, err := models.GetStaffFromUsername(username)
-      if err != nil { 
-        write.Error(w, http.StatusInternalServerError, err)
-        return
-      }
-      if staff.Username == "" {
-        write.Error(w, http.StatusBadRequest, errors.New("Bad username"))
-        return
-      }
+      if err != nil { w.WriteHeader(controllers.InternalServerError); return }
+      if staff.Username == "" { w.WriteHeader(http.StatusBadRequest); return }
       if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }
       next.ServeHTTP(w, r)
     })

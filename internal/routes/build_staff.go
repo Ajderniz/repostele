@@ -29,6 +29,7 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/login", func(r chi.Router){
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.GetFingerprint())
+    r.Get( "/", controllers.ServeMainTemplate)
     r.Post("/", controllers.Login)
   })
   r.Route("/logout", func(r chi.Router) {

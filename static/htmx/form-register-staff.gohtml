@@ -1,3 +1,4 @@
+{{define "form-register-staff"}}
 <form method="post" action="/init">
   <table>
     <tr>
@@ -16,51 +17,15 @@
     </tr>
     <tr>
       <th><label for="username">Nombre de usuario</label></th>
-      <td>
-        <input
-        type="text"
-        id="username"
-        name="username"
-        minlength="4"
-        maxlength="16"
-        pattern="[a-zA-Z0-9]+"
-        placeholder="usuario"
-        title="4-16 caracteres alfanuméricos"
-        required
-        >
-      </td>
+      <td>{{template "input-username"}}</td>
     </tr>
     <tr>
       <th><label for="password-1">Contraseña</label></th>
-      <td>
-        <input
-        type="password"
-        id="password-1"
-        name="password-1"
-        minlength="4"
-        maxlength="16"
-        pattern="[a-zA-Z0-9]+"
-        placeholder="●●●●●●●●●●●●●●●●"
-        title="4-16 caracteres alfanuméricos"
-        required
-        >
-      </td>
+      <td>{{template "input-password" "password-1"}}</td>
     </tr>
     <tr>
       <th><label for="password-2">Contraseña (otra vez)</label></th>
-      <td>
-        <input
-        type="password"
-        id="password-2"
-        name="password-2"
-        minlength="4"
-        maxlength="16"
-        pattern="[a-zA-Z0-9]+"
-        placeholder="●●●●●●●●●●●●●●●●"
-        title="4-16 caracteres alfanuméricos"
-        required
-        >
-      </td>
+      <td>{{template "input-password" "password-2"}}</td>
     </tr>
     <tr>
       <th><label for="full-name">Nombre completo</label></th>
@@ -69,7 +34,7 @@
         type="text"
         id="full-name"
         name="full-name"
-        pattern="[a-zA-Z0-9\ ]+"
+        pattern="[a-zA-Z0-9\s]+"
         placeholder="Nemo Omen"
         title="Caracteres alfanuméricos y espacios"
         required
@@ -82,3 +47,4 @@
     </tr>
   </table>
 </form>
+{{end}}

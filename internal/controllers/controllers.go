@@ -11,6 +11,8 @@ import (
 	"strings"
 
 	"github.com/go-chi/chi/v5"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/ajderniz/repostele/static"
 )
@@ -19,6 +21,17 @@ const (
 	_STATUS    = "ctx_status"
 	_ERR       = "ctx_err"
 	_MAIN_DATA = "main_data"
+
+	OK = http.StatusOK
+	Created = http.StatusCreated
+	MovedPermanently = http.StatusMovedPermanently
+	PermanentRedirect = http.StatusPermanentRedirect
+	BadRequest = http.StatusBadRequest
+	Unauthorized = http.StatusUnauthorized
+	Forbidden = http.StatusForbidden
+	Conflict = http.StatusConflict
+	TooManyRequests = http.StatusTooManyRequests
+	InternalServerError = http.StatusInternalServerError
 )
 
 type _MainData struct {
@@ -32,16 +45,20 @@ type _TplData struct {
 	Init     bool
 	LoggedIn bool
 	MainName string
-	MainData _MainData
+	MainData *_MainData
 	Err      string
 }
 
 var (
+	_MsgEmpty = "Nothing here yet"
   _MsgNoResults = "No results found"
 
+  _ErrInternal = errors.New("Something went wrong")
 	_ErrBadSearch = errors.New("Bad search criteria")
 
 	_Tpl *tpl.Template
+
+	titleCaser = cases.Title(language.Spanish)
 )
 
 func callTemplate(name string, data any) (tpl.HTML, error) {
@@ -54,6 +71,7 @@ func InitTemplate() {
 	_Tpl = tpl.New("base")
 	_Tpl.Funcs(tpl.FuncMap{"CallTemplate": callTemplate})
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
+	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))
 }
 
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
@@ -61,49 +79,54 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	if r.Header.Get("HX-Request") != "true" || path == "" {
 		http.NotFound(w, r); return
 	}
-	http.ServeFileFS(w, r, static.FS, static.HXDIR+"/"+path)
+	err := _Tpl.ExecuteTemplate(w, path, nil)
+	if err != nil {
+		slog.Error(err.Error())
+		http.Error(w, _ErrInternal.Error(), InternalServerError);
+	}
 }
 
-var _SectionsCheckSessionStaff = []string{ "init", "menu", "login" }
+var _SectionsCheckSession = []string{ "init", "menu", "login" }
 
 func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
-	section := strings.SplitN(r.URL.Path, "/", 2)[1]
+	section := strings.Split(r.URL.Path, "/")[1]
 
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }
 
 	loggedIn := true
-	if slices.Contains(_SectionsCheckSessionStaff, section) {
+	if slices.Contains(_SectionsCheckSession, section) {
 		loggedIn = checkSession(r)
 	}
 
 	dataAny := r.Context().Value(_MAIN_DATA)
-	var data _MainData
-	if dataAny != nil { data = dataAny.(_MainData) }
+	var data *_MainData
+	if dataAny != nil { data = dataAny.(*_MainData) }
 
 	errAny := r.Context().Value(_ERR)
-	var err error
-	if errAny != nil { err = errAny.(error) }
+	var errStr string
+	if errAny != nil { errStr = errAny.(error).Error() }
 
 	statusAny := r.Context().Value(_STATUS)
 	if statusAny != nil { w.WriteHeader(statusAny.(int)) }
 
-	err = _Tpl.Execute(w, _TplData{
-		Title: strings.Title(section), 
+	err := _Tpl.Execute(w, _TplData{
+		Title: titleCaser.String(section),
 		Server: _SERVER_NAME,
 		Init: init, 
 		LoggedIn: loggedIn,
-		MainName: section+"-main",
+		MainName: "main-"+section,
 		MainData: data,
-		Err: err.Error(),
+		Err: errStr,
 	})
 	if err != nil {
 		slog.Error(err.Error())
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), InternalServerError)
+		return
 	}
 }
 
-func serveMainTpl(
+func serveResponse(
   w      http.ResponseWriter,
   r      *http.Request,
   data   *_MainData,
@@ -114,4 +137,28 @@ func serveMainTpl(
   ctx =  context.WithValue(ctx, _STATUS, status)
   ctx =  context.WithValue(ctx, _ERR, err)
   ServeMainTemplate(w, r.WithContext(ctx))
+}
+
+func serveMsg(w http.ResponseWriter, r *http.Request, msg string) {
+	serveResponse(w, r, &_MainData{Msg: msg}, OK, nil)
+}
+
+func serveData(w http.ResponseWriter, r *http.Request, data any) {
+	serveResponse(w, r, &_MainData{Data: data}, OK, nil)
+}
+
+func serveNoResults(w http.ResponseWriter, r *http.Request) {
+	serveMsg(w, r, _MsgNoResults)
+}
+
+func serveErr(w http.ResponseWriter, r *http.Request, status int, err error) {
+	serveResponse(w, r, nil, status, err)
+}
+
+func serveBadRequest(w http.ResponseWriter, r *http.Request, err error) {
+	serveErr(w, r, BadRequest, err)
+}
+
+func serveInternalErr(w http.ResponseWriter, r *http.Request) {
+	serveErr(w, r, InternalServerError, _ErrInternal)
 }

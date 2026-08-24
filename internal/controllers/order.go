@@ -12,7 +12,6 @@ import (
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/write"
 )
 
 const (
@@ -73,19 +72,16 @@ var _ErrOrderIDMax = errors.New("Order ID max exceeded")
 func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
+  if err != nil { serveInternalErr(w, r); return }
   if latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    write.Error(w, http.StatusTooManyRequests, errors.New("Only one order per user"))
+    serveErr(w, r, TooManyRequests, errors.New("Only one order per user"))
     return
   }
 
   request := _OrderRequest{}
   if err := bind.JSON(r, &request); err != nil {
-    write.Error(w, http.StatusBadRequest, err)
+    serveBadRequest(w, r, err)
     return
   }
 
@@ -106,20 +102,18 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   }
   if len(items) == 0 {
     slog.Error(_ErrNoItems.Error())
-    write.Error(w, http.StatusBadRequest, _ErrNoItems)
+    serveBadRequest(w, r, _ErrNoItems)
     return
   }
 
   if _OrderDate == 0 || _OrderCounter == 0 { 
-    if err := initOrderId(); err != nil {
-      write.Error(w, http.StatusInternalServerError, err)
-      return
-    }
+    if err := initOrderId(); err != nil { serveInternalErr(w, r); return }
   }
 
   if _ORDER_COUNTER_MAX - 1 < _OrderCounter {
     slog.Error(_ErrOrderIDMax.Error())
-    write.Error(w, http.StatusInternalServerError, _ErrOrderIDMax)
+    serveInternalErr(w, r)
+    return
   }
 
   orderId := orderDateAndCounter2ID(_OrderDate, _OrderCounter)
@@ -133,16 +127,15 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     Items:  items,
   })
   if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
+    serveInternalErr(w, r)
     return
   }
 
-  write.JSON(w, http.StatusCreated, write.H{
-    write.KEY_MSG: "Order posted. Waiting for approval",
-    write.KEY_DAT: write.H{
-      models.ORDER_ID: orderId,
-    },
-  })
+  serveResponse(w, r, &_MainData{
+    Msg: "Order posted. Waiting for approval",
+    Data: orderId,
+    }, Created, nil,
+  )
 
   updateOrderID()
 }
@@ -150,40 +143,37 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
 
   orders, err := models.GetOrders(params)
-  if err != nil {write.Error(w, http.StatusInternalServerError, err);return}
-  if len(orders) <= 0 { write.Data(w, _MsgNoResults); return }
+  if err != nil { serveInternalErr(w, r); return }
+  if len(orders) <= 0 { serveNoResults(w, r); return }
 
-  write.Data(w, orders)
+  serveData(w, r, orders)
 }
 
 func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {
   idStr := chi.URLParam(r, models.ORDER_ID)
   id, err := strconv.Atoi(idStr)
-  if err != nil { return models.Order{}, http.StatusBadRequest, _ErrBadSearch }
+  if err != nil { return models.Order{}, BadRequest, _ErrBadSearch }
   order, err := models.GetOrderFromID(id)
-  if err != nil { return models.Order{}, http.StatusInternalServerError, err }
-  return order, http.StatusOK, nil
+  if err != nil { return models.Order{}, InternalServerError, err }
+  return order, OK, nil
 }
 
 func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
   order, status, err := getOrderFromIdUrlParam(r)
-  if err != nil { write.Error(w, status, err); return }
-  if order.RefNum == "" { write.Data(w, _MsgNoResults); return }
-  write.Data(w, order)
+  if err != nil { serveErr(w, r, status, err); return }
+  if order.RefNum == "" { serveNoResults(w, r); return }
+  serveData(w, r, order)
 }
 
 func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   orders, err := models.GetAllOrdersFromUsername(username)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-  if len(orders) == 0 { write.Data(w, _MsgNoResults); return }
-  write.Data(w, orders)
+  if err != nil { serveInternalErr(w, r); return }
+  if len(orders) == 0 { serveNoResults(w, r); return }
+  serveData(w, r, orders)
 }
 
 func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
@@ -191,20 +181,17 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   id, err := strconv.Atoi(idStr);
   if err != nil {
     slog.Error(err.Error())
-    write.Error(w, http.StatusBadRequest, errors.New("Invalid order ID"))
+    serveBadRequest(w, r, errors.New("Invalid order ID"))
   }
 
   order, err := models.GetOrderFromID(id)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-  if order.User == "" { write.Data(w, _MsgNoResults); return }
+  if err != nil { serveInternalErr(w, r); return }
+  if order.User == "" { serveNoResults(w, r); return }
 
   username := r.Context().Value(models.USER_USERNAME).(string)
-  if username != order.User { write.Data(w, _MsgNoResults); return }
+  if username != order.User { serveNoResults(w, r); return }
 
-  write.Data(w, order)
+  serveData(w, r, order)
 }
 
 var _ErrCantModOrder = errors.New("Cannot modify this order")
@@ -212,62 +199,47 @@ var _ErrCantModOrder = errors.New("Cannot modify this order")
 func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
+  if err != nil { serveInternalErr(w, r); return }
   if latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
      latestOrder.Status != models.ORDER_STATUS_DENIED {
-    write.Error(w, http.StatusForbidden, _ErrCantModOrder)
+    serveErr(w, r, Forbidden, _ErrCantModOrder)
     return
   }
   refNum, err := bind.FormValue(r,models.ORDER_REF_NUM,"required,number,len=25")
-  if err != nil {
-    write.Error(w, http.StatusBadRequest, err)
-    return
-  }
+  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
   err = models.UpdateOrderRefNum(latestOrder.Id, refNum)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-  write.Msg(w, "Order updated successfully")
+  if err != nil { serveResponse(w, r, nil, InternalServerError, err); return }
+  serveMsg(w, r, "Order updated successfully")
 }
 
 func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
+  if err != nil { serveInternalErr(w, r); return }
   if latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
      latestOrder.Status != models.ORDER_STATUS_DENIED && 
      latestOrder.Status != models.ORDER_STATUS_ACCEPTED {
-    write.Error(w, http.StatusForbidden, _ErrCantModOrder)
+    serveErr(w, r, Forbidden, _ErrCantModOrder)
     return
   }
   err = models.CancelOrder(latestOrder.Id)
-  if err != nil {
-    write.Error(w, http.StatusInternalServerError, err)
-    return
-  }
-  write.Msg(w, "The order was cancelled")
+  if err != nil { serveInternalErr(w, r); return }
+  serveMsg(w, r, "The order was cancelled")
 }
 
 func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   statusStr, err := bind.FormValue(r, models.ORDER_STATUS, 
     "required,number,gte=0,lte=4",
   )
-  if err != nil { write.Error(w, http.StatusBadRequest, err); return }
+  if err != nil { serveBadRequest(w, r, err); return }
   status, _ := strconv.Atoi(statusStr)
 
   setStatus := models.OrderStatus(status)
 
   order, httpStatus, err := getOrderFromIdUrlParam(r)
-  if err != nil { write.Error(w, httpStatus, err); return }
+  if err != nil { serveErr(w, r, httpStatus, err); return }
   if order.RefNum == "" { 
-    write.Error(w, http.StatusBadRequest,errors.New("Order does not exist"))
+    serveBadRequest(w, r, errors.New("Order does not exist"))
     return
   }
 
@@ -275,21 +247,19 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   case models.ORDER_STATUS_UNREVIEWED, models.ORDER_STATUS_DENIED:
     if setStatus != models.ORDER_STATUS_ACCEPTED &&
        setStatus != models.ORDER_STATUS_DENIED {
-      write.Error(w, http.StatusBadRequest, _ErrCantModOrder)
+      serveBadRequest(w, r, _ErrCantModOrder)
       return
     }
   case models.ORDER_STATUS_ACCEPTED:
     if setStatus != models.ORDER_STATUS_FULFILLED {
-      write.Error(w, http.StatusBadRequest, _ErrCantModOrder)
+      serveBadRequest(w, r, _ErrCantModOrder)
       return
     }
-  default:
-    write.Error(w, http.StatusBadRequest, _ErrCantModOrder)
-    return
+  default: serveBadRequest(w, r, _ErrCantModOrder); return
   }
 
   err = models.UpdateOrderStatus(order.Id, setStatus)
-  if err != nil { write.Error(w, http.StatusInternalServerError,err);return}
+  if err != nil { serveInternalErr(w, r); return }
 
-  write.Msg(w, "Order status updated successfully")
+  serveMsg(w, r, "Order status updated successfully")
 }
