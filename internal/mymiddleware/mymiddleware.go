@@ -12,10 +12,14 @@ import (
 	"github.com/anhnmt/go-fingerprint"
 )
 
+const (
+  _CREDS_USERNAME = "username"
+)
+
 var (
-  _ErrAuth = errors.New("Unauthorized")
-  _ErrGetSession = errors.New("Could not retrieve session info")
-  _ErrExpired = errors.New("Session expired")
+  _ErrAuth = errors.New("Sin autorización")
+  _ErrGetSession = errors.New("No se pudo acceder a la información de sesión")
+  _ErrExpired = errors.New("La sesión expiró")
 )
 
 func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, error){
@@ -32,17 +36,17 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
   }
   if session.SessionToken == "" {
     slog.Error(_ErrGetSession.Error())
-    return models.Session{}, http.StatusInternalServerError, _ErrGetSession 
+    return models.Session{}, http.StatusNotFound, _ErrGetSession
   }
 
   if r.Method != http.MethodGet && r.Method != http.MethodHead {
     csrf := r.Header.Get("X-CSRF-Token")
     if csrf == "" {
-      slog.Error("'csrf-token' not found")
+      slog.Error("No se encontró la cookie llamada 'csrf-token'")
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
     if csrf != session.CSRFToken {
-      slog.Error("Invalid CSRF token")
+      slog.Error("Token CSRF inválido")
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
   }
@@ -55,17 +59,34 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
   return session, http.StatusOK, nil
 }
 
-
-// Called AFTER staff authentication for the '/staff' path
-func RequireAdminAuth() func(next http.Handler) http.Handler {
+func OptUsername() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      username := r.Context().Value(models.STAFF_USERNAME).(string)
-      staff, err := models.GetStaffFromUsername(username)
-      if err != nil { w.WriteHeader(controllers.InternalServerError); return }
-      if staff.Username == "" { w.WriteHeader(http.StatusBadRequest); return }
-      if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }
+      session, status, err := getSession(w, r)
+      if err != nil && status == http.StatusInternalServerError {
+        w.WriteHeader(status)
+        return
+      }
+      if session.User != "" {
+        ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)
+        next.ServeHTTP(w, r.WithContext(ctx))
+        return
+      }
       next.ServeHTTP(w, r)
+    })
+  }
+}
+
+func RequireAuth() func(next http.Handler) http.Handler {
+  return func(next http.Handler) http.Handler {
+    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+      session, status, err := getSession(w, r)
+      if err != nil {
+        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
+        w.WriteHeader(http.StatusInternalServerError)
+      }
+      ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)
+      next.ServeHTTP(w, r.WithContext(ctx))
     })
   }
 }

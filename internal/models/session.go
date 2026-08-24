@@ -35,7 +35,7 @@ const (
                       ","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES
 )
 
-var _ErrOpenSession = errors.New("Could not open a new session")
+var _ErrOpenSession = errors.New("No se pudo abrir una nueva sesión")
 
 func InsertSession(session Session, fingerprintID string) error {
   tx, err := _DB.Beginx()
@@ -70,8 +70,10 @@ func GetSessionFromID(sid string) (Session, error) {
   )
   if err != nil {
     slog.Error(err.Error())
-    if err == sql.ErrNoRows {return Session{},errors.New("Session nonexistent")}
-    return Session{}, errors.New("Could not retrieve session information")
+    if err == sql.ErrNoRows {return Session{},errors.New("La sesión no existe")}
+    return Session{}, errors.New(
+      "No se pudo acceder a la información de la sesión",
+    )
   }
   return session, nil
 }
@@ -123,7 +125,7 @@ func CloseAllSessions(users, staff bool) error {
     }
   }
   _, err := dbBeginExecAndCommit(query, time.Now().Unix())
-  if err != nil { return errors.New("Could not close all sessions") }
+  if err != nil { return errors.New("No se pudo cerrar todas las sesiones") }
   return nil
 }
 
@@ -143,7 +145,7 @@ func GetActiveSessions(params SelectParams) ([]Session, error) {
   )
   if dbSelectErr(err) != nil {
     slog.Error(err.Error())
-    return []Session{}, errors.New("Could not retrieve session list")
+    return []Session{}, errors.New("No se pudo acceder a la lista de sesiones")
   }
   return sessions, nil
 }

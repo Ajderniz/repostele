@@ -14,6 +14,7 @@ import (
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 
+	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/static"
 )
 
@@ -44,17 +45,19 @@ type _TplData struct {
 	Server   string
 	Init     bool
 	LoggedIn bool
+	IsStaff  bool
+	IsAdmin  bool
 	MainName string
 	MainData *_MainData
 	Err      string
 }
 
 var (
-	_MsgEmpty = "Nothing here yet"
-  _MsgNoResults = "No results found"
+	_MsgEmpty = "Aún no hay nada"
+  _MsgNoResults = "No se encontraron resultados"
 
-  _ErrInternal = errors.New("Something went wrong")
-	_ErrBadSearch = errors.New("Bad search criteria")
+  _ErrInternal = errors.New("Algo salió mal")
+	_ErrBadSearch = errors.New("Criterios de búsqueda inválidos")
 
 	_Tpl *tpl.Template
 
@@ -94,9 +97,25 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }
 
-	loggedIn := true
+	loggedIn := false
 	if slices.Contains(_SectionsCheckSession, section) {
 		loggedIn = checkSession(r)
+	}
+
+	isStaff := false
+	isAdmin := false
+
+	usernameAny := r.Context().Value(_CREDS_USERNAME)
+	if usernameAny != nil {
+		username := usernameAny.(string)
+
+		isStaff = false
+		staff, err := models.GetStaffFromUsername(username)
+		if err != nil { w.WriteHeader(InternalServerError); return }
+		if staff.Username != "" { isStaff = true }
+
+		isAdmin = false
+		if staff.Admin { isAdmin = true }
 	}
 
 	dataAny := r.Context().Value(_MAIN_DATA)
@@ -115,6 +134,8 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		Server: _SERVER_NAME,
 		Init: init, 
 		LoggedIn: loggedIn,
+		IsStaff: isStaff,
+		IsAdmin: isAdmin,
 		MainName: "main-"+section,
 		MainData: data,
 		Err: errStr,

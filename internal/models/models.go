@@ -16,11 +16,11 @@ const _DB_FILEPATH = "./data.db"
 var (
   _DB *sqlx.DB
 
-  _ErrInsertAcc = errors.New("Could not create account")
-  _ErrGetAccs = errors.New("Could not retrieve accout list")
-  _ErrGetAcc = errors.New("Could not retrieve accout")
-  _ErrModAcc = errors.New("Could not modify account")
-  _ErrCloseSession = errors.New("Could not close session")
+  _ErrInsertAcc = errors.New("No se pudo crear la cuenta")
+  _ErrGetAccs = errors.New("No se pudo acceder a la lista de cuentas")
+  _ErrGetAcc = errors.New("No se pudo acceder a la cuenta")
+  _ErrModAcc = errors.New("No se pudo modificar la cuenta")
+  _ErrCloseSession = errors.New("No se pudo cerrar la sesión")
 )
 
 type SortDir string
@@ -123,7 +123,7 @@ func dbSelectList(
   )
   if dbSelectErr(err) != nil {
     slog.Error(err.Error())
-    return errors.New("Selection error")
+    return errors.New("Error de selección")
   }
   return nil
 }

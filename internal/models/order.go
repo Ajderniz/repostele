@@ -49,9 +49,9 @@ const (
 )
 
 var (
-  _ErrGetOrders = errors.New("Could not retrieve order list")
-  _ErrInsertOrder = errors.New("Could not insert order")
-  _ErrUpdateOrder = errors.New("Could not modify the order")
+  _ErrGetOrders = errors.New("No se pudo acceder a la lista de órdenes")
+  _ErrInsertOrder = errors.New("No se pudo insertar la nueva orden")
+  _ErrUpdateOrder = errors.New("No se pudo modificar la orden")
 )
 
 func updateOrderField(id int, field string, v any) error {
@@ -117,7 +117,9 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
   )
   if err != nil {
     slog.Error(err.Error())
-    return nil, errors.New("Could not retrieve item list from order")
+    return nil, errors.New(
+      "No se pudo acceder a la lista de ítemes de la orden",
+    )
   }
 
   items := make(ItemIdQuant, len(ois))
@@ -134,7 +136,9 @@ func GetOrderFromID(id int) (Order, error) {
     "WHERE "+ORDER_ID+" = ?",
     id,
   )
-  if err != nil{return Order{},errors.New("Could not retrieve requested order")}
+  if err != nil{
+    return Order{},errors.New("No se pudo acceder la orden consultada")
+  }
 
   order.Items, err = getItemsFromOrderID(id)
   if err != nil { return Order{}, err }
@@ -151,7 +155,9 @@ func GetAllOrdersFromUsername(username string) ([]Order, error) {
     "ORDER BY "+_ORDER_TIME+" DESC",
     username,
   )
-  if err != nil { return []Order{},errors.New("Could not retrieve order list") }
+  if err != nil {
+    return []Order{},errors.New("No se pudo acceder a la lista de órdenes")
+  }
   return orders, nil
 }
 
@@ -165,7 +171,9 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
     "LIMIT 1",
     username,
   )
-  if err != nil { return Order{},errors.New("Could not retrieve latest order") }
+  if err != nil {
+    return Order{},errors.New("No se pudo acceder a la última orden")
+  }
   return order, nil
 }
 
@@ -177,7 +185,9 @@ func GetLatestOrderID() (int, error) {
     "ORDER BY "+ORDER_ID+" DESC "+
     "LIMIT 1",
   )
-  if err != nil { return -1, errors.New("Could not retrieve latest order ID") }
+  if err != nil {
+    return -1, errors.New("No se pudo acceder al ID de la última orden")
+  }
   return id, nil
 }
 

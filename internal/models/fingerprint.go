@@ -33,7 +33,7 @@ func InsertFingerprint(fg Fingerprint) (error) {
 			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+")",
 		&fg,
 	)
-	if err != nil { return errors.New("Could not save fingerprint") }
+	if err != nil { return errors.New("No se pudo guardar la huella") }
 	return nil
 }
 
@@ -48,13 +48,13 @@ func GetFingerPrintFromID(id string) (Fingerprint, error) {
 		id, time.Now().Unix(),
 	)
 	if err != nil {
-		return Fingerprint{}, errors.New("Could not retrieve fingerprint")
+		return Fingerprint{}, errors.New("No se pudo acceder a la huella")
 	}
 	return fg, nil
 }
 
 func UpdateFingerprintField(id, field string, v any) error {
 	_, err := dbUpdateTableField(_FINGERPRINTS, field, v, FINGERPRINT_ID, id)
-	if err != nil { return errors.New("Could not update fingerprint") }
+	if err != nil { return errors.New("No se pudo actualizar la huella") }
 	return nil
 }

@@ -66,8 +66,8 @@ type _OrderRequest struct {
   Items  models.ItemIdQuant              `json:"items"   validate:"min=1,max=16,dive,gte=0,lte=4"`
 }
 
-var _ErrNoItems = errors.New("Not enough items ordered")
-var _ErrOrderIDMax = errors.New("Order ID max exceeded")
+var _ErrNoItems = errors.New("No se ordenaron suficientes ítemes")
+var _ErrOrderIDMax = errors.New("Se excedió el límite de órdenes diarias")
 
 func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
@@ -75,7 +75,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErr(w, r); return }
   if latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, TooManyRequests, errors.New("Only one order per user"))
+    serveErr(w, r, TooManyRequests, errors.New("Se permite solo una orden pendiente por usuario"))
     return
   }
 
@@ -94,7 +94,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
       continue
     }
     if item.Name == "" {
-      slog.Error("Invalid item requested")
+      slog.Error("Ítem inválido")
       continue
     }
     total += item.Price * float32(quant)
@@ -132,7 +132,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   }
 
   serveResponse(w, r, &_MainData{
-    Msg: "Order posted. Waiting for approval",
+    Msg: "Orden enviada. Esperando aprobación.",
     Data: orderId,
     }, Created, nil,
   )
@@ -181,7 +181,7 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   id, err := strconv.Atoi(idStr);
   if err != nil {
     slog.Error(err.Error())
-    serveBadRequest(w, r, errors.New("Invalid order ID"))
+    serveBadRequest(w, r, errors.New("ID de orden inválido"))
   }
 
   order, err := models.GetOrderFromID(id)
@@ -194,7 +194,7 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   serveData(w, r, order)
 }
 
-var _ErrCantModOrder = errors.New("Cannot modify this order")
+var _ErrCantModOrder = errors.New("No se puede modificar esta orden")
 
 func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
@@ -209,7 +209,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
   err = models.UpdateOrderRefNum(latestOrder.Id, refNum)
   if err != nil { serveResponse(w, r, nil, InternalServerError, err); return }
-  serveMsg(w, r, "Order updated successfully")
+  serveMsg(w, r, "Se actualizó la orden")
 }
 
 func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
@@ -224,7 +224,7 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   }
   err = models.CancelOrder(latestOrder.Id)
   if err != nil { serveInternalErr(w, r); return }
-  serveMsg(w, r, "The order was cancelled")
+  serveMsg(w, r, "Se canceló la orden")
 }
 
 func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
@@ -239,7 +239,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   order, httpStatus, err := getOrderFromIdUrlParam(r)
   if err != nil { serveErr(w, r, httpStatus, err); return }
   if order.RefNum == "" { 
-    serveBadRequest(w, r, errors.New("Order does not exist"))
+    serveBadRequest(w, r, errors.New("La orden no existe"))
     return
   }
 
@@ -261,5 +261,5 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   err = models.UpdateOrderStatus(order.Id, setStatus)
   if err != nil { serveInternalErr(w, r); return }
 
-  serveMsg(w, r, "Order status updated successfully")
+  serveMsg(w, r, "Se actualizó el estado de la orden")
 }

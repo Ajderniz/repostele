@@ -54,7 +54,7 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErr(w, r); return }
 
   serveResponse(
-    w, r, &_MainData{Msg: "Item posted succesfully"}, Created, nil,
+    w, r, &_MainData{Msg: "Se creó el item"}, Created, nil,
   )
 }
 
@@ -100,5 +100,5 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  serveMsg(w, r, "Item updated successfully")
+  serveMsg(w, r, "Se actualizó el ítem")
 }

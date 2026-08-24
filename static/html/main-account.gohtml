@@ -1,0 +1,19 @@
+{{define "main-account"}}
+
+<article>
+  <h1>Mi cuenta</h1>
+  <ul>
+    <li>
+      <button hx-get="htmx/form-change-password" hx-target="#account-content" hx-swap="innerHTML">
+        Cambiar contraseña
+    </button>
+    </li>
+    <li>
+      <button hx-get="htmx/form-deactivate-account" hx-target="#account-content" hx-swap="innerHTML">
+        Desactivar cuenta
+      </button>
+    </li>
+  </ul>
+</article>
+
+{{end}}

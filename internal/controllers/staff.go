@@ -56,7 +56,7 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
   key, err := bind.FormValue(r, "key", "required,number,len=16")
   if err != nil { serveBadRequest(w, r, err); return }
   if key != _TEST_KEY {
-    serveErr(w, r, Unauthorized, errors.New("Bad key"))
+    serveErr(w, r, Unauthorized, errors.New("Clave de activación inválida"))
     return
   }
 
@@ -76,7 +76,10 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveErr(w, r, status, err); return }
 
   adminStr, err := bind.FormValue(r, "admin", "required,boolean")
-  if err != nil {serveBadRequest(w, r,errors.New("'admin' tag invalid"));return}
+  if err != nil {
+    serveBadRequest(w, r,errors.New("Parámetro 'admin' inválido"))
+    return
+  }
   staff.Admin, _ = strconv.ParseBool(adminStr)
 
   err = models.InsertStaffAccount(staff)
@@ -125,7 +128,7 @@ func deactivateStaffAccount(
   if err != nil { return InternalServerError, err }
   if len(admins) <= 1 { 
     return Forbidden,
-           errors.New("At least one admin account is required to be active")
+           errors.New("Es necesaria al menos una cuenta de administrador activa")
   }
 
   sid, err := r.Cookie(SESSION_ID)

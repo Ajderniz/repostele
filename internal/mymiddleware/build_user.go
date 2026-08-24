@@ -3,32 +3,17 @@
 package mymiddleware
 
 import (
-	"context"
 	"log/slog"
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
 )
 
-func RequireAuth() func(next http.Handler) http.Handler {
-  return func(next http.Handler) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      session, status, err := getSession(w, r)
-      if err != nil {
-        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
-        w.WriteHeader(http.StatusInternalServerError)
-      }
-      ctx := context.WithValue(r.Context(), models.USER_USERNAME, session.User)
-      next.ServeHTTP(w, r.WithContext(ctx))
-    })
-  }
-}
-
 func CheckInit() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       if !models.CheckInit() {
-        slog.Error("System not initialized")
+        slog.Error("El sistema no ha sido configurado")
         w.WriteHeader(http.StatusForbidden)
         return
       }

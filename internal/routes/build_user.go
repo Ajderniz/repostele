@@ -18,6 +18,7 @@ func RegisterRoutes(r *chi.Mux) error {
 
   r.Route("/menu", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
+    r.Use(mymiddleware.OptUsername())
     r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
@@ -25,11 +26,13 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/register", func(r chi.Router){
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.GetFingerprint())
+    r.Use(mymiddleware.OptUsername())
     r.Post("/", controllers.SelfRegisterAccount)
   })
   r.Route("/login", func(r chi.Router){
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.GetFingerprint())
+    r.Use(mymiddleware.OptUsername())
     r.Post("/",    controllers.Login)
   })
   r.Route("/logout", func(r chi.Router) {

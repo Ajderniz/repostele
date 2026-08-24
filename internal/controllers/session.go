@@ -102,7 +102,7 @@ func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   err = models.CloseSessionForUsername(username)
   if err != nil { serveInternalErr(w, r); return }
 
-  serveMsg(w, r, "Session closed successfully")
+  serveMsg(w, r, "La sesión fue cerrada")
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
@@ -117,7 +117,7 @@ func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
     err = models.CloseAllSessions(users, staff)
     if err != nil { serveInternalErr(w, r); return }
   }
-  serveMsg(w, r, "All requested sessions closed successfully")
+  serveMsg(w, r, "Se cerraron todas las sesiones deseadas")
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {

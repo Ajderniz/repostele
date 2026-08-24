@@ -3,22 +3,21 @@
 package mymiddleware
 
 import (
-	"context"
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
 )
 
-func RequireAuth() func(next http.Handler) http.Handler {
+// Called AFTER staff authentication for the '/staff' path
+func RequireAdminAuth() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      session, status, err := getSession(w, r)
-      if err != nil {
-        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
-        w.WriteHeader(http.StatusInternalServerError)
-      }
-      ctx := context.WithValue(r.Context(), models.STAFF_USERNAME, session.User)
-      next.ServeHTTP(w, r.WithContext(ctx))
+      username := r.Context().Value(models.STAFF_USERNAME).(string)
+      staff, err := models.GetStaffFromUsername(username)
+      if err != nil { w.WriteHeader(http.StatusInternalServerError); return }
+      if staff.Username == "" { w.WriteHeader(http.StatusBadRequest); return }
+      if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }
+      next.ServeHTTP(w, r)
     })
   }
 }

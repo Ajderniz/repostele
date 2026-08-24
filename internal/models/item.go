@@ -41,14 +41,16 @@ func InsertItem(item Item) error {
       _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
     &item,
   )
-  if err != nil { return errors.New("Could not post new item") }
+  if err != nil { return errors.New("No se pudo publicar el nuevo ítem") }
   return nil
 }
 
 func GetItems(params SelectParams) ([]Item, error) {
   items := []Item{}
   err := dbSelectList(&items, "*", _ITEMS, params, _ItemSortFields)
-  if err != nil { return []Item{}, errors.New("Could not retrieve item list") }
+  if err != nil {
+    return []Item{}, errors.New("No se pudo acceder a la lista de ítemes")
+  }
   return items, nil
 }
 
@@ -60,7 +62,7 @@ func GetItemFromID(id int) (Item, error) {
     "WHERE "+ITEM_ID+" = ?",
     id,
   )
-  if err != nil { return Item{}, errors.New("Could not retrieve item") }
+  if err != nil { return Item{}, errors.New("No se pudo acceder al ítem") }
   return item, nil
 }
 
@@ -108,7 +110,7 @@ func UpdateItem(id int, update ItemUpdate) error {
   )
   if err != nil {
     slog.Error(err.Error())
-    return errors.New("Could not update item")
+    return errors.New("No se pudo actualizar el ítem")
   }
 
   return nil

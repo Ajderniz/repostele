@@ -22,6 +22,7 @@ func RegisterRoutes(r *chi.Mux) error {
 
   r.Route("/menu", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
+    r.Use(mymiddleware.OptUsername())
     r.Get("/",          controllers.GetItems)
     r.Get("/item/{id}", controllers.GetItemFromID)
   })
@@ -29,6 +30,7 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/login", func(r chi.Router){
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.GetFingerprint())
+    r.Use(mymiddleware.OptUsername())
     r.Get( "/", controllers.ServeMainTemplate)
     r.Post("/", controllers.Login)
   })
@@ -41,6 +43,7 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/account", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireAuth())
+    r.Get(  "/",           controllers.ServeMainTemplate)
     r.Patch("/deactivate", controllers.SelfDeactivateAccount)
     r.Patch("/password",   controllers.SelfUpdatePassword)
   })

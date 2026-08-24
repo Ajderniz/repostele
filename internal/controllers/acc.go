@@ -13,25 +13,25 @@ const (
 )
 
 var (
-	_ErrBadCreds = errors.New("Bad credentials")
-	_ErrAlreadyInit  = errors.New("Already initialized")
-	_ErrSameUsername = errors.New("Username already exists")
-	_ErrSamePassword = errors.New("Password is the same")
-  _ErrGetAcc = errors.New("Could not retrieve account information")
+	_ErrBadCreds = errors.New("Credenciales inválidos")
+	_ErrAlreadyInit  = errors.New("El sistema ya está configurado")
+	_ErrSameUsername = errors.New("El usuario ya existe")
+	_ErrSamePassword = errors.New("La contraseña es idéntica a la anterior")
+  _ErrGetAcc = errors.New("No se pudo acceder a la información de la cuenta")
 
-	_MsgAccNotFound = "Account not found"
-  _MsgAccCreated = "Account registered successfully"
-	_MsgLoggedIn = "Logged in successfully"
-	_MsgLoggedOut = "Logged out successfully"
-	_MsgAccDeactivated = "Account deactivated successfully"
-	_MsgUsernameChanged = "Username changed successfully"
-	_MsgPasswordChanged = "Password changed successfully"
+	_MsgAccNotFound = "Cuenta no encontrada"
+  _MsgAccCreated = "Registro exitoso"
+	_MsgLoggedIn = "Inicio de sesión exitoso"
+	_MsgLoggedOut = "Cierre de sesión exitoso"
+	_MsgAccDeactivated = "La cuenta fue desactivada"
+	_MsgUsernameChanged = "Se cambió el nombre de usuario"
+	_MsgPasswordChanged = "Se cambio la contraseña"
 )
 
 func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Fingerprint, err error) {
   fp = r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
   if _MAX_FAILED_LOGINS <= fp.FailedLogins {
-    err = errors.New("Max login attempts reached")
+    err = errors.New("Se alcanzó el límite de intentos de inicio de sesión")
   }
   return 
 }

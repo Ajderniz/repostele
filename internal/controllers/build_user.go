@@ -29,7 +29,7 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   fp := r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
   if _MAX_REG_ACCS <= fp.AccsCreated {
-    serveErr(w, r, Forbidden, errors.New("Account creation limit reached"))
+    serveErr(w, r, Forbidden, errors.New("Se alcanzó el límite de creación de cuentas"))
     return
   }
 
@@ -103,7 +103,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   if latestOrder.RefNum != "" &&
      latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, Conflict, errors.New("An order is pending"))
+    serveErr(w, r, Conflict, errors.New("Ya hay una orden pendiente"))
     return
   }
 
