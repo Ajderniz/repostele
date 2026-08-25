@@ -419,13 +419,33 @@ svg {
 .hx-container {
   position: relative;
   width: 100%;
-  padding: 1.1rem 2.6rem 1rem 1rem;
+  padding: 0 1rem 1rem;
   border: $border solid var(--rule);
   overflow-x: auto;
 }
 
 .hx-container > * + * {
   margin-top: 0.65rem;
+}
+
+.hx-container > .button-clear + * {
+  margin-top: 0;
+}
+
+.hx-container > .button-clear + .panel-title {
+  min-height: 2.1rem;
+  padding-right: 2.3rem;
+  display: flex;
+  align-items: center;
+}
+
+.hx-container > .button-clear + .page-form {
+  padding-top: 0.55rem;
+}
+
+.hx-container > .button-clear + .page-form .form-table tr:first-child th,
+.hx-container > .button-clear + .page-form .form-table tr:first-child td {
+  padding-right: 1.35rem;
 }
 
 .button-clear {
@@ -624,7 +644,15 @@ svg {
 }
 
 .menu-item .hx-container {
-  padding: 0.7rem 2.2rem 0.7rem 0.7rem;
+  padding: 0 0.7rem 0.7rem;
+}
+
+.menu-item .hx-container > .button-clear + .page-form .form-table tr:first-child th {
+  padding-right: 1.7rem;
+}
+
+.menu-item .hx-container > .button-clear + .page-form .form-table tr:first-child td {
+  padding-right: 0;
 }
 
 .menu-item .field-area {
@@ -694,6 +722,14 @@ svg {
     padding: 0.7rem 0 0.25rem;
     white-space: normal;
     border-top: 0;
+  }
+
+  .hx-container > .button-clear + .page-form .form-table tr:first-child th {
+    padding-right: 1.7rem;
+  }
+
+  .hx-container > .button-clear + .page-form .form-table tr:first-child td {
+    padding-right: 0;
   }
 
   .form-table td {
