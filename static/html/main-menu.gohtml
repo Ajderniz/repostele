@@ -2,9 +2,18 @@
 
 <article class="page">
   <h1 class="page-title">Menú</h1>
+  {{$isAdmin := .IsAdmin}}
+  {{$isStaff := .IsStaff}}
+  {{if $isStaff}}
+    <button
+    class="btn btn-block"
+    hx-get="htmx/form-create-item"
+    hx-target="#menu-new-item"
+    hx-swap="innerHTML"
+    >Crear nuevo item</button>
+    <div id="menu-new-item" class="hx-slot"></div>
+  {{end}}
   <div id="menu-item-list">
-    {{$isAdmin := .IsAdmin}}
-    {{$isStaff := .IsStaff}}
     {{with .Data}}
       {{range .}}
         {{if or .Available $isAdmin}}
