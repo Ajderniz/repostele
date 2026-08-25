@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+  "log/slog"
 	"strconv"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 )
 
 const (
-  _ITEM_ID = "id"
   _MAX_UPLOAD_MEM = 10 << 20 // 10 MiB, incl. non-file form fields
 )
 
@@ -83,20 +83,46 @@ func GetItemFromID(w http.ResponseWriter, r *http.Request) {
   serveData(w, r, item)
 }
 
+func GetItemEditForm(w http.ResponseWriter, r *http.Request) {
+  idStr := chi.URLParam(r, models.ITEM_ID)
+  id, err := strconv.Atoi(idStr)
+  if err != nil { serveBadRequestHX(w, "ID inválido"); return }
+
+  item, err := models.GetItemFromID(id)
+  if err != nil { serveInternalErrHX(w); return }
+  if item.Name == "" { serveBadRequestHX(w, "Ítem no encontrado"); return }
+
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  if err := _Tpl.ExecuteTemplate(w, "form-edit-item", item); err != nil {
+    slog.Error(err.Error())
+    serveInternalErrHX(w)
+  }
+}
+
 func UpdateItem(w http.ResponseWriter, r *http.Request) {
-  idStr, err := bind.FormValue(r, _ITEM_ID, "required,number")
-  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
-  id, _ := strconv.Atoi(idStr)
+  idStr := chi.URLParam(r, models.ITEM_ID)
+  id, err := strconv.Atoi(idStr)
+  if err != nil { serveBadRequestHX(w, "ID inválido"); return }
 
-  update := models.ItemUpdate{}
-  err = bind.JSON(r, &update)
-  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
-
-  err = models.UpdateItem(id, update)
-  if err != nil {
-    serveResponse(w, r, nil, InternalServerError, err)
-    return
+  update := models.ItemUpdate{
+    Name: r.FormValue("name"),
+    Desc: r.FormValue("desc"),
   }
 
-  serveMsg(w, r, "Se actualizó el ítem")
+  if priceStr := r.FormValue("price"); priceStr != "" {
+    price, err := strconv.ParseFloat(priceStr, 32)
+    if err != nil { serveBadRequestHX(w, "Precio inválido"); return }
+    p := float32(price)
+    update.Price = &p
+  }
+
+  if availStr := r.FormValue("available"); availStr != "" {
+    avail := availStr == "true"
+    update.Available = &avail
+  }
+
+  err = models.UpdateItem(id, update)
+  if err != nil { serveInternalErrHX(w); return }
+
+  serveResponseHX(w, "Se actualizó el ítem", OK)
 }

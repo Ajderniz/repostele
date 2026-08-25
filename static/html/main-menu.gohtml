@@ -3,16 +3,23 @@
 <article>
   <h1>Menú</h1>
   <div id="menu-item-list">
+    {{$isAdmin := .IsAdmin}}
     {{with .Data}}
       {{range .}}
-        {{if .Available}}
-        <div class="menu-item">
-          <h3>{{.Name}}</h3>
+        {{if or .Available $isAdmin}}
+        <div class="menu-item {{if not .Available}}unavailable{{end}}">
+          <h3>{{.Name}} {{if not .Available}}(deshabilitado){{end}}</h3>
           <div><span>₡{{.Price}}</span></div>
           {{if .ImgPath}}
           <img src="{{.ImgPath}}" alt="{{.Name}}">
           {{end}}
           <p>{{.Desc}}</p>
+          <button
+          hx-get="/dashboard/admin/menu/{{.Id}}/edit"
+          hx-target="#item-edit-{{.Id}}"
+          hx-swap="innerHTML"
+          >Editar</button>
+          <div id="item-edit-{{.Id}}"></div>
         </div>
         {{end}}
       {{end}}

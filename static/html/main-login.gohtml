@@ -1,7 +1,7 @@
 {{define "main-login"}}
 
-{{with .}}
-  {{template "div-msg" .Msg}}
+{{with .Msg}}
+  {{template "div-msg" .}}
 {{else}}
   <form action="/login" id="login-form" method="post">
     <table>

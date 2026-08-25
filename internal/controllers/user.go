@@ -41,15 +41,21 @@ func deactivateUserAccount(
   w http.ResponseWriter,
   r *http.Request,
   username string,
+  self bool,
 ) (int, error) {
 
-  sid, err := r.Cookie(SESSION_ID)
-  if err != nil { return BadRequest, err }
+  if self {
+    sid, err := r.Cookie(SESSION_ID)
+    if err != nil { return BadRequest, err }
+    err = closeSession(w, sid.Value)
+    if err != nil { return InternalServerError, err }
+  } else {
+    if err := models.CloseSessionForUsername(username); err != nil {
+      return InternalServerError, err
+    }
+  }
 
-  err = closeSession(w, sid.Value)
-  if err != nil { return InternalServerError, err }
-
-  err = models.UpdateUserField(username, models.USER_ACTIVE, false)
+  err := models.UpdateUserField(username, models.USER_ACTIVE, false)
   if err != nil { return InternalServerError, err }
 
   return OK, nil
@@ -59,7 +65,7 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  status, err := deactivateUserAccount(w, r, username)
+  status, err := deactivateUserAccount(w, r, username, false)
   if err != nil { serveResponseHX(w, err.Error(), status); return }
 
   serveResponseHX(w,_MsgAccDeactivated, OK)
@@ -73,8 +79,7 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
   users, err := models.GetUsers(params)
   if err != nil { serveInternalErr(w, r); return }
 
-  if len(users) <= 0 { serveNoResults(w, r); return }
-  serveData(w, r, users)
+  serveDataHX(w, r, users, "list-users")
 }
 
 func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {

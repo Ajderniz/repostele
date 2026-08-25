@@ -31,7 +31,6 @@ func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
   fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
   if err != nil { return models.Staff{}, BadRequest, err }
 
-
   staff := models.Staff{}
   staff.Username = username
   staff.PassHash, err = pass.HashPassword(password1)
@@ -122,20 +121,32 @@ func deactivateStaffAccount(
   w http.ResponseWriter,
   r *http.Request,
   username string,
+  self bool,
 ) (int, error) {
-  
-  admins, err := models.GetStaffAdmins()
+
+  target, err := models.GetStaffFromUsername(username)
   if err != nil { return InternalServerError, err }
-  if len(admins) <= 1 { 
-    return Forbidden,
-           errors.New("Es necesaria al menos una cuenta de administrador activa")
+
+  if target.Admin {
+    admins, err := models.GetStaffAdmins()
+    if err != nil { return InternalServerError, err }
+    if len(admins) <= 1 {
+      return Forbidden, errors.New(
+        "Es necesaria al menos una cuenta de administrador activa",
+      )
+    }
   }
 
-  sid, err := r.Cookie(SESSION_ID)
-  if err != nil { return BadRequest, err }
-
-  err = closeSession(w, sid.Value)
-  if err != nil { return InternalServerError, err }
+  if self {
+    sid, err := r.Cookie(SESSION_ID)
+    if err != nil { return BadRequest, err }
+    err = closeSession(w, sid.Value)
+    if err != nil { return InternalServerError, err }
+  } else {
+    if err := models.CloseSessionForUsername(username); err != nil {
+      return InternalServerError, err
+    }
+  }
 
   err = models.UpdateStaffField(username, models.STAFF_ACTIVE, false)
   if err != nil { return InternalServerError, err }
@@ -147,7 +158,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  status, err := deactivateStaffAccount(w, r, username)
+  status, err := deactivateStaffAccount(w, r, username, false)
   if err != nil { serveErr(w, r, status, err); return }
 
   serveMsg(w, r, _MsgAccDeactivated)
@@ -164,7 +175,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   err = pass.CheckPasswordHash(password, staff.PassHash)
   if err != nil { serveErr(w, r, Unauthorized, err); return }
 
-  status, err := deactivateStaffAccount(w, r, username)
+  status, err := deactivateStaffAccount(w, r, username, true)
   if err != nil { serveErr(w, r, status, err); return }
 
   serveMsg(w, r, _MsgAccDeactivated)

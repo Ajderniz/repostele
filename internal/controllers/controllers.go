@@ -36,8 +36,9 @@ const (
 )
 
 type _MainData struct {
-	Data any
-	Msg  string
+	Data    any
+	Msg     string
+	IsAdmin bool
 }
 
 type _TplData struct {
@@ -134,7 +135,12 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 
 	dataAny := r.Context().Value(_MAIN_DATA)
 	var data *_MainData
-	if dataAny != nil { data = dataAny.(*_MainData) }
+	if dataAny != nil {
+		data = dataAny.(*_MainData)
+	} else {
+		data = &_MainData{}
+	}
+	data.IsAdmin = isAdmin
 
 	errAny := r.Context().Value(_ERR)
 	var errStr string
@@ -213,9 +219,7 @@ func serveInternalErrHX(w http.ResponseWriter) {
 
 // serveDataHX renders tplName directly (a bare partial, no page chrome) when
 // the request came from htmx, and falls back to the normal full-page
-// serveData otherwise. Used by dashboard list views, which are only ever
-// reached by an hx-get swapping into #dashboard-content — a full page
-// (doctype, head, body) injected as innerHTML there would be broken markup.
+// serveData otherwise.
 func serveDataHX(w http.ResponseWriter, r *http.Request, data any, tplName string) {
 	if r.Header.Get("HX-Request") == "true" {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")

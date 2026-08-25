@@ -85,8 +85,9 @@ func RegisterRoutes(r *chi.Mux) error {
       })
 
       r.Route("/menu", func(r chi.Router) {
-        r.Post( "/",     controllers.PostItem)
-        r.Patch("/{id}", controllers.UpdateItem)
+        r.Post( "/",          controllers.PostItem)
+        r.Get(  "/{id}/edit", controllers.GetItemEditForm)
+        r.Patch("/{id}",      controllers.UpdateItem)
       })
     })
   })

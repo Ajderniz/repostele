@@ -96,18 +96,18 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil || user.Username == "" { serveInternalErr(w, r); return }
 
   err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil { serveErr(w, r, Unauthorized, err) }
+  if err != nil { serveErr(w, r, Unauthorized, err); return }
 
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErr(w, r); return }
   if latestOrder.RefNum != "" &&
      latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, Conflict, errors.New("Ya hay una orden pendiente"))
+    serveErr(w, r, Conflict, errors.New("Hay una orden pendiente"))
     return
   }
 
-  status, err := deactivateUserAccount(w, r, user.Username)
+  status, err := deactivateUserAccount(w, r, user.Username, true)
   if err != nil { serveErr(w, r, status, err); return }
 
   serveMsg(w, r, _MsgAccDeactivated)

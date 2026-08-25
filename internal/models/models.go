@@ -38,7 +38,7 @@ type SelectParams struct {
   Dir   SortDir `schema:"dir,deafult:asc"`
 }
 
-func (params SelectParams) Fix(fields _SortFields) {
+func (params *SelectParams) Fix(fields _SortFields) {
   if params.Start < 0 { params.Start = 0 }
   if params.Limit <= 0 { params.Limit = 99 }
   if !slices.Contains(fields, params.Sort) { params.Sort = fields[0] }

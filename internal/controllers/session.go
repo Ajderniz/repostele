@@ -97,27 +97,27 @@ func closeSession(w http.ResponseWriter, sid string) error {
 
 func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   username, err := bind.URLParam(r, _CREDS_USERNAME, "required")
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   err = models.CloseSessionForUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
 
-  serveMsg(w, r, "La sesión fue cerrada")
+  serveResponseHX(w, "La sesión fue cerrada", OK)
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
   userStr, err := bind.FormValue(r, "users", "boolean")
-  staffStr, err  := bind.FormValue(r, "staff", "boolean")
-  if err != nil { serveBadRequest(w, r, err); return }
+  staffStr, err := bind.FormValue(r, "staff", "boolean")
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   users, _ := strconv.ParseBool(userStr)
   staff, _ := strconv.ParseBool(staffStr)
 
   if users || staff {
     err = models.CloseAllSessions(users, staff)
-    if err != nil { serveInternalErr(w, r); return }
+    if err != nil { serveInternalErrHX(w); return }
   }
-  serveMsg(w, r, "Se cerraron todas las sesiones deseadas")
+  serveResponseHX(w, "Se cerraron todas las sesiones deseadas", OK)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -137,5 +137,5 @@ func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErr(w, r); return }
 
   if len(sessions) <= 0 { serveNoResults(w, r); return }
-  serveData(w, r, sessions)
+  serveDataHX(w, r, sessions, "list-sessions")
 }
