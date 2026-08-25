@@ -39,6 +39,7 @@ const (
 type _MainData struct {
 	Data    any
 	Msg     string
+	IsStaff bool
 	IsAdmin bool
 }
 
@@ -147,6 +148,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	} else {
 		data = &_MainData{}
 	}
+	data.IsStaff = isStaff
 	data.IsAdmin = isAdmin
 
 	errAny := r.Context().Value(_ERR)

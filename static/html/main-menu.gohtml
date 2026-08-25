@@ -4,6 +4,7 @@
   <h1>Menú</h1>
   <div id="menu-item-list">
     {{$isAdmin := .IsAdmin}}
+    {{$isStaff := .IsStaff}}
     {{with .Data}}
       {{range .}}
         {{if or .Available $isAdmin}}
@@ -14,12 +15,14 @@
           <img src="{{.ImgPath}}" alt="{{.Name}}">
           {{end}}
           <p>{{.Desc}}</p>
+          {{if $isStaff}}
           <button
           hx-get="/dashboard/admin/menu/{{.Id}}/edit"
           hx-target="#item-edit-{{.Id}}"
           hx-swap="innerHTML"
           >Editar</button>
           <div id="item-edit-{{.Id}}"></div>
+          {{end}}
         </div>
         {{end}}
       {{end}}
