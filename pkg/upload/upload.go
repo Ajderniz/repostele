@@ -22,9 +22,11 @@ var _AllowedImgExt = map[string]string{
 }
 
 var (
-	ErrTooLarge  = errors.New("Image is too large (max 5MB)")
-	ErrBadType   = errors.New("File is not a supported image type (jpg, png, gif, webp)")
-	_ErrSave     = errors.New("Could not save image")
+	ErrTooLarge  = errors.New("La imagen es muy grande (máx. 5MB)")
+	ErrBadType   = errors.New(
+		"El archivo no es un formato de imagen aceptable (jpg, png, gif, webp)",
+	)
+	_ErrSave     = errors.New("No se pudo guardar la imagen")
 )
 
 // SaveImage reads a multipart file, validates it is actually an image
@@ -35,24 +37,17 @@ var (
 func SaveImage(file multipart.File, header *multipart.FileHeader, dir string) (string, error) {
 	defer file.Close()
 
-	if header.Size > _MAX_IMG_BYTES {
-		return "", ErrTooLarge
-	}
+	if header.Size > _MAX_IMG_BYTES { return "", ErrTooLarge }
 
 	// Sniff real content type from the first 512 bytes; never trust
 	// header.Header.Get("Content-Type") alone, it's client-controlled.
 	sniff := make([]byte, 512)
 	n, err := file.Read(sniff)
-	if err != nil && err != io.EOF {
-		slog.Error(err.Error())
-		return "", _ErrSave
-	}
+	if err != nil && err != io.EOF { slog.Error(err.Error()); return "", _ErrSave}
 	contentType := http.DetectContentType(sniff[:n])
 
 	ext, ok := _AllowedImgExt[contentType]
-	if !ok {
-		return "", ErrBadType
-	}
+	if !ok { return "", ErrBadType }
 
 	if _, err := file.Seek(0, io.SeekStart); err != nil {
 		slog.Error(err.Error())
@@ -65,9 +60,7 @@ func SaveImage(file multipart.File, header *multipart.FileHeader, dir string) (s
 	}
 
 	name, err := pass.GenerateToken(16)
-	if err != nil {
-		return "", _ErrSave
-	}
+	if err != nil { return "", _ErrSave }
 	// GenerateToken uses base64.URLEncoding, which can still contain
 	// '/' and '=' — neither is filename-safe. Sanitize before use.
 	name = sanitizeFilename(name)
