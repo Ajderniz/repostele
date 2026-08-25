@@ -504,6 +504,40 @@ article ul > li > [id^=db-] > table span {
   margin-top: 0.25rem;
 }
 
+.order-list .order-row td {
+  border-bottom: 0;
+  padding-bottom: 0.2rem;
+}
+
+.order-list .order-ref-row td {
+  white-space: normal;
+  padding: 0.15rem 0 0.85rem;
+  border-bottom: 2px solid var(--rule);
+}
+
+.order-ref-label {
+  display: block;
+  font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.order-ref-num {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  font-size: clamp(0.95rem, 3.4vw, 1.2rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.08em;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+
 #menu-item-list {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
