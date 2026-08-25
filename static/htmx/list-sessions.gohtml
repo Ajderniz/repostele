@@ -10,8 +10,8 @@
     <tr id="session-{{.User}}">
       <td>{{.User}}</td>
       <td>{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</td>
-      <td>{{.Starts}}</td>
-      <td>{{.Expires}}</td>
+      <td>{{UnixToTime .Starts}}</td>
+      <td>{{UnixToTime .Expires}}</td>
       <td>
         <button
         hx-patch="/dashboard/admin/sessions/close/{{.User}}"

@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"golang.org/x/text/cases"
@@ -82,11 +83,17 @@ func orderStatusName(s models.OrderStatus) string {
 	}
 }
 
+func unixToTime(unix int64) string {
+	t := time.Unix(unix, 0)
+	return t.Format("0102-030405")
+}
+
 func InitTemplate() {
 	_Tpl = tpl.New("base")
 	_Tpl.Funcs(tpl.FuncMap{
 		"CallTemplate": callTemplate,
 		"OrderStatusName": orderStatusName,
+		"UnixToTime": unixToTime,
 	})
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))

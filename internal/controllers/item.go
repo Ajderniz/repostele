@@ -67,6 +67,9 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   if err != nil{ serveInternalErr(w, r); return }
   if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgEmpty }
 
+  // TODO: somehow serve _MsgIsEmpty if all items in list are not .Available
+  // Admins do get to see the list, so don't show a 'no results' page.
+
   serveResponse(w, r, &data, OK, nil)
 }
 

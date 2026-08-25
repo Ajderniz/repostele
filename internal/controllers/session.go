@@ -19,6 +19,7 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
+// TODO: actually check if user is logged in, not just if they have a 'session-id' cookie
 func checkSession(r *http.Request) bool {
   _, err := r.Cookie(SESSION_ID)
   return err == nil
