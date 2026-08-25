@@ -144,7 +144,7 @@ header::before {
   flex: 0 0 auto;
   width: 0.9em;
   height: 0.9em;
-  background: url("/favicon.ico") 47% 47%/170% no-repeat;
+  background: url("/repostele.png") 50% 50%/150% no-repeat;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   filter: var(--mark-filter);
