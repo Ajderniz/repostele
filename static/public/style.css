@@ -52,12 +52,16 @@ html {
 }
 
 body {
+  width: 100%;
+  max-width: 800px;
   min-height: 100dvh;
+  margin-inline: auto;
   display: flex;
   flex-direction: column;
   background: var(--bg);
   color: var(--fg);
   font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  border: 2px solid var(--rule);
 }
 
 img,
@@ -81,7 +85,7 @@ svg {
   display: flex;
   align-items: center;
   gap: 0.55em;
-  padding: 0.55rem clamp(1rem, 3vw, 2rem);
+  padding: 0.55rem 1rem;
   font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
   font-size: clamp(1.6rem, 6vw, 4.5rem);
   font-weight: 800;
@@ -143,7 +147,7 @@ svg {
 }
 .site-footer {
   margin-top: auto;
-  padding: 0.7rem clamp(1rem, 3vw, 2rem);
+  padding: 0.7rem 1rem;
   border-top: 2px solid var(--rule);
   font-size: 0.85rem;
   color: var(--muted);
@@ -151,8 +155,6 @@ svg {
 
 .site-main {
   width: 100%;
-  max-width: 800px;
-  margin-inline: auto;
   flex: 1 0 auto;
   padding: clamp(1.25rem, 3vw, 2rem) 1rem 3rem;
 }
