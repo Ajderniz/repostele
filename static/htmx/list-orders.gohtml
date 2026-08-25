@@ -9,21 +9,21 @@
     <table class="data-table order-list">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Usuario</th>
-          <th>Total</th>
-          <th>Estado</th>
-          <th>Acciones</th>
+          <th class="order-col-id">ID</th>
+          <th class="order-col-user">Usuario</th>
+          <th class="order-col-total">Total</th>
+          <th class="order-col-status">Estado</th>
+          <th class="order-col-actions">Acciones</th>
         </tr>
       </thead>
       {{range .}}
       <tbody class="order-block" id="order-{{.Id}}">
         <tr class="order-row">
-          <td>{{.Id}}</td>
-          <td>{{.User}}</td>
-          <td>₡{{.Total}}</td>
-          <td>{{OrderStatusName .Status}}</td>
-          <td>
+          <td class="order-col-id">{{.Id}}</td>
+          <td class="order-col-user">{{.User}}</td>
+          <td class="order-col-total">₡{{.Total}}</td>
+          <td class="order-col-status">{{OrderStatusName .Status}}</td>
+          <td class="order-col-actions">
             {{if or (eq .Status 0) (eq .Status 1)}}
               <button
               class="btn btn-compact"

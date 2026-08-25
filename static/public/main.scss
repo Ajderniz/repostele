@@ -330,9 +330,12 @@ svg {
 
 .btn-compact {
   width: auto;
+  max-width: 100%;
   padding: 0.4rem 0.65rem;
   margin: 0.15rem 0.3rem 0.15rem 0;
   font-size: 0.9rem;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 @media (hover: hover) {
@@ -516,7 +519,7 @@ svg {
 
 .data-table {
   width: 100%;
-  table-layout: fixed;
+  table-layout: auto;
   border-collapse: collapse;
   font-size: 0.9rem;
   line-height: 1.35;
@@ -527,9 +530,6 @@ svg {
   padding: 0.5rem 0.7rem 0.5rem 0;
   text-align: left;
   vertical-align: middle;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
 }
 
@@ -541,17 +541,65 @@ svg {
   text-transform: uppercase;
 }
 
-.data-table th:last-child,
-.data-table td:last-child {
-  width: 38%;
-  white-space: normal;
-  overflow: visible;
-  text-overflow: unset;
+.data-table td {
+  overflow-wrap: anywhere;
 }
 
-.order-list th:first-child,
-.order-list td:first-child {
-  width: 3.25rem;
+.data-table th:last-child,
+.data-table td:last-child {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.data-table .btn {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+.order-list {
+  table-layout: auto;
+  width: 100%;
+}
+
+.order-list th,
+.order-list td {
+  overflow: visible;
+}
+
+.order-list .order-col-id {
+  width: 3.5rem;
+  white-space: nowrap;
+}
+
+.order-list .order-col-user,
+.order-list .order-col-status {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.order-list .order-col-total {
+  white-space: nowrap;
+  overflow-wrap: normal;
+}
+
+.order-list th.order-col-actions,
+.order-list td.order-col-actions {
+  white-space: nowrap;
+}
+
+.order-list .order-row td.order-col-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.order-list .order-col-actions .btn {
+  flex: 0 0 auto;
+  white-space: nowrap;
+  overflow-wrap: normal;
+  max-width: none;
 }
 
 .order-list .order-row td {
@@ -750,12 +798,38 @@ svg {
   }
 
   .data-table {
+    width: 100%;
     table-layout: auto;
+  }
+
+  .data-table th,
+  .data-table td {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    padding-right: 0.4rem;
   }
 
   .data-table th:last-child,
   .data-table td:last-child {
     width: auto;
+    min-width: 5.5rem;
+  }
+
+  .order-list th.order-col-actions,
+  .order-list td.order-col-actions {
+    width: auto;
+    white-space: normal;
+  }
+
+  .order-list .order-row td.order-col-actions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .order-list .order-col-actions .btn {
+    white-space: normal;
+    overflow-wrap: anywhere;
+    max-width: 100%;
   }
 }
 
