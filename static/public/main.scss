@@ -329,6 +329,16 @@ input[type="number"]::-webkit-outer-spin-button {
   margin: 0;
 }
 
+input[type="checkbox"],
+input[type="radio"] {
+  width: 1.15rem;
+  height: 1.15rem;
+  margin: 0 0.4rem 0 0;
+  accent-color: var(--fg);
+  vertical-align: middle;
+  cursor: pointer;
+}
+
 input[type="file"] {
   width: 100%;
   padding: 0.55rem;
@@ -389,66 +399,133 @@ input:invalid:not(:placeholder-shown):not(:focus) {
 
 // --- dashboard / account ---
 
-article > nav,
-article > nav ul,
-article > nav li,
-article > nav button {
-  width: 100%;
+article > * + h2 {
+  margin-top: 1.75rem;
 }
 
-#dashboard-content,
-#account-content {
-  min-height: 0.5rem;
-}
-
-#account-content:empty,
-#dashboard-content:empty {
-  display: none;
+article > h1 + h2 {
+  margin-top: 1rem;
 }
 
 article ul {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.65rem;
   width: 100%;
 }
 
-article ul li,
-article ul button {
+article ul > li {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
   width: 100%;
 }
 
-article ul button {
+article ul > li > button {
+  width: 100%;
   text-align: left;
+}
+
+#account-content:empty,
+[id^="db-"]:empty,
+[id^="item-edit-"]:empty {
+  display: none;
+}
+
+article ul > li > [id^="db-"]:not(:empty) {
+  width: 100%;
+  margin-top: 0.65rem;
+  padding: 0.75rem;
+  border: $border solid var(--rule);
+  overflow-x: auto;
+}
+
+article ul > li > [id^="db-"] > * + * {
+  margin-top: 0.65rem;
+}
+
+article ul > li > [id^="db-"] h3 {
+  font-size: 0.95rem;
+}
+
+article ul > li > [id^="db-"] > button {
+  width: 100%;
+}
+
+#account-content:not(:empty) {
+  margin-top: 0.65rem;
+}
+
+// data tables (orders, users, sessions) — not form tables
+article ul > li > [id^="db-"] > table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+  line-height: 1.3;
+}
+
+article ul > li > [id^="db-"] > table th,
+article ul > li > [id^="db-"] > table td {
+  padding: 0.4rem 0.4rem 0.4rem 0;
+  text-align: left;
+  vertical-align: middle;
+  white-space: nowrap;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+}
+
+article ul > li > [id^="db-"] > table th {
+  font-family: $font-heading;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+article ul > li > [id^="db-"] > table button {
+  width: auto;
+  padding: 0.35rem 0.55rem;
+  margin: 0.15rem 0.3rem 0.15rem 0;
+  font-size: 0.85rem;
+}
+
+article ul > li > [id^="db-"] > table span {
+  display: inline-block;
+  margin-top: 0.25rem;
 }
 
 // --- menu ---
 
 #menu-item-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 0.5rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+  align-items: start;
 }
 
 .menu-item {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3rem;
   min-width: 0;
-  padding: 0.45rem;
+  padding: 0.6rem;
   border: $border solid var(--rule);
 }
 
+.menu-item.unavailable {
+  opacity: 0.55;
+}
+
 .menu-item h3 {
-  font-size: 0.78rem;
+  font-size: 0.9rem;
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
 .menu-item span {
   font-family: $font-heading;
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
@@ -461,14 +538,55 @@ article ul button {
   image-rendering: auto;
 }
 
-.menu-item p {
+.menu-item > p {
   color: var(--muted);
-  font-size: 0.72rem;
+  font-size: 0.78rem;
   line-height: 1.3;
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+.menu-item > button {
+  width: 100%;
+  margin-top: 0.15rem;
+  padding: 0.45rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.menu-item > [id^="item-edit-"]:not(:empty) {
+  margin-top: 0.35rem;
+  padding-top: 0.5rem;
+  border-top: $border solid var(--rule);
+}
+
+.menu-item textarea {
+  min-height: 4rem;
+}
+
+.menu-item form table,
+.menu-item form tbody,
+.menu-item form tr,
+.menu-item form th,
+.menu-item form td {
+  display: block;
+  width: 100%;
+}
+
+.menu-item form th {
+  width: 100%;
+  padding: 0.5rem 0 0.2rem;
+  white-space: normal;
+}
+
+.menu-item form td {
+  padding: 0 0 0.35rem;
+}
+
+.menu-item form tr + tr th,
+.menu-item form tr + tr td {
+  border-top: 0;
 }
 
 // --- htmx ---
