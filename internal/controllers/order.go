@@ -19,8 +19,10 @@ const (
   _ORDER_COUNTER_MAX = 1000
 )
 
-var _OrderDate    = 0
-var _OrderCounter = 0
+var (
+  _OrderDate    = 0
+  _OrderCounter = 0
+)
 
 func orderId2DateAndCounter(orderId int) (date, counter int) {
   div     := float64(orderId) / _ORDER_COUNTER_MAX
@@ -75,7 +77,9 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErr(w, r); return }
   if latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, TooManyRequests, errors.New("Se permite solo una orden pendiente por usuario"))
+    serveErr(w, r, TooManyRequests, errors.New(
+      "Se permite solo una orden pendiente por usuario"),
+    )
     return
   }
 
@@ -89,14 +93,8 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   items := models.ItemIdQuant{}
   for itemId, quant := range request.Items {
     item, err := models.GetItemFromID(itemId)
-    if err != nil  {
-      slog.Error(err.Error())
-      continue
-    }
-    if item.Name == "" {
-      slog.Error("Ítem inválido")
-      continue
-    }
+    if err != nil  { slog.Error(err.Error()); continue }
+    if item.Name == "" { slog.Error("Ítem inválido"); continue }
     total += item.Price * float32(quant)
     items[item.Id] = quant
   }
@@ -126,10 +124,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     Status: models.ORDER_STATUS_UNREVIEWED,
     Items:  items,
   })
-  if err != nil {
-    serveInternalErr(w, r)
-    return
-  }
+  if err != nil { serveInternalErr(w, r); return }
 
   serveResponse(w, r, &_MainData{
     Msg: "Orden enviada. Esperando aprobación.",
@@ -147,9 +142,8 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
 
   orders, err := models.GetOrders(params)
   if err != nil { serveInternalErr(w, r); return }
-  if len(orders) <= 0 { serveNoResults(w, r); return }
 
-  serveData(w, r, orders)
+  serveDataHX(w, r, orders, "list-orders")
 }
 
 func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {
@@ -231,35 +225,32 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   statusStr, err := bind.FormValue(r, models.ORDER_STATUS, 
     "required,number,gte=0,lte=4",
   )
-  if err != nil { serveBadRequest(w, r, err); return }
-  status, _ := strconv.Atoi(statusStr)
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
+  status, _ := strconv.Atoi(statusStr)
   setStatus := models.OrderStatus(status)
 
   order, httpStatus, err := getOrderFromIdUrlParam(r)
-  if err != nil { serveErr(w, r, httpStatus, err); return }
-  if order.RefNum == "" { 
-    serveBadRequest(w, r, errors.New("La orden no existe"))
-    return
-  }
+  if err != nil { serveResponseHX(w, err.Error(), httpStatus); return }
+  if order.RefNum == "" { serveBadRequestHX(w, "La orden no existe"); return }
 
   switch order.Status {
   case models.ORDER_STATUS_UNREVIEWED, models.ORDER_STATUS_DENIED:
     if setStatus != models.ORDER_STATUS_ACCEPTED &&
        setStatus != models.ORDER_STATUS_DENIED {
-      serveBadRequest(w, r, _ErrCantModOrder)
+      serveBadRequestHX(w, _ErrCantModOrder.Error())
       return
     }
   case models.ORDER_STATUS_ACCEPTED:
     if setStatus != models.ORDER_STATUS_FULFILLED {
-      serveBadRequest(w, r, _ErrCantModOrder)
+      serveBadRequestHX(w, _ErrCantModOrder.Error())
       return
     }
-  default: serveBadRequest(w, r, _ErrCantModOrder); return
+  default: serveBadRequestHX(w, _ErrCantModOrder.Error()); return
   }
 
   err = models.UpdateOrderStatus(order.Id, setStatus)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
 
-  serveMsg(w, r, "Se actualizó el estado de la orden")
+  serveResponseHX(w, "Se actualizó el estado de la orden", OK)
 }

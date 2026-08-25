@@ -70,9 +70,23 @@ func callTemplate(name string, data any) (tpl.HTML, error) {
 	return tpl.HTML(buf.String()), err
 }
 
+func orderStatusName(s models.OrderStatus) string {
+	switch s {
+	case models.ORDER_STATUS_UNREVIEWED: return "Sin revisar"
+	case models.ORDER_STATUS_DENIED:     return "Denegada"
+	case models.ORDER_STATUS_CANCELLED:  return "Cancelada"
+	case models.ORDER_STATUS_ACCEPTED:   return "Aceptada"
+	case models.ORDER_STATUS_FULFILLED:  return  "Cumplida"
+	default: return ""
+	}
+}
+
 func InitTemplate() {
 	_Tpl = tpl.New("base")
-	_Tpl.Funcs(tpl.FuncMap{"CallTemplate": callTemplate})
+	_Tpl.Funcs(tpl.FuncMap{
+		"CallTemplate": callTemplate,
+		"OrderStatusName": orderStatusName,
+	})
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))
 }
@@ -195,4 +209,21 @@ func serveBadRequestHX(w http.ResponseWriter, msg string) {
 
 func serveInternalErrHX(w http.ResponseWriter) {
 	serveResponseHX(w, _ErrInternal.Error(), InternalServerError)
+}
+
+// serveDataHX renders tplName directly (a bare partial, no page chrome) when
+// the request came from htmx, and falls back to the normal full-page
+// serveData otherwise. Used by dashboard list views, which are only ever
+// reached by an hx-get swapping into #dashboard-content — a full page
+// (doctype, head, body) injected as innerHTML there would be broken markup.
+func serveDataHX(w http.ResponseWriter, r *http.Request, data any, tplName string) {
+	if r.Header.Get("HX-Request") == "true" {
+		w.Header().Set("Content-Type", "text/html; charset=utf-8")
+		if err := _Tpl.ExecuteTemplate(w, tplName, data); err != nil {
+			slog.Error(err.Error())
+			serveInternalErrHX(w)
+		}
+		return
+	}
+	serveData(w, r, data)
 }

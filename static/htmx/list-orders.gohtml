@@ -1,0 +1,47 @@
+{{define "list-orders"}}
+
+<h3>Órdenes</h3>
+{{if not .}}
+  <p>No hay órdenes</p>
+{{else}}
+  <table>
+    <tr>
+      <th>ID</th><th>Usuario</th><th>Total</th><th>Ref.</th><th>Estado</th><th>Acciones</th>
+    </tr>
+    {{range .}}
+    <tr id="order-{{.Id}}">
+      <td>{{.Id}}</td>
+      <td>{{.User}}</td>
+      <td>₡{{.Total}}</td>
+      <td>{{.RefNum}}</td>
+      <td>{{OrderStatusName .Status}}</td>
+      <td>
+        {{if or (eq .Status 0) (eq .Status 1)}}
+          <button
+          hx-patch="/dashboard/orders/{{.Id}}/status"
+          hx-vals='{"status":"3"}'
+          hx-target="#msg-{{.Id}}"
+          hx-swap="innerHTML"
+          >Aceptar</button>
+          <button
+          hx-patch="/dashboard/orders/{{.Id}}/status"
+          hx-vals='{"status":"1"}'
+          hx-target="#msg-{{.Id}}"
+          hx-swap="innerHTML"
+          >Denegar</button>
+        {{else if eq .Status 3}}
+          <button
+          hx-patch="/dashboard/orders/{{.Id}}/status"
+          hx-vals='{"status":"4"}'
+          hx-target="#msg-{{.Id}}"
+          hx-swap="innerHTML"
+          >Marcar cumplida</button>
+        {{end}}
+        <span id="msg-{{.Id}}"></span>
+      </td>
+    </tr>
+    {{end}}
+  </table>
+{{end}}
+
+{{end}}

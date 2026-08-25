@@ -12,7 +12,7 @@ func updateUserPassword(username, oldPassword, newPassword string) (int, error){
   if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil||user.Username == "" {return InternalServerError,err}
+  if err != nil || user.Username == "" {return InternalServerError,err}
 
   err = pass.CheckPasswordHash(oldPassword, user.PassHash)
   if err != nil { return Unauthorized, err }
@@ -60,9 +60,9 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   status, err := deactivateUserAccount(w, r, username)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveResponseHX(w, err.Error(), status); return }
 
-  serveResponse(w, r, &_MainData{Msg:_MsgAccDeactivated}, OK, nil)
+  serveResponseHX(w,_MsgAccDeactivated, OK)
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {

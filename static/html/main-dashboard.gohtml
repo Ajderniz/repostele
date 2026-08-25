@@ -1,14 +1,29 @@
 {{define "main-dashboard"}}
 
 <article>
-  <h2>Panel administrativo</h2>
+  <h1>Panel administrativo</h1>
   {{with .}}
     {{template "div-msg" .Msg}}
   {{else}}
     <nav>
-      <button hx-get="htmx/form-create-item" hx-target="#dashboard-content" hx-swap="innerHTML">
-        Crear nuevo item
-      </button>
+      <ul>
+        <li>
+          <button
+          hx-get="htmx/form-create-item"
+          hx-target="#dashboard-content"
+          hx-swap="innerHTML">
+            Crear nuevo item
+          </button>
+        </li>
+        <li>
+          <button
+          hx-get="htmx/list-orders"
+          hx-target="#dashboard-content"
+          hx-swap="innerHTML">
+          Lista de ordenes
+          </button>
+        </li>
+      </ul>
     </nav>
     <div id="dashboard-content"></div>
   {{end}}
