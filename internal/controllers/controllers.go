@@ -55,6 +55,17 @@ type _TplData struct {
 	Err      string
 }
 
+type _NextAction struct {
+	URL  string
+	Name string
+	HTMX bool
+}
+
+type _HXData struct {
+	Msg         string
+	NextAction  *_NextAction
+}
+
 var (
 	_MsgEmpty = "Aún no hay nada"
   _MsgNoResults = "No se encontraron resultados"
@@ -213,17 +224,23 @@ func serveInternalErr(w http.ResponseWriter, r *http.Request) {
 	serveErr(w, r, InternalServerError, _ErrInternal)
 }
 
-func serveResponseHX(w http.ResponseWriter, msg string, status int) {
+func serveResponseHX(
+	w 					http.ResponseWriter,
+	msg         string,
+	status      int,
+	nextAction 	*_NextAction,
+) {
+	data := _HXData {Msg: msg, NextAction: nextAction }
 	w.WriteHeader(status)
-	_Tpl.ExecuteTemplate(w, "div-response", map[string]string{"Msg": msg})
+	_Tpl.ExecuteTemplate(w, "div-response", data)
 }
 
 func serveBadRequestHX(w http.ResponseWriter, msg string) {
-	serveResponseHX(w, msg, BadRequest)
+	serveResponseHX(w, msg, BadRequest, nil)
 }
 
 func serveInternalErrHX(w http.ResponseWriter) {
-	serveResponseHX(w, _ErrInternal.Error(), InternalServerError)
+	serveResponseHX(w, _ErrInternal.Error(), InternalServerError, nil)
 }
 
 // serveDataHX renders tplName directly (a bare partial, no page chrome) when

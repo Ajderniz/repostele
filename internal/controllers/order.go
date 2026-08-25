@@ -231,7 +231,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   setStatus := models.OrderStatus(status)
 
   order, httpStatus, err := getOrderFromIdUrlParam(r)
-  if err != nil { serveResponseHX(w, err.Error(), httpStatus); return }
+  if err != nil { serveResponseHX(w, err.Error(), httpStatus, nil); return }
   if order.RefNum == "" { serveBadRequestHX(w, "La orden no existe"); return }
 
   switch order.Status {
@@ -252,5 +252,5 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   err = models.UpdateOrderStatus(order.Id, setStatus)
   if err != nil { serveInternalErrHX(w); return }
 
-  serveResponseHX(w, "Se actualizó el estado de la orden", OK)
+  serveResponseHX(w, "Se actualizó el estado de la orden", OK, nil)
 }

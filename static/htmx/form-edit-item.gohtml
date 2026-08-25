@@ -1,45 +1,64 @@
 {{define "form-edit-item"}}
-<form hx-patch="/dashboard/admin/menu/{{.Id}}" hx-target="#item-edit-{{.Id}}" hx-swap="innerHTML">
-  <table>
-    <tr>
-      <th><label for="edit-name-{{.Id}}">Nombre</label></th>
-      <td><input type="text" id="edit-name-{{.Id}}" name="name" value="{{.Name}}" required></td>
-    </tr>
-    <tr>
-      <th><label for="edit-price-{{.Id}}">Precio</label></th>
-      <td>
-        <input
-        type="number"
-        id="edit-price-{{.Id}}"
-        name="price"
-        step="0.01"
-        min="0"
-        value="{{.Price}}"
-        required
-        >
-      </td>
-    </tr>
-    <tr>
-      <th><label for="edit-desc-{{.Id}}">Descripción</label></th>
-      <td><textarea id="edit-desc-{{.Id}}" name="desc">{{.Desc}}</textarea></td>
-    </tr>
-    <tr>
-      <th><label for="edit-available-{{.Id}}">Disponible</label></th>
-      <td>
-        <input
-        type="checkbox"
-        id="edit-available-{{.Id}}"
-        name="available"
-        value="true"
-        {{if .Available}}checked{{end}}
-        >
-        <input type="hidden" name="available" value="false">
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td><input type="submit" value="Guardar"></td>
-    </tr>
-  </table>
-</form>
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  <form
+  hx-patch="/dashboard/admin/menu/{{.Id}}"
+  hx-target="#item-edit-{{.Id}}"
+  hx-swap="innerHTML"
+  >
+    <table>
+      <tr>
+        <th><label for="edit-name-{{.Id}}">Nombre</label></th>
+        <td>
+          <input
+          type="text"
+          id="edit-name-{{.Id}}"
+          name="name"
+          value="{{.Name}}"
+          required
+          >
+        </td>
+      </tr>
+      <tr>
+        <th><label for="edit-price-{{.Id}}">Precio</label></th>
+        <td>
+          <input
+          type="number"
+          id="edit-price-{{.Id}}"
+          name="price"
+          step="0.01"
+          min="0"
+          value="{{.Price}}"
+          required
+          >
+        </td>
+      </tr>
+      <tr>
+        <th><label for="edit-desc-{{.Id}}">Descripción</label></th>
+        <td>
+          <textarea id="edit-desc-{{.Id}}" name="desc">{{.Desc}}</textarea>
+        </td>
+      </tr>
+      <tr>
+        <th><label for="edit-available-{{.Id}}">Disponible</label></th>
+        <td>
+          <input
+          type="checkbox"
+          id="edit-available-{{.Id}}"
+          name="available"
+          value="true"
+          {{if .Available}}checked{{end}}
+          >
+          <input type="hidden" name="available" value="false">
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="submit" value="Guardar"></td>
+      </tr>
+    </table>
+  </form>
+</div>
+
 {{end}}

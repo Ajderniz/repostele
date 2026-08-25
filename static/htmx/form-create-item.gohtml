@@ -1,53 +1,62 @@
 {{define "form-create-item"}}
-<form hx-post="/dashboard/admin/menu" hx-encoding="multipart/form-data">
-  <table>
-    <tr>
-      <th><label for="name">Nombre</label></th>
-      <td>
-        <input
-        type="text"
-        id="name"
-        name="name"
-        placeholder="Galleta de chispas"
-        required
-        >
-      </td>
-    </tr>
-    <tr>
-      <th><label for="price">Precio</label></th>
-      <td>
-        <input
-        type="number"
-        id="price"
-        name="price"
-        step="0.01"
-        min="0"
-        placeholder="1500"
-        required
-        >
-      </td>
-    </tr>
-    <tr>
-      <th><label for="desc">Descripción</label></th>
-      <td>
-        <textarea id="desc" name="desc" placeholder="Ingredientes, tamaño, etc."></textarea>
-      </td>
-    </tr>
-    <tr>
-      <th><label for="img">Imagen</label></th>
-      <td>
-        <input
-        type="file"
-        id="img"
-        name="img"
-        accept="image/jpeg,image/png,image/gif,image/webp"
-        >
-      </td>
-    </tr>
-    <tr>
-      <td></td>
-      <td><input type="submit" value="Publicar"></td>
-    </tr>
-  </table>
-</form>
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  <form hx-post="/dashboard/admin/menu" hx-encoding="multipart/form-data">
+    <table>
+      <tr>
+        <th><label for="name">Nombre</label></th>
+        <td>
+          <input
+          type="text"
+          id="name"
+          name="name"
+          placeholder="Galleta de chispas"
+          required
+          >
+        </td>
+      </tr>
+      <tr>
+        <th><label for="price">Precio</label></th>
+        <td>
+          <input
+          type="number"
+          id="price"
+          name="price"
+          step="0.01"
+          min="0"
+          placeholder="1500"
+          required
+          >
+        </td>
+      </tr>
+      <tr>
+        <th><label for="desc">Descripción</label></th>
+        <td>
+          <textarea
+          id="desc"
+          name="desc"
+          placeholder="Ingredientes, tamaño, etc."
+          ></textarea>
+        </td>
+      </tr>
+      <tr>
+        <th><label for="img">Imagen</label></th>
+        <td>
+          <input
+          type="file"
+          id="img"
+          name="img"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          >
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input type="submit" value="Publicar"></td>
+      </tr>
+    </table>
+  </form>
+</div>
+
 {{end}}

@@ -84,6 +84,7 @@ func RequireAuth() func(next http.Handler) http.Handler {
       if err != nil {
         if status == http.StatusUnauthorized { w.WriteHeader(status); return }
         w.WriteHeader(http.StatusInternalServerError)
+        return
       }
       ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)
       next.ServeHTTP(w, r.WithContext(ctx))

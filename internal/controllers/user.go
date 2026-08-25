@@ -65,10 +65,19 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  status, err := deactivateUserAccount(w, r, username, false)
-  if err != nil { serveResponseHX(w, err.Error(), status); return }
+  nextAction := _NextAction{
+    URL: "/dashboard/admin/users",
+    Name: "Volver a la lista de usuarios",
+    HTMX: true,
+  }
 
-  serveResponseHX(w,_MsgAccDeactivated, OK)
+  status, err := deactivateUserAccount(w, r, username, false)
+  if err != nil {
+    serveResponseHX(w, err.Error(), status, &nextAction)
+    return
+}
+
+  serveResponseHX(w,_MsgAccDeactivated, OK, &nextAction)
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {

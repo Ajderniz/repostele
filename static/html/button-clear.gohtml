@@ -1,0 +1,9 @@
+{{define "button-clear"}}
+<!-- MUST be immediate child of a div in order to work as expected -->
+<button
+class="button-clear"
+hx-get="htmx/blank"
+hx-target="closest div"
+hx-swap="outerHTML"
+>X</button>
+{{end}}

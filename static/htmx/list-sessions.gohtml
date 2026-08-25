@@ -1,36 +1,45 @@
 {{define "list-sessions"}}
 
-<h3>Sesiones activas</h3>
-{{if not .}}
-  <p>No hay sesiones activas</p>
-{{else}}
-  <table>
-    <tr><th>Usuario</th><th>Rol</th><th>Inicio</th><th>Expira</th><th>Acciones</th></tr>
-    {{range .}}
-    <tr id="session-{{.User}}">
-      <td>{{.User}}</td>
-      <td>{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</td>
-      <td>{{UnixToTime .Starts}}</td>
-      <td>{{UnixToTime .Expires}}</td>
-      <td>
-        <button
-        hx-patch="/dashboard/admin/sessions/close/{{.User}}"
-        hx-target="#msg-session-{{.User}}"
-        hx-swap="innerHTML"
-        hx-confirm="¿Cerrar la sesión de {{.User}}?"
-        >Cerrar sesión</button>
-        <span id="msg-session-{{.User}}"></span>
-      </td>
-    </tr>
-    {{end}}
-  </table>
-  <button
-  hx-patch="/dashboard/admin/sessions/close"
-  hx-vals='{"users":"true","staff":"true"}'
-  hx-target="#db-session-list"
-  hx-swap="innerHTML"
-  hx-confirm="¿Cerrar TODAS las sesiones activas?"
-  >Cerrar todas las sesiones</button>
-{{end}}
+<div class="hx-container">
+  {{template "button-clear"}}
+  <h3>Sesiones activas</h3>
+  {{if not .}}
+    <p>No hay sesiones activas</p>
+  {{else}}
+    <table>
+      <tr>
+        <th>Usuario</th>
+        <th>Rol</th>
+        <th>Inicio</th>
+        <th>Expira</th>
+        <th>Acciones</th>
+      </tr>
+      {{range .}}
+      <tr id="session-{{.User}}">
+        <td>{{.User}}</td>
+        <td>{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</td>
+        <td>{{UnixToTime .Starts}}</td>
+        <td>{{UnixToTime .Expires}}</td>
+        <td>
+          <button
+          hx-patch="/dashboard/admin/sessions/close/{{.User}}"
+          hx-target="#msg-session-{{.User}}"
+          hx-swap="innerHTML"
+          hx-confirm="¿Cerrar la sesión de {{.User}}?"
+          >Cerrar sesión</button>
+          <span id="msg-session-{{.User}}"></span>
+        </td>
+      </tr>
+      {{end}}
+    </table>
+    <button
+    hx-patch="/dashboard/admin/sessions/close"
+    hx-vals='{"users":"true","staff":"true"}'
+    hx-target="#db-session-list"
+    hx-swap="innerHTML"
+    hx-confirm="¿Cerrar TODAS las sesiones activas?"
+    >Cerrar todas las sesiones</button>
+  {{end}}
+</div>
 
 {{end}}

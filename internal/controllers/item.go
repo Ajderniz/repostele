@@ -53,7 +53,11 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   err = models.InsertItem(item)
   if err != nil { serveInternalErrHX(w); return }
 
-  serveResponseHX(w, "Se creó el item", Created)
+  serveResponseHX(w, "Se creó el item", Created, &_NextAction{
+    URL: "htmx/form-create-item",
+    Name: "Crear otro",
+    HTMX: true,
+  })
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
@@ -127,5 +131,5 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   err = models.UpdateItem(id, update)
   if err != nil { serveInternalErrHX(w); return }
 
-  serveResponseHX(w, "Se actualizó el ítem", OK)
+  serveResponseHX(w, "Se actualizó el ítem", OK, nil)
 }
