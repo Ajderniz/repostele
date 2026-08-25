@@ -1,0 +1,26 @@
+{{define "form-deactivate-account"}}
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  <!--
+  TODO: not getting expected feedback when error
+  same issue in other similar elements too
+  -->
+  <form
+  class="page-form"
+  hx-patch="/account/deactivate"
+  hx-confirm="¿Desactivar tu cuenta? Esta acción no se puede deshacer.">
+    <table class="form-table">
+      <tr>
+        <th><label for="password">Contraseña</label></th>
+        <td>{{template "input-password" "password"}}</td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input class="btn" type="submit" value="Desactivar cuenta"></td>
+      </tr>
+    </table>
+  </form>
+</div>
+
+{{end}}

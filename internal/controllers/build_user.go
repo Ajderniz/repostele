@@ -79,36 +79,44 @@ func Login(w http.ResponseWriter, r *http.Request) {
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   status, err := updateUserPassword(username, oldPassword, newPassword)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
-  serveMsg(w, r, _MsgPasswordChanged)
+  serveResponseHX(w, _MsgPasswordChanged, OK, nil)
 }
 
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil || user.Username == "" { serveInternalErr(w, r); return }
+  if err != nil || user.Username == "" { serveInternalErrHX(w); return }
 
   err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil { serveErr(w, r, Unauthorized, err); return }
+  if err != nil {
+    serveResponseHX(w, _ErrBadCreds.Error(), Unauthorized, nil)
+    return
+  }
 
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
   if latestOrder.RefNum != "" &&
      latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, Conflict, errors.New("Hay una orden pendiente"))
+    serveResponseHX(w, "Hay una orden pendiente", Conflict, nil)
     return
   }
 
   status, err := deactivateUserAccount(w, r, user.Username, true)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("HX-Redirect", "/login")
+    w.WriteHeader(OK)
+    return
+  }
   serveMsg(w, r, _MsgAccDeactivated)
 }

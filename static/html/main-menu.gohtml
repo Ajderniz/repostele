@@ -6,9 +6,13 @@
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
-  {{if $isStaff}}
+  {{if $isAdmin}}
     {{template "button-create-item" "menu-new-item"}}
   {{end}}
+  <!--
+  TODO: refresh when items edited
+  (applies to many more things than just item list or items whatsoever)
+  -->
   <div id="menu-item-list">
     {{$anyVisible := false}}
     {{with .Data}}
@@ -26,13 +30,15 @@
           <p class="menu-item-desc">{{.Desc}}</p>
           {{if $loggedIn}}
             {{if $isStaff}}
-              <button
-              class="btn btn-block"
-              hx-get="/dashboard/admin/menu/{{.Id}}/edit"
-              hx-target="#item-edit-{{.Id}}"
-              hx-swap="innerHTML"
-              >Editar</button>
-              <div id="item-edit-{{.Id}}" class="hx-slot"></div>
+              {{if $isAdmin}}
+                <button
+                class="btn btn-block"
+                hx-get="/dashboard/admin/menu/{{.Id}}/edit"
+                hx-target="#item-edit-{{.Id}}"
+                hx-swap="innerHTML"
+                >Editar</button>
+                <div id="item-edit-{{.Id}}" class="hx-slot"></div>
+              {{end}}
             {{else}}
               <!--
               TODO: implement this ofc

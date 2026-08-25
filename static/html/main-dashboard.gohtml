@@ -17,13 +17,13 @@
         </button>
         <div id="db-order-list" class="hx-slot"></div>
       </li>
-      <li class="action-item">
-        {{template "button-create-item" "db-new-item"}}
-      </li>
     </ul>
     {{if .IsAdmin}}
     <h2 class="section-title">Acciones de administrador</h2>
     <ul class="action-list">
+      <li class="action-item">
+      {{template "button-create-item" "db-new-item"}}
+      </li>
       <li class="action-item">
         <button
         class="btn btn-block"

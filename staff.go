@@ -88,7 +88,6 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   })
 }
 
-// TODO: fix: currently throws 500 when login fails
 func Login(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { serveErr(w, r, Forbidden, err); return }
@@ -175,10 +174,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil || staff.Username == "" { serveInternalErrHX(w); return }
 
   err = pass.CheckPasswordHash(password, staff.PassHash)
-  if err != nil {
-    serveResponseHX(w, _ErrBadCreds.Error(), Unauthorized, nil)
-    return
-  }
+  if err != nil { serveResponseHX(w, _ErrBadCreds.Error(), Unauthorized, nil); return }
 
   status, err := deactivateStaffAccount(w, r, username, true)
   if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
@@ -221,7 +217,7 @@ func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
+  username := r.Context().Value(models.USER_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
