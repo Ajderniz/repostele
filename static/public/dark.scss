@@ -1,0 +1,18 @@
+// Dark theme. Inverts the favicon: white mark on a black field.
+
+@mixin tokens {
+  color-scheme: dark;
+  --bg: #000000;
+  --fg: #ffffff;
+  --mark-filter: invert(1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    @include tokens;
+  }
+}
+
+[data-theme="dark"] {
+  @include tokens;
+}

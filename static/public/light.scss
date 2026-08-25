@@ -1,0 +1,16 @@
+// Light theme. Matches the favicon: black mark on a white field.
+
+@mixin tokens {
+  color-scheme: light;
+  --bg: #ffffff;
+  --fg: #000000;
+  --mark-filter: none;
+}
+
+:root {
+  @include tokens;
+}
+
+[data-theme="light"] {
+  @include tokens;
+}

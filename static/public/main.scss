@@ -1,31 +1,17 @@
-:root {
-  color-scheme: light;
-  --bg: #ffffff;
-  --fg: #000000;
-  --mark-filter: none;
-}
+@use "light";
+@use "dark";
 
-[data-theme=light] {
-  color-scheme: light;
-  --bg: #ffffff;
-  --fg: #000000;
-  --mark-filter: none;
-}
+// Breakpoints from the original stub. Phone matches main's max-width.
+$bpoint-desktop: 1440px;
+$bpoint-tablet: 1024px;
+$bpoint-phone: 600px;
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme=light]) {
-    color-scheme: dark;
-    --bg: #000000;
-    --fg: #ffffff;
-    --mark-filter: invert(1);
-  }
-}
-[data-theme=dark] {
-  color-scheme: dark;
-  --bg: #000000;
-  --fg: #ffffff;
-  --mark-filter: invert(1);
-}
+$font-heading: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+$font-body: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+
+$border: 3px;
+$pad: 1rem;
+$max-main: 600px;
 
 *,
 *::before,
@@ -45,7 +31,7 @@
 html {
   background: var(--bg);
   color: var(--fg);
-  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  font-family: $font-body;
   font-size: 100%;
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
@@ -79,8 +65,9 @@ a {
     text-decoration: none;
   }
 }
+
 :focus-visible {
-  outline: 3px solid var(--fg);
+  outline: $border solid var(--fg);
   outline-offset: 2px;
 }
 
@@ -95,7 +82,7 @@ h3,
 h4,
 h5,
 h6 {
-  font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  font-family: $font-heading;
   font-weight: 800;
   line-height: 1.05;
   letter-spacing: 0.04em;
@@ -103,40 +90,31 @@ h6 {
   text-wrap: balance;
 }
 
-h1 {
-  font-size: clamp(2rem, 8vw, 3.25rem);
-}
-
-h2 {
-  font-size: clamp(1.35rem, 4vw, 1.85rem);
-}
-
-h3 {
-  font-size: clamp(1.05rem, 3vw, 1.25rem);
-}
-
+h1 { font-size: clamp(2rem, 8vw, 3.25rem); }
+h2 { font-size: clamp(1.35rem, 4vw, 1.85rem); }
+h3 { font-size: clamp(1.05rem, 3vw, 1.25rem); }
 h4,
 h5,
-h6 {
-  font-size: 1rem;
-}
+h6 { font-size: 1rem; }
 
 p + p {
   margin-top: 0.75em;
 }
 
+// --- chrome ---
+
 header {
   display: flex;
   align-items: center;
   gap: 0.55em;
-  padding: 0.55rem clamp(1rem, 3vw, 2rem);
-  font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  padding: 0.55rem clamp($pad, 3vw, 2rem);
+  font-family: $font-heading;
   font-size: clamp(1.6rem, 6vw, 4.5rem);
   font-weight: 800;
   line-height: 0.9;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: 3px solid var(--rule);
+  border-bottom: $border solid var(--rule);
 }
 
 header::before {
@@ -144,14 +122,14 @@ header::before {
   flex: 0 0 auto;
   width: 0.9em;
   height: 0.9em;
-  background: url("/favicon.ico") 47% 47%/170% no-repeat;
+  background: url("/favicon.ico") 47% 47% / 170% no-repeat;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
   filter: var(--mark-filter);
 }
 
 body > nav {
-  border-bottom: 3px solid var(--rule);
+  border-bottom: $border solid var(--rule);
 }
 
 body > nav:not(:has(ul)) {
@@ -165,14 +143,14 @@ body > nav ul {
 }
 
 body > nav li {
-  border-right: 3px solid var(--rule);
+  border-right: $border solid var(--rule);
 }
 
 body > nav a,
 body > nav button {
   display: block;
   padding: 0.7rem 1.15rem;
-  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  font-family: $font-body;
   font-size: 1rem;
   line-height: 1.2;
   color: inherit;
@@ -189,20 +167,23 @@ body > nav button {
     color: var(--on-fill);
   }
 }
+
 footer {
   margin-top: auto;
-  padding: 0.7rem clamp(1rem, 3vw, 2rem);
-  border-top: 3px solid var(--rule);
+  padding: 0.7rem clamp($pad, 3vw, 2rem);
+  border-top: $border solid var(--rule);
   font-size: 0.85rem;
   color: var(--muted);
 }
 
+// --- page ---
+
 main {
   width: 100%;
-  max-width: 600px;
+  max-width: $max-main;
   margin-inline: auto;
   flex: 1 0 auto;
-  padding: clamp(1.25rem, 3vw, 2rem) 1rem 3rem;
+  padding: clamp(1.25rem, 3vw, 2rem) $pad 3rem;
 }
 
 main > * + * {
@@ -212,6 +193,8 @@ main > * + * {
 article > * + * {
   margin-top: 1rem;
 }
+
+// --- init ---
 
 #init-div {
   display: flex;
@@ -226,7 +209,7 @@ article > * + * {
 }
 
 #init-div h2 {
-  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  font-family: $font-body;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -234,7 +217,7 @@ article > * + * {
 }
 
 #init-div h3 {
-  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  font-family: $font-body;
   font-weight: 400;
   text-transform: none;
   letter-spacing: 0;
@@ -242,11 +225,13 @@ article > * + * {
   color: var(--muted);
 }
 
+// --- messages ---
+
 #err-msg,
 #msg,
 #htmx-message {
   padding: 0.85rem 1rem;
-  border: 3px solid var(--rule);
+  border: $border solid var(--rule);
 }
 
 #err-msg {
@@ -259,6 +244,8 @@ article > * + * {
 #htmx-message p {
   font-size: 1rem;
 }
+
+// --- forms ---
 
 form table {
   width: 100%;
@@ -297,7 +284,7 @@ button {
   border-radius: 0;
 }
 
-input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=number]),
+input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="number"]),
 textarea,
 select,
 button {
@@ -305,10 +292,10 @@ button {
   -webkit-appearance: none;
 }
 
-input[type=text],
-input[type=password],
-input[type=number],
-input[type=email],
+input[type="text"],
+input[type="password"],
+input[type="number"],
+input[type="email"],
 textarea,
 select {
   width: 100%;
@@ -316,7 +303,7 @@ select {
   padding: 0.4rem 0.55rem;
   background: var(--bg);
   color: var(--fg);
-  border: 3px solid var(--rule);
+  border: $border solid var(--rule);
 }
 
 textarea {
@@ -331,29 +318,29 @@ textarea::placeholder {
   opacity: 1;
 }
 
-input[type=number] {
+input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
 
-input[type=number]::-webkit-inner-spin-button,
-input[type=number]::-webkit-outer-spin-button {
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
 }
 
-input[type=file] {
+input[type="file"] {
   width: 100%;
   padding: 0.55rem;
-  border: 3px dashed var(--rule);
+  border: $border dashed var(--rule);
   background: var(--bg);
   cursor: pointer;
 }
 
-input[type=file]::file-selector-button {
+input[type="file"]::file-selector-button {
   margin-right: 0.75rem;
   padding: 0.35rem 0.7rem;
-  font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  font-family: $font-heading;
   font-weight: 800;
   font-size: 0.75rem;
   letter-spacing: 0.06em;
@@ -365,28 +352,29 @@ input[type=file]::file-selector-button {
 }
 
 button,
-input[type=submit],
-input[type=button] {
+input[type="submit"],
+input[type="button"] {
   display: inline-block;
   padding: 0.7rem 1.1rem;
-  font-family: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
+  font-family: $font-body;
   font-size: 1rem;
   line-height: 1.2;
   color: var(--on-fill);
   background: var(--fill);
-  border: 3px solid var(--rule);
+  border: $border solid var(--rule);
   cursor: pointer;
 }
 
 @media (hover: hover) {
   button:hover,
-  input[type=submit]:hover,
-  input[type=button]:hover,
-  input[type=file]:hover {
+  input[type="submit"]:hover,
+  input[type="button"]:hover,
+  input[type="file"]:hover {
     background: var(--bg);
     color: var(--fg);
   }
 }
+
 button:disabled,
 input:disabled {
   opacity: 0.45;
@@ -394,10 +382,12 @@ input:disabled {
 }
 
 input:invalid:not(:placeholder-shown):not(:focus) {
-  outline: 3px solid var(--fg);
+  outline: $border solid var(--fg);
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px var(--bg), inset 0 0 0 4px var(--fg);
 }
+
+// --- dashboard / account ---
 
 main nav {
   display: flex;
@@ -428,6 +418,8 @@ article ul button {
   text-align: left;
 }
 
+// --- menu ---
+
 #menu-item-list {
   display: flex;
   flex-direction: column;
@@ -439,7 +431,7 @@ article ul button {
   flex-direction: column;
   gap: 0.5rem;
   padding: 1rem;
-  border: 3px solid var(--rule);
+  border: $border solid var(--rule);
 }
 
 .menu-item h3 {
@@ -447,16 +439,16 @@ article ul button {
 }
 
 .menu-item span {
-  font-family: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+  font-family: $font-heading;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
 .menu-item img {
   width: 100%;
-  aspect-ratio: 4/3;
+  aspect-ratio: 4 / 3;
   object-fit: cover;
-  border: 3px solid var(--rule);
+  border: $border solid var(--rule);
   image-rendering: auto;
 }
 
@@ -464,26 +456,33 @@ article ul button {
   color: var(--muted);
 }
 
+// --- htmx ---
+
 .htmx-request {
   cursor: wait;
 }
 
 .htmx-request button,
-.htmx-request input[type=submit] {
+.htmx-request input[type="submit"] {
   opacity: 0.6;
 }
 
-@media (max-width: 600px) {
+// --- responsive ---
+
+@media (max-width: $bpoint-phone) {
   body > nav ul {
     flex-direction: column;
   }
+
   body > nav li {
     border-right: 0;
-    border-bottom: 3px solid var(--rule);
+    border-bottom: $border solid var(--rule);
   }
+
   body > nav li:last-child {
     border-bottom: 0;
   }
+
   form table,
   form tbody,
   form tr,
@@ -492,32 +491,39 @@ article ul button {
     display: block;
     width: 100%;
   }
+
   form th {
     padding: 0.7rem 0 0.25rem;
     white-space: normal;
     border-top: 0;
   }
+
   form td {
     padding: 0 0 0.7rem;
   }
+
   form tr + tr th,
   form tr + tr td {
     border-top: 0;
   }
+
   main {
     padding-inline: 0.85rem;
   }
 }
-@media (min-width: 1024px) {
+
+@media (min-width: $bpoint-tablet) {
   header {
     padding-block: 0.7rem;
   }
 }
-@media (min-width: 1440px) {
+
+@media (min-width: $bpoint-desktop) {
   header {
     letter-spacing: 0.08em;
   }
 }
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -526,5 +532,3 @@ article ul button {
     scroll-behavior: auto !important;
   }
 }
-
-/*# sourceMappingURL=style.css.map */
