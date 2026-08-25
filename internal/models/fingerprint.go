@@ -30,7 +30,13 @@ func InsertFingerprint(fg Fingerprint) (error) {
 	_, err := dbBeginNamedExecAndCommit(
 		"INSERT INTO "+_FINGERPRINTS+" ("+_FINGERPRINT_FIELDS+") "+
 		"VALUES (:"+FINGERPRINT_ID+",:"+_FINGERPRINT_USER+",:"+_FINGERPRINT_EXPIRES+
-			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+")",
+			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+") "+
+		"ON CONFLICT("+FINGERPRINT_ID+") DO UPDATE SET "+
+			_FINGERPRINT_USER+"=excluded."+_FINGERPRINT_USER+","+
+			_FINGERPRINT_EXPIRES+"=excluded."+_FINGERPRINT_EXPIRES+","+
+			FINGERPRINT_FAILED_LOGINS+"=0,"+
+			FINGERPRINT_ACCS_CREATED+"=0 "+
+		"WHERE excluded."+_FINGERPRINT_USER+"!="+_FINGERPRINTS+"."+_FINGERPRINT_USER,
 		&fg,
 	)
 	if err != nil { return errors.New("No se pudo guardar la huella") }

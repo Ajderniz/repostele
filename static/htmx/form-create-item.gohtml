@@ -1,5 +1,5 @@
 {{define "form-create-item"}}
-<form method="post" action="/dashboard/admin/menu" enctype="multipart/form-data">
+<form hx-post="/dashboard/admin/menu" hx-encoding="multipart/form-data">
   <table>
     <tr>
       <th><label for="name">Nombre</label></th>

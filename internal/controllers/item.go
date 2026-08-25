@@ -20,15 +20,15 @@ const (
 
 func PostItem(w http.ResponseWriter, r *http.Request) {
   err := r.ParseMultipartForm(_MAX_UPLOAD_MEM)
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   name, err := bind.FormValue(r, "name", "required")
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   priceStr, err := bind.FormValue(r, "price", "required,numeric")
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
   price, err := strconv.ParseFloat(priceStr, 32)
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   desc := r.FormValue("desc")
 
@@ -36,10 +36,10 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   file, header, err := r.FormFile("img")
   if err == nil {
     filename, err := upload.SaveImage(file, header, static.IMGDIR)
-    if err != nil { serveBadRequest(w, r, err); return }
+    if err != nil { serveBadRequestHX(w, err.Error()); return }
     imgPath = "/" + static.IMGDIR + "/" + filename
   } else if err != http.ErrMissingFile {
-    serveBadRequest(w, r, err); return
+    serveBadRequestHX(w, err.Error()); return
   }
 
   item := models.Item{
@@ -51,11 +51,9 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     ImgPath:   imgPath,
   }
   err = models.InsertItem(item)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
 
-  serveResponse(
-    w, r, &_MainData{Msg: "Se creó el item"}, Created, nil,
-  )
+  serveResponseHX(w, "Se creó el item", Created)
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {

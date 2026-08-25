@@ -97,7 +97,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }
 
-	loggedIn := false
+	loggedIn := true
 	if slices.Contains(_SectionsCheckSession, section) {
 		loggedIn = checkSession(r)
 	}
@@ -182,4 +182,17 @@ func serveBadRequest(w http.ResponseWriter, r *http.Request, err error) {
 
 func serveInternalErr(w http.ResponseWriter, r *http.Request) {
 	serveErr(w, r, InternalServerError, _ErrInternal)
+}
+
+func serveResponseHX(w http.ResponseWriter, msg string, status int) {
+	w.WriteHeader(status)
+	_Tpl.ExecuteTemplate(w, "div-response", map[string]string{"Msg": msg})
+}
+
+func serveBadRequestHX(w http.ResponseWriter, msg string) {
+	serveResponseHX(w, msg, BadRequest)
+}
+
+func serveInternalErrHX(w http.ResponseWriter) {
+	serveResponseHX(w, _ErrInternal.Error(), InternalServerError)
 }

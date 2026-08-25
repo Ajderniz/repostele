@@ -9,22 +9,28 @@
   <link rel="stylesheet" type="text/css" href="/style.css">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
   <script src="/htmx.min.js"></script>
+  <script src="/csrf.js" defer></script>
 </head>
 <body>
   <header>Repostele</header>
   <nav>
     {{if .Init}}
       <ul>
+        <li><a href="/menu">Menú</a></li>
         {{if .LoggedIn}}
-        {{if .IsStaff}}<li><a href="/dashboard">Panel administrativo</a></li>{{end}}
-        <li><a href="/account">Mi cuenta</a></li>
-        <li>
-          <button id="login-logout" type="submit" formaction="/logout" formmethod="patch">
-            Salir
-          </button>
-        </li>
+          {{if .IsStaff}}<li><a href="/dashboard">Panel</a></li>{{end}}
+          <li><a href="/account">Cuenta</a></li>
+          <li>
+            <button
+            id="login-logout"
+            type="submit"
+            formaction="/logout"
+            formmethod="patch"
+            >Salir
+            </button>
+          </li>
         {{else}}
-        <li><a href="/login" id="login-logout">Acceder</a></li>
+          <li><a href="/login" id="login-logout">Acceder</a></li>
         {{end}}
       </ul>
     {{end}}

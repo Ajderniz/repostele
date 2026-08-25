@@ -42,7 +42,7 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
   if r.Method != http.MethodGet && r.Method != http.MethodHead {
     csrf := r.Header.Get("X-CSRF-Token")
     if csrf == "" {
-      slog.Error("No se encontró la cookie llamada 'csrf-token'")
+      slog.Error("No se encontró el header X-CSRF-Token")
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
     if csrf != session.CSRFToken {
