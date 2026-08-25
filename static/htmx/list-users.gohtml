@@ -11,7 +11,7 @@
       {{range .}}
       <tr id="user-{{.Username}}">
         <td>{{.Username}}</td>
-        <td>{{.TimeCreated}}</td>
+        <td>{{UnixToTime .TimeCreated}}</td>
         <td>{{if .Active}}Sí{{else}}No{{end}}</td>
         <td>
           {{if .Active}}
