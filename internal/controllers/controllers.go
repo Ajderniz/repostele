@@ -98,7 +98,7 @@ func orderStatusName(s models.OrderStatus) string {
 
 func unixToTime(unix int64) string {
 	t := time.Unix(unix, 0)
-	return t.Format("2 Jan 03:04:05")
+	return t.Format("2-1 03:04:05")
 }
 
 func InitTemplate() {
