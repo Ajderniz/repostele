@@ -130,6 +130,13 @@ func Logout(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
   err = closeSession(w, sid.Value)
   if err != nil { serveBadRequest(w, r, err); return }
+
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("HX-Redirect", "/login")
+    w.WriteHeader(OK)
+    return
+  }
+
   serveMsg(w, r, _MsgLoggedOut)
 }
 

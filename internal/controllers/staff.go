@@ -72,19 +72,20 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
 
 func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   staff, status, err := makeNewStaffFromForm(r)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
   adminStr, err := bind.FormValue(r, "admin", "required,boolean")
-  if err != nil {
-    serveBadRequest(w, r,errors.New("Parámetro 'admin' inválido"))
-    return
-  }
+  if err != nil { serveBadRequestHX(w, "Parámetro 'admin' inválido"); return }
   staff.Admin, _ = strconv.ParseBool(adminStr)
 
   err = models.InsertStaffAccount(staff)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErrHX(w); return }
   
-  serveMsg(w, r, _MsgAccCreated)
+  serveResponseHX(w, _MsgAccCreated, Created, &_NextAction{
+    URL: "/htmx/form-register-staff-admin",
+    Name: "Agregar otro",
+    HTMX: true,
+  })
 }
 
 func Login(w http.ResponseWriter, r *http.Request) {
@@ -156,12 +157,12 @@ func deactivateStaffAccount(
 
 func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   status, err := deactivateStaffAccount(w, r, username, false)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
-  serveMsg(w, r, _MsgAccDeactivated)
+  serveResponseHX(w, _MsgAccDeactivated, OK, nil)
 }
 
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
@@ -229,9 +230,7 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
   staff, err := models.GetStaff(params)
   if err != nil { serveInternalErr(w, r); return }
 
-  if staff == nil { serveNoResults(w, r); return }
-
-  serveData(w, r, staff)
+  serveDataHX(w, r, staff, "list-staff")
 }
 
 func GetStaffFromUsername(w http.ResponseWriter, r *http.Request) {

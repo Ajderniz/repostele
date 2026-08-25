@@ -27,11 +27,19 @@
       <li class="action-item">
         <button
         class="btn btn-block"
+        hx-get="/dashboard/admin/staff"
+        hx-target="#db-staff-list"
+        hx-swap="innerHTML"
+        >Personal</button>
+        <div id="db-staff-list" class="hx-slot"></div>
+      </li>
+      <li class="action-item">
+        <button
+        class="btn btn-block"
         hx-get="/dashboard/admin/users"
         hx-target="#db-user-list"
-        hx-swap="innerHTML">
-          Usuarios
-        </button>
+        hx-swap="innerHTML"
+        >Usuarios</button>
         <div id="db-user-list" class="hx-slot"></div>
       </li>
       <li class="action-item">
@@ -39,9 +47,8 @@
         class="btn btn-block"
         hx-get="/dashboard/admin/sessions"
         hx-target="#db-session-list"
-        hx-swap="innerHTML">
-          Sesiones
-        </button>
+        hx-swap="innerHTML"
+        >Sesiones</button>
         <div id="db-session-list" class="hx-slot"></div>
       </li>
     </ul>

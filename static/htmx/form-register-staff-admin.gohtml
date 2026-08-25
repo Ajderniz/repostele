@@ -1,26 +1,11 @@
-{{define "form-register-staff"}}
+{{define "form-register-staff-admin"}}
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <form class="page-form" method="post" action="/init">
+  <form class="page-form" hx-post="/dashboard/admin/staff">
     <table class="form-table">
       <tr>
-        <th><label for="key">Clave de activación</label></th>
-        <td>
-          <input
-          class="field"
-          type="text"
-          id="key"
-          name="key"
-          pattern="[0-9]{16}"
-          placeholder="1111-2222-3333-4444"
-          title="Código de 16 dígitos"
-          required
-          >
-        </td>
-      </tr>
-      <tr>
-        <th><label for="username">Nombre de usuario</label></th>
+        <th><label for="reg-username">Nombre de usuario</label></th>
         <td>{{template "input-username"}}</td>
       </tr>
       <tr>
@@ -36,8 +21,15 @@
         <td>{{template "input-full-name"}}</td>
       </tr>
       <tr>
+        <th><label for="admin">Administrador</label></th>
+        <td>
+          <input type="checkbox" id="admin" name="admin" value="true">
+          <input type="hidden" name="admin" value="false">
+        </td>
+      </tr>
+      <tr>
         <td></td>
-        <td><input class="btn" type="submit" value="Enviar"></td>
+        <td><input class="btn" type="submit" value="Crear cuenta"></td>
       </tr>
     </table>
   </form>

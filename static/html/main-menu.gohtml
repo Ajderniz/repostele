@@ -2,49 +2,60 @@
 
 <article class="page">
   <h1 class="page-title">Menú</h1>
+  {{$loggedIn := .LoggedIn}}
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
+  {{$topMsg := .Msg}}
   {{if $isStaff}}
     {{template "button-create-item" "menu-new-item"}}
   {{end}}
   <div id="menu-item-list">
+    {{$anyVisible := false}}
     {{with .Data}}
       {{range .}}
         {{if or .Available $isAdmin}}
+        {{$anyVisible = true}}
         <div class="menu-item {{if not .Available}}unavailable{{end}}">
-          <h3 class="menu-item-name">{{.Name}} {{if not .Available}}(no disponible){{end}}</h3>
+          <h3 class="menu-item-name">
+            {{.Name}} {{if not .Available}}(no disponible){{end}}
+          </h3>
           <div class="menu-item-price"><span>₡{{.Price}}</span></div>
           {{if .ImgPath}}
           <img class="menu-item-img" src="{{.ImgPath}}" alt="{{.Name}}">
           {{end}}
           <p class="menu-item-desc">{{.Desc}}</p>
-          {{if $isStaff}}
-            <button
-            class="btn btn-block"
-            hx-get="/dashboard/admin/menu/{{.Id}}/edit"
-            hx-target="#item-edit-{{.Id}}"
-            hx-swap="innerHTML"
-            >Editar</button>
-            <div id="item-edit-{{.Id}}" class="hx-slot"></div>
-          {{else}}
-            <!--
-            TODO: implement this ofc
-            - somehow add to a cache
-            - then view form probably in a new main-
-            - this order form uses tesseract.min.js and a local script
-            - script scans attached image with 25-digit refnum
-            - prompts user to verify scanned code against real code
-            - if ok, proceed to post order by using code string, not img
-            -->
-            <button class="btn btn-block" type="button">
-              Agregar a la orden
-            </button>
+          {{if $loggedIn}}
+            {{if $isStaff}}
+              <button
+              class="btn btn-block"
+              hx-get="/dashboard/admin/menu/{{.Id}}/edit"
+              hx-target="#item-edit-{{.Id}}"
+              hx-swap="innerHTML"
+              >Editar</button>
+              <div id="item-edit-{{.Id}}" class="hx-slot"></div>
+            {{else}}
+              <!--
+              TODO: implement this ofc
+              - somehow add to a cache
+              - then view form probably in a new main-
+              - this order form uses tesseract.min.js and a local script
+              - script scans attached image with 25-digit refnum
+              - prompts user to verify scanned code against real code
+              - if ok, proceed to post order by using code string, not img
+              -->
+              <button class="btn btn-block" type="button">
+                Agregar a la orden
+              </button>
+            {{end}}
           {{end}}
         </div>
         {{end}}
       {{end}}
-    {{else}}
-      <p class="empty-msg">{{.Msg}}</p>
+    {{end}}
+    {{if not $anyVisible}}
+      <p class="empty-msg">
+      {{if $topMsg}}{{$topMsg}}{{else}}No hay ítemes disponibles{{end}}
+      </p>
     {{end}}
   </div>
 </article>

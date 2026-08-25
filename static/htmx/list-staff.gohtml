@@ -1,0 +1,51 @@
+{{define "list-staff"}}
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  <h3 class="panel-title">Personal</h3>
+  <button
+  class="btn btn-block"
+  hx-get="htmx/form-register-staff-admin"
+  hx-target="#staff-new-account"
+  hx-swap="innerHTML"
+  >Crear nueva cuenta</button>
+  <div id="staff-new-account" class="hx-slot"></div>
+  {{if not .}}
+    <p class="empty-msg">No hay personal</p>
+  {{else}}
+    <table class="data-table">
+      <tr>
+        <th>Usuario</th>
+        <th>Nombre</th>
+        <th>Creado</th>
+        <th>Activo</th>
+        <th>Admin</th>
+        <th>Acciones</th>
+      </tr>
+      {{range .}}
+      <tr id="staff-{{.Username}}">
+        <td>{{.Username}}</td>
+        <td>{{.FullName}}</td>
+        <td>{{UnixToTime .TimeCreated}}</td>
+        <td>{{if .Active}}Sí{{else}}No{{end}}</td>
+        <td>{{if .Admin}}Sí{{else}}No{{end}}</td>
+        <td>
+          {{if .Active}}
+          <button
+          class="btn btn-compact"
+          hx-patch="/dashboard/admin/staff/deactivate/{{.Username}}"
+          hx-vals='{"username":"{{.Username}}"}'
+          hx-target="#msg-staff-{{.Username}}"
+          hx-swap="innerHTML"
+          hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
+          >Desactivar</button>
+          {{end}}
+          <span id="msg-staff-{{.Username}}" class="row-msg"></span>
+        </td>
+      </tr>
+      {{end}}
+    </table>
+  {{end}}
+</div>
+
+{{end}}

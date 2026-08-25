@@ -37,10 +37,11 @@ const (
 )
 
 type _MainData struct {
-	Data    any
-	Msg     string
-	IsStaff bool
-	IsAdmin bool
+	Data     any
+	Msg      string
+	LoggedIn bool
+	IsStaff  bool
+	IsAdmin  bool
 }
 
 type _TplData struct {
@@ -97,7 +98,7 @@ func orderStatusName(s models.OrderStatus) string {
 
 func unixToTime(unix int64) string {
 	t := time.Unix(unix, 0)
-	return t.Format("0102-030405")
+	return t.Format("2 Jan 03:04:05")
 }
 
 func InitTemplate() {
@@ -161,6 +162,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 	data.IsStaff = isStaff
 	data.IsAdmin = isAdmin
+	data.LoggedIn = loggedIn
 
 	errAny := r.Context().Value(_ERR)
 	var errStr string
