@@ -1,51 +1,55 @@
 {{define "main-dashboard"}}
 
-<article>
-  <h1>Panel de operaciones</h1>
+<article class="page">
+  <h1 class="page-title">Panel de operaciones</h1>
   {{with .Msg}}
     {{template "div-msg" .}}
   {{else}}
-    <h2>Acciones generales</h2>
-    <ul>
-      <li>
+    <h2 class="section-title">Acciones generales</h2>
+    <ul class="action-list">
+      <li class="action-item">
         <button
+        class="btn btn-block"
         hx-get="/dashboard/orders"
         hx-target="#db-order-list"
         hx-swap="innerHTML">
         Lista de ordenes
         </button>
-        <div id="db-order-list"></div>
+        <div id="db-order-list" class="hx-slot"></div>
       </li>
-      <li>
+      <li class="action-item">
         <button
+        class="btn btn-block"
         hx-get="htmx/form-create-item"
         hx-target="#db-new-item"
         hx-swap="innerHTML">
           Crear nuevo item
         </button>
-        <div id="db-new-item"></div>
+        <div id="db-new-item" class="hx-slot"></div>
       </li>
     </ul>
     {{if .IsAdmin}}
-    <h2>Acciones de administrador</h2>
-    <ul>
-      <li>
+    <h2 class="section-title">Acciones de administrador</h2>
+    <ul class="action-list">
+      <li class="action-item">
         <button
+        class="btn btn-block"
         hx-get="/dashboard/admin/users"
         hx-target="#db-user-list"
         hx-swap="innerHTML">
           Usuarios
         </button>
-        <div id="db-user-list"></div>
+        <div id="db-user-list" class="hx-slot"></div>
       </li>
-      <li>
+      <li class="action-item">
         <button
+        class="btn btn-block"
         hx-get="/dashboard/admin/sessions"
         hx-target="#db-session-list"
         hx-swap="innerHTML">
           Sesiones
         </button>
-        <div id="db-session-list"></div>
+        <div id="db-session-list" class="hx-slot"></div>
       </li>
     </ul>
     {{end}}

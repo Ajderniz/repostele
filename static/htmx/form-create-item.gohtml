@@ -2,12 +2,17 @@
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <form hx-post="/dashboard/admin/menu" hx-encoding="multipart/form-data">
-    <table>
+  <form
+  class="page-form"
+  hx-post="/dashboard/admin/menu"
+  hx-encoding="multipart/form-data"
+  >
+    <table class="form-table">
       <tr>
         <th><label for="name">Nombre</label></th>
         <td>
           <input
+          class="field"
           type="text"
           id="name"
           name="name"
@@ -20,6 +25,7 @@
         <th><label for="price">Precio</label></th>
         <td>
           <input
+          class="field"
           type="number"
           id="price"
           name="price"
@@ -34,6 +40,7 @@
         <th><label for="desc">Descripción</label></th>
         <td>
           <textarea
+          class="field field-area"
           id="desc"
           name="desc"
           placeholder="Ingredientes, tamaño, etc."
@@ -44,6 +51,7 @@
         <th><label for="img">Imagen</label></th>
         <td>
           <input
+          class="field-file"
           type="file"
           id="img"
           name="img"
@@ -53,7 +61,7 @@
       </tr>
       <tr>
         <td></td>
-        <td><input type="submit" value="Publicar"></td>
+        <td><input class="btn" type="submit" value="Publicar"></td>
       </tr>
     </table>
   </form>

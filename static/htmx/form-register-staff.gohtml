@@ -2,12 +2,13 @@
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <form method="post" action="/init">
-    <table>
+  <form class="page-form" method="post" action="/init">
+    <table class="form-table">
       <tr>
         <th><label for="key">Clave de activación</label></th>
         <td>
           <input
+          class="field"
           type="text"
           id="key"
           name="key"
@@ -34,6 +35,7 @@
         <th><label for="full-name">Nombre completo</label></th>
         <td>
           <input
+          class="field"
           type="text"
           id="full-name"
           name="full-name"
@@ -46,7 +48,7 @@
       </tr>
       <tr>
         <td></td>
-        <td><input type="submit" value="Enviar"></td>
+        <td><input class="btn" type="submit" value="Enviar"></td>
       </tr>
     </table>
   </form>

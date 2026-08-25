@@ -2,11 +2,11 @@
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <h3>Usuarios</h3>
+  <h3 class="panel-title">Usuarios</h3>
   {{if not .}}
-    <p>No hay usuarios</p>
+    <p class="empty-msg">No hay usuarios</p>
   {{else}}
-    <table>
+    <table class="data-table">
       <tr><th>Usuario</th><th>Creado</th><th>Activo</th><th>Acciones</th></tr>
       {{range .}}
       <tr id="user-{{.Username}}">
@@ -16,6 +16,7 @@
         <td>
           {{if .Active}}
           <button
+          class="btn btn-compact"
           hx-patch="/dashboard/admin/users/deactivate/{{.Username}}"
           hx-vals='{"username":"{{.Username}}"}'
           hx-target="#msg-user-{{.Username}}"
@@ -23,7 +24,7 @@
           hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
           >Desactivar</button>
           {{end}}
-          <span id="msg-user-{{.Username}}"></span>
+          <span id="msg-user-{{.Username}}" class="row-msg"></span>
         </td>
       </tr>
       {{end}}

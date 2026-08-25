@@ -1,17 +1,20 @@
 {{define "div-response"}}
 
-<p>{{.Msg}}</p>
-{{with .NextAction}}
-  {{if .HTMX}}
-    <button
-    class="next-action"
-    hx-get="{{.URL}}"
-    hx-target="closest div"
-    hx-swap="outerHTML"
-    >{{.Name}}</button>
-  {{else}}
-    <a href={{.URL}} class="next-action">{{.Name}}</a>
+<div class="hx-flash">
+  <p class="hx-msg">{{.Msg}}</p>
+  {{with .NextAction}}
+    {{if .HTMX}}
+      <button
+      class="btn next-action"
+      type="button"
+      hx-get="{{.URL}}"
+      hx-target="closest .hx-container"
+      hx-swap="outerHTML"
+      >{{.Name}}</button>
+    {{else}}
+      <a href="{{.URL}}" class="btn next-action">{{.Name}}</a>
+    {{end}}
   {{end}}
-{{end}}
+</div>
 
 {{end}}

@@ -3,18 +3,19 @@
 {{with .Msg}}
   {{template "div-msg" .}}
 {{else}}
-  <form action="/login" id="login-form" method="post">
-    <table>
+  <form action="/login" id="login-form" class="page-form" method="post">
+    <table class="form-table">
       <tr>
         <th><label for="username">Usuario</label></th>
-        <td>{{template "input-username"}}</tr></td>
+        <td>{{template "input-username"}}</td>
+      </tr>
       <tr>
         <th><label for="password">Contraseña</label></th>
         <td>{{template "input-password" "password"}}</td>
       </tr>
       <tr>
         <td></td>
-        <td><input type="submit" value="Enviar"></td>
+        <td><input class="btn" type="submit" value="Enviar"></td>
       </tr>
     </table>
   </form>

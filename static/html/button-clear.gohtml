@@ -1,9 +1,11 @@
 {{define "button-clear"}}
-<!-- MUST be immediate child of a div in order to work as expected -->
+<!-- MUST be immediate child of .hx-container -->
 <button
 class="button-clear"
+type="button"
 hx-get="htmx/blank"
-hx-target="closest div"
+hx-target="closest .hx-container"
 hx-swap="outerHTML"
+aria-label="Cerrar"
 >X</button>
 {{end}}

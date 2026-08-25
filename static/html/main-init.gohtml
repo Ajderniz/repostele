@@ -4,10 +4,15 @@
   {{template "div-msg" .}}
 {{else}}
   <div id="init-div">
-    <h1>Repostele</h1>
-    <h2>App de personal</h2>
-    <h3>Aún no se ha configurado la app</h3>
-    <button hx-get="htmx/form-register-staff" hx-target="#init-div" hx-swap="outerHTML">
+    <h1 class="init-title">Repostele</h1>
+    <h2 class="init-sub">App de personal</h2>
+    <h3 class="init-note">Aún no se ha configurado la app</h3>
+    <button
+    class="btn"
+    hx-get="htmx/form-register-staff"
+    hx-target="#init-div"
+    hx-swap="outerHTML"
+    >
       Iniciar ya
     </button>
   </div>

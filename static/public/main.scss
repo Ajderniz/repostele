@@ -30,7 +30,6 @@ $max-main: 800px;
 html {
   background: var(--bg);
   color: var(--fg);
-  font-family: $font-body;
   font-size: 100%;
   line-height: 1.5;
   -webkit-text-size-adjust: 100%;
@@ -43,6 +42,7 @@ body {
   flex-direction: column;
   background: var(--bg);
   color: var(--fg);
+  font-family: $font-body;
 }
 
 img,
@@ -50,19 +50,6 @@ svg {
   max-width: 100%;
   height: auto;
   display: block;
-}
-
-a {
-  color: inherit;
-  text-underline-offset: 0.15em;
-}
-
-@media (hover: hover) {
-  a:hover {
-    background: var(--fill);
-    color: var(--on-fill);
-    text-decoration: none;
-  }
 }
 
 :focus-visible {
@@ -75,34 +62,9 @@ a {
   color: var(--on-fill);
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: $font-heading;
-  font-weight: 800;
-  line-height: 1.05;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  text-wrap: balance;
-}
-
-h1 { font-size: clamp(2rem, 8vw, 3.25rem); }
-h2 { font-size: clamp(1.35rem, 4vw, 1.85rem); }
-h3 { font-size: clamp(1.05rem, 3vw, 1.25rem); }
-h4,
-h5,
-h6 { font-size: 1rem; }
-
-p + p {
-  margin-top: 0.75em;
-}
-
 // --- chrome ---
 
-header {
+.site-header {
   display: flex;
   align-items: center;
   gap: 0.55em;
@@ -116,7 +78,7 @@ header {
   border-bottom: $border solid var(--rule);
 }
 
-header::before {
+.site-header::before {
   content: "";
   flex: 0 0 auto;
   width: 0.9em;
@@ -127,26 +89,26 @@ header::before {
   filter: var(--mark-filter);
 }
 
-body > nav {
+.site-nav {
   border-bottom: $border solid var(--rule);
 }
 
-body > nav:not(:has(ul)) {
+.site-nav:not(:has(.site-nav-list)) {
   display: none;
 }
 
-body > nav ul {
+.site-nav-list {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
 }
 
-body > nav li {
+.site-nav-list > li {
   border-right: $border solid var(--rule);
 }
 
-body > nav a,
-body > nav button {
+.site-nav-list a,
+.site-nav-btn {
   display: block;
   padding: 0.7rem 1.15rem;
   font-family: $font-body;
@@ -160,14 +122,14 @@ body > nav button {
 }
 
 @media (hover: hover) {
-  body > nav a:hover,
-  body > nav button:hover {
+  .site-nav-list a:hover,
+  .site-nav-btn:hover {
     background: var(--fill);
     color: var(--on-fill);
   }
 }
 
-footer {
+.site-footer {
   margin-top: auto;
   padding: 0.7rem clamp($pad, 3vw, 2rem);
   border-top: $border solid var(--rule);
@@ -177,7 +139,7 @@ footer {
 
 // --- page ---
 
-main {
+.site-main {
   width: 100%;
   max-width: $max-main;
   margin-inline: auto;
@@ -185,11 +147,37 @@ main {
   padding: clamp(1.25rem, 3vw, 2rem) $pad 3rem;
 }
 
-main > * + * {
-  margin-top: 1.25rem;
+.site-main > * + * {
+  margin-top: 1.75rem;
 }
 
-article > * + * {
+.page-title,
+.section-title,
+.panel-title,
+.menu-item-name,
+.init-title {
+  font-family: $font-heading;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.page-title { font-size: clamp(2rem, 8vw, 3.25rem); }
+.section-title { font-size: clamp(1.35rem, 4vw, 1.85rem); }
+.panel-title { font-size: 0.95rem; }
+.menu-item-name { font-size: 0.9rem; }
+
+.page > * + * {
+  margin-top: 1rem;
+}
+
+.page > * + .section-title {
+  margin-top: 1.75rem;
+}
+
+.page > .page-title + .section-title {
   margin-top: 1rem;
 }
 
@@ -203,100 +191,62 @@ article > * + * {
   padding-block: 1rem;
 }
 
-#init-div h1 {
+.init-title {
   font-size: clamp(2.4rem, 12vw, 4rem);
 }
 
-#init-div h2 {
+.init-sub {
   font-family: $font-body;
   font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
   font-size: 1.25rem;
 }
 
-#init-div h3 {
+.init-note {
   font-family: $font-body;
   font-weight: 400;
-  text-transform: none;
-  letter-spacing: 0;
   font-size: 1rem;
   color: var(--muted);
 }
 
-// --- messages ---
+// --- banners / empty ---
 
-#err-msg,
-#msg,
-#htmx-message {
+.banner {
   padding: 0.85rem 1rem;
   border: $border solid var(--rule);
 }
 
-#err-msg {
+.banner-err {
   background: var(--fill);
   color: var(--on-fill);
 }
 
-#err-msg p,
-#msg p,
-#htmx-message p {
+.banner-text,
+.empty-msg {
   font-size: 1rem;
 }
 
-// --- forms ---
-
-form table {
-  width: 100%;
-  border-collapse: collapse;
+.empty-msg {
+  color: var(--muted);
 }
 
-form th,
-form td {
-  padding: 0.45rem 0;
-  vertical-align: middle;
-  font-weight: 400;
-  text-align: left;
-}
+// --- controls ---
 
-form th {
-  width: 10.5rem;
-  padding-right: 1.25rem;
-  white-space: nowrap;
-}
-
-form th label {
-  font-size: 0.95rem;
-}
-
-form tr + tr th,
-form tr + tr td {
-  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
-}
-
-input,
-textarea,
-select,
-button {
+.field,
+.field-file,
+.btn,
+.button-clear {
   font: inherit;
   color: inherit;
   border-radius: 0;
 }
 
-input:not([type="file"]):not([type="checkbox"]):not([type="radio"]):not([type="number"]),
-textarea,
-select,
-button {
+.field,
+.btn {
   appearance: none;
   -webkit-appearance: none;
 }
 
-input[type="text"],
-input[type="password"],
-input[type="number"],
-input[type="email"],
-textarea,
-select {
+.field {
   width: 100%;
   min-height: 2.5rem;
   padding: 0.4rem 0.55rem;
@@ -305,31 +255,29 @@ select {
   border: $border solid var(--rule);
 }
 
-textarea {
+.field-area {
   min-height: 6.5rem;
   resize: vertical;
   line-height: 1.4;
 }
 
-input::placeholder,
-textarea::placeholder {
+.field::placeholder {
   color: var(--muted);
   opacity: 1;
 }
 
-input[type="number"] {
+.field[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
 
-input[type="number"]::-webkit-inner-spin-button,
-input[type="number"]::-webkit-outer-spin-button {
+.field[type="number"]::-webkit-inner-spin-button,
+.field[type="number"]::-webkit-outer-spin-button {
   appearance: none;
   margin: 0;
 }
 
-input[type="checkbox"],
-input[type="radio"] {
+.field-check {
   width: 1.15rem;
   height: 1.15rem;
   margin: 0 0.4rem 0 0;
@@ -338,7 +286,7 @@ input[type="radio"] {
   cursor: pointer;
 }
 
-input[type="file"] {
+.field-file {
   width: 100%;
   padding: 0.55rem;
   border: $border dashed var(--rule);
@@ -346,7 +294,7 @@ input[type="file"] {
   cursor: pointer;
 }
 
-input[type="file"]::file-selector-button {
+.field-file::file-selector-button {
   margin-right: 0.75rem;
   padding: 0.35rem 0.7rem;
   font-family: $font-heading;
@@ -360,9 +308,7 @@ input[type="file"]::file-selector-button {
   cursor: pointer;
 }
 
-button,
-input[type="submit"],
-input[type="button"] {
+.btn {
   display: inline-block;
   padding: 0.7rem 1.1rem;
   font-family: $font-body;
@@ -371,42 +317,80 @@ input[type="button"] {
   color: var(--on-fill);
   background: var(--fill);
   border: $border solid var(--rule);
+  text-decoration: none;
   cursor: pointer;
 }
 
+.btn-block {
+  width: 100%;
+  text-align: left;
+}
+
+.btn-compact {
+  width: auto;
+  padding: 0.4rem 0.65rem;
+  margin: 0.15rem 0.3rem 0.15rem 0;
+  font-size: 0.9rem;
+}
+
 @media (hover: hover) {
-  button:hover,
-  input[type="submit"]:hover,
-  input[type="button"]:hover,
-  input[type="file"]:hover {
+  .btn:hover,
+  .field-file:hover {
+    background: var(--bg);
+    color: var(--fg);
+  }
+
+  .field-file:hover::file-selector-button {
     background: var(--bg);
     color: var(--fg);
   }
 }
 
-button:disabled,
-input:disabled {
+.btn:disabled,
+.field:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-input:invalid:not(:placeholder-shown):not(:focus) {
+.field:invalid:not(:placeholder-shown):not(:focus) {
   outline: $border solid var(--fg);
   outline-offset: 0;
   box-shadow: inset 0 0 0 2px var(--bg), inset 0 0 0 4px var(--fg);
 }
 
+// --- forms ---
+
+.form-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.form-table th,
+.form-table td {
+  padding: 0.45rem 0;
+  vertical-align: middle;
+  font-weight: 400;
+  text-align: left;
+}
+
+.form-table th {
+  width: 10.5rem;
+  padding-right: 1.25rem;
+  white-space: nowrap;
+}
+
+.form-table th label {
+  font-size: 0.95rem;
+}
+
+.form-table tr + tr th,
+.form-table tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+}
+
 // --- dashboard / account ---
 
-article > * + h2 {
-  margin-top: 1.75rem;
-}
-
-article > h1 + h2 {
-  margin-top: 1rem;
-}
-
-article ul {
+.action-list {
   list-style: none;
   display: flex;
   flex-direction: column;
@@ -414,50 +398,101 @@ article ul {
   width: 100%;
 }
 
-article ul > li {
+.action-item {
   display: flex;
   flex-direction: column;
   align-items: stretch;
   width: 100%;
 }
 
-article ul > li > button {
-  width: 100%;
-  text-align: left;
-}
-
-#account-content:empty,
-[id^="db-"]:empty,
-[id^="item-edit-"]:empty {
+.hx-slot:empty {
   display: none;
 }
 
-article ul > li > [id^="db-"]:not(:empty) {
+.hx-slot:not(:empty) {
   width: 100%;
   margin-top: 0.75rem;
-  padding: 1rem;
+}
+
+.hx-container {
+  position: relative;
+  width: 100%;
+  padding: 1.1rem 2.6rem 1rem 1rem;
   border: $border solid var(--rule);
   overflow-x: auto;
 }
 
-article ul > li > [id^="db-"] > * + * {
+.hx-container > * + * {
   margin-top: 0.65rem;
 }
 
-article ul > li > [id^="db-"] h3 {
-  font-size: 0.95rem;
+.button-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--fg);
+  background: var(--bg);
+  border: 0;
+  border-left: $border solid var(--rule);
+  border-bottom: $border solid var(--rule);
+  cursor: pointer;
 }
 
-article ul > li > [id^="db-"] > button {
-  width: 100%;
+@media (hover: hover) {
+  .button-clear:hover {
+    background: var(--fill);
+    color: var(--on-fill);
+  }
 }
 
-#account-content:not(:empty) {
-  margin-top: 0.65rem;
+.hx-flash {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
 }
 
-// data tables (orders, users, sessions) — not form tables
-article ul > li > [id^="db-"] > table {
+.hx-slot > .hx-flash {
+  padding: 1rem;
+  border: $border solid var(--rule);
+}
+
+.hx-msg {
+  font-size: 1rem;
+}
+
+.row-msg:empty {
+  display: none;
+}
+
+.row-msg .hx-flash {
+  margin-top: 0.25rem;
+}
+
+.row-msg .hx-msg {
+  font-size: 0.85rem;
+}
+
+.row-msg .next-action {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+}
+
+// --- data tables ---
+
+.data-table {
   width: 100%;
   table-layout: fixed;
   border-collapse: collapse;
@@ -465,8 +500,8 @@ article ul > li > [id^="db-"] > table {
   line-height: 1.35;
 }
 
-article ul > li > [id^="db-"] > table th,
-article ul > li > [id^="db-"] > table td {
+.data-table th,
+.data-table td {
   padding: 0.5rem 0.7rem 0.5rem 0;
   text-align: left;
   vertical-align: middle;
@@ -476,33 +511,20 @@ article ul > li > [id^="db-"] > table td {
   border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
 }
 
-article ul > li > [id^="db-"] > table th {
+.data-table th {
   font-family: $font-heading;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  white-space: nowrap;
 }
 
-article ul > li > [id^="db-"] > table th:last-child,
-article ul > li > [id^="db-"] > table td:last-child {
+.data-table th:last-child,
+.data-table td:last-child {
   width: 38%;
   white-space: normal;
   overflow: visible;
   text-overflow: unset;
-}
-
-article ul > li > [id^="db-"] > table button {
-  width: auto;
-  padding: 0.4rem 0.65rem;
-  margin: 0.15rem 0.3rem 0.15rem 0;
-  font-size: 0.9rem;
-}
-
-article ul > li > [id^="db-"] > table span {
-  display: inline-block;
-  margin-top: 0.25rem;
 }
 
 .order-list th:first-child,
@@ -566,28 +588,26 @@ article ul > li > [id^="db-"] > table span {
   opacity: 0.55;
 }
 
-.menu-item h3 {
-  font-size: 0.9rem;
+.menu-item-name {
   line-height: 1.15;
   overflow-wrap: anywhere;
 }
 
-.menu-item span {
+.menu-item-price {
   font-family: $font-heading;
   font-size: 0.85rem;
   font-weight: 800;
   letter-spacing: 0.04em;
 }
 
-.menu-item img {
+.menu-item-img {
   width: 100%;
   aspect-ratio: 1;
   object-fit: cover;
   border: $border solid var(--rule);
-  image-rendering: auto;
 }
 
-.menu-item > p {
+.menu-item-desc {
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.3;
@@ -597,44 +617,39 @@ article ul > li > [id^="db-"] > table span {
   overflow: hidden;
 }
 
-.menu-item > button {
-  width: 100%;
-  margin-top: 0.15rem;
-  padding: 0.45rem 0.6rem;
-  font-size: 0.9rem;
-}
-
-.menu-item > [id^="item-edit-"]:not(:empty) {
+.menu-item .hx-slot:not(:empty) {
   margin-top: 0.35rem;
-  padding-top: 0.5rem;
-  border-top: $border solid var(--rule);
 }
 
-.menu-item textarea {
+.menu-item .hx-container {
+  padding: 0.7rem 2.2rem 0.7rem 0.7rem;
+}
+
+.menu-item .field-area {
   min-height: 4rem;
 }
 
-.menu-item form table,
-.menu-item form tbody,
-.menu-item form tr,
-.menu-item form th,
-.menu-item form td {
+.menu-item .form-table,
+.menu-item .form-table tbody,
+.menu-item .form-table tr,
+.menu-item .form-table th,
+.menu-item .form-table td {
   display: block;
   width: 100%;
 }
 
-.menu-item form th {
+.menu-item .form-table th {
   width: 100%;
   padding: 0.5rem 0 0.2rem;
   white-space: normal;
 }
 
-.menu-item form td {
+.menu-item .form-table td {
   padding: 0 0 0.35rem;
 }
 
-.menu-item form tr + tr th,
-.menu-item form tr + tr td {
+.menu-item .form-table tr + tr th,
+.menu-item .form-table tr + tr td {
   border-top: 0;
 }
 
@@ -644,52 +659,51 @@ article ul > li > [id^="db-"] > table span {
   cursor: wait;
 }
 
-.htmx-request button,
-.htmx-request input[type="submit"] {
+.htmx-request .btn {
   opacity: 0.6;
 }
 
 // --- responsive ---
 
 @media (max-width: $bpoint-phone) {
-  body > nav ul {
+  .site-nav-list {
     flex-direction: column;
   }
 
-  body > nav li {
+  .site-nav-list > li {
     border-right: 0;
     border-bottom: $border solid var(--rule);
   }
 
-  body > nav li:last-child {
+  .site-nav-list > li:last-child {
     border-bottom: 0;
   }
 
-  form table,
-  form tbody,
-  form tr,
-  form th,
-  form td {
+  .form-table,
+  .form-table tbody,
+  .form-table tr,
+  .form-table th,
+  .form-table td {
     display: block;
     width: 100%;
   }
 
-  form th {
+  .form-table th {
     padding: 0.7rem 0 0.25rem;
     white-space: normal;
     border-top: 0;
   }
 
-  form td {
+  .form-table td {
     padding: 0 0 0.7rem;
   }
 
-  form tr + tr th,
-  form tr + tr td {
+  .form-table tr + tr th,
+  .form-table tr + tr td {
     border-top: 0;
   }
 
-  main {
+  .site-main {
     padding-inline: 0.85rem;
   }
 
@@ -697,24 +711,24 @@ article ul > li > [id^="db-"] > table span {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  article ul > li > [id^="db-"] > table {
+  .data-table {
     table-layout: auto;
   }
 
-  article ul > li > [id^="db-"] > table th:last-child,
-  article ul > li > [id^="db-"] > table td:last-child {
+  .data-table th:last-child,
+  .data-table td:last-child {
     width: auto;
   }
 }
 
 @media (min-width: $bpoint-tablet) {
-  header {
+  .site-header {
     padding-block: 0.7rem;
   }
 }
 
 @media (min-width: $bpoint-desktop) {
-  header {
+  .site-header {
     letter-spacing: 0.08em;
   }
 }

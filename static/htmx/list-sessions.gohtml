@@ -2,11 +2,11 @@
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <h3>Sesiones activas</h3>
+  <h3 class="panel-title">Sesiones activas</h3>
   {{if not .}}
-    <p>No hay sesiones activas</p>
+    <p class="empty-msg">No hay sesiones activas</p>
   {{else}}
-    <table>
+    <table class="data-table">
       <tr>
         <th>Usuario</th>
         <th>Rol</th>
@@ -22,17 +22,19 @@
         <td>{{UnixToTime .Expires}}</td>
         <td>
           <button
+          class="btn btn-compact"
           hx-patch="/dashboard/admin/sessions/close/{{.User}}"
           hx-target="#msg-session-{{.User}}"
           hx-swap="innerHTML"
           hx-confirm="¿Cerrar la sesión de {{.User}}?"
           >Cerrar sesión</button>
-          <span id="msg-session-{{.User}}"></span>
+          <span id="msg-session-{{.User}}" class="row-msg"></span>
         </td>
       </tr>
       {{end}}
     </table>
     <button
+    class="btn btn-block"
     hx-patch="/dashboard/admin/sessions/close"
     hx-vals='{"users":"true","staff":"true"}'
     hx-target="#db-session-list"

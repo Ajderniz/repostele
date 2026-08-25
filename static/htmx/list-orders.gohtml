@@ -2,11 +2,11 @@
 
 <div class="hx-container">
   {{template "button-clear"}}
-  <h3>Órdenes</h3>
+  <h3 class="panel-title">Órdenes</h3>
   {{if not .}}
-    <p>No hay órdenes</p>
+    <p class="empty-msg">No hay órdenes</p>
   {{else}}
-    <table class="order-list">
+    <table class="data-table order-list">
       <thead>
         <tr>
           <th>ID</th>
@@ -26,12 +26,14 @@
           <td>
             {{if or (eq .Status 0) (eq .Status 1)}}
               <button
+              class="btn btn-compact"
               hx-patch="/dashboard/orders/{{.Id}}/status"
               hx-vals='{"status":"3"}'
               hx-target="#msg-{{.Id}}"
               hx-swap="innerHTML"
               >Aceptar</button>
               <button
+              class="btn btn-compact"
               hx-patch="/dashboard/orders/{{.Id}}/status"
               hx-vals='{"status":"1"}'
               hx-target="#msg-{{.Id}}"
@@ -39,13 +41,14 @@
               >Denegar</button>
             {{else if eq .Status 3}}
               <button
+              class="btn btn-compact"
               hx-patch="/dashboard/orders/{{.Id}}/status"
               hx-vals='{"status":"4"}'
               hx-target="#msg-{{.Id}}"
               hx-swap="innerHTML"
               >Marcar cumplida</button>
             {{end}}
-            <span id="msg-{{.Id}}"></span>
+            <span id="msg-{{.Id}}" class="row-msg"></span>
           </td>
         </tr>
         <tr class="order-ref-row">

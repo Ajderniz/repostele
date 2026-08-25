@@ -12,10 +12,10 @@
   <script src="/csrf.min.js" defer></script>
 </head>
 <body>
-  <header>Repostele</header>
-  <nav>
+  <header class="site-header">Repostele</header>
+  <nav class="site-nav">
     {{if .Init}}
-      <ul>
+      <ul class="site-nav-list">
         <li><a href="/menu">Menú</a></li>
         {{if .LoggedIn}}
           {{if .IsStaff}}<li><a href="/dashboard">Panel</a></li>{{end}}
@@ -24,6 +24,7 @@
             <!-- TODO: make this work -->
             <button
             id="login-logout"
+            class="site-nav-btn"
             type="submit"
             formaction="/logout"
             formmethod="patch"
@@ -36,16 +37,16 @@
       </ul>
     {{end}}
   </nav>
-  <main>
+  <main class="site-main">
     {{with .Err}}
-      <div id="err-msg">
-        <p>{{.}}</p>
+      <div id="err-msg" class="banner banner-err">
+        <p class="banner-text">{{.}}</p>
       </div>
     {{else}}
       {{CallTemplate .MainName .MainData}}
     {{end}}
   </main>
-  <footer>Footer</footer>
+  <footer class="site-footer">Footer</footer>
 </body>
 </html>
 

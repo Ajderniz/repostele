@@ -1,7 +1,7 @@
 {{define "main-menu"}}
 
-<article>
-  <h1>Menú</h1>
+<article class="page">
+  <h1 class="page-title">Menú</h1>
   <div id="menu-item-list">
     {{$isAdmin := .IsAdmin}}
     {{$isStaff := .IsStaff}}
@@ -9,19 +9,20 @@
       {{range .}}
         {{if or .Available $isAdmin}}
         <div class="menu-item {{if not .Available}}unavailable{{end}}">
-          <h3>{{.Name}} {{if not .Available}}(no disponible){{end}}</h3>
-          <div><span>₡{{.Price}}</span></div>
+          <h3 class="menu-item-name">{{.Name}} {{if not .Available}}(no disponible){{end}}</h3>
+          <div class="menu-item-price"><span>₡{{.Price}}</span></div>
           {{if .ImgPath}}
-          <img src="{{.ImgPath}}" alt="{{.Name}}">
+          <img class="menu-item-img" src="{{.ImgPath}}" alt="{{.Name}}">
           {{end}}
-          <p>{{.Desc}}</p>
+          <p class="menu-item-desc">{{.Desc}}</p>
           {{if $isStaff}}
             <button
+            class="btn btn-block"
             hx-get="/dashboard/admin/menu/{{.Id}}/edit"
             hx-target="#item-edit-{{.Id}}"
             hx-swap="innerHTML"
             >Editar</button>
-            <div id="item-edit-{{.Id}}"></div>
+            <div id="item-edit-{{.Id}}" class="hx-slot"></div>
           {{else}}
             <!--
             TODO: implement this ofc
@@ -32,7 +33,7 @@
             - prompts user to verify scanned code against real code
             - if ok, proceed to post order by using code string, not img
             -->
-            <button>
+            <button class="btn btn-block" type="button">
               Agregar a la orden
             </button>
           {{end}}
@@ -40,7 +41,7 @@
         {{end}}
       {{end}}
     {{else}}
-      <p>{{.Msg}}</p>
+      <p class="empty-msg">{{.Msg}}</p>
     {{end}}
   </div>
 </article>

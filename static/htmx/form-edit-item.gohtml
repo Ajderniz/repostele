@@ -3,15 +3,15 @@
 <div class="hx-container">
   {{template "button-clear"}}
   <form
+  class="page-form"
   hx-patch="/dashboard/admin/menu/{{.Id}}"
-  hx-target="#item-edit-{{.Id}}"
-  hx-swap="innerHTML"
   >
-    <table>
+    <table class="form-table">
       <tr>
         <th><label for="edit-name-{{.Id}}">Nombre</label></th>
         <td>
           <input
+          class="field"
           type="text"
           id="edit-name-{{.Id}}"
           name="name"
@@ -24,6 +24,7 @@
         <th><label for="edit-price-{{.Id}}">Precio</label></th>
         <td>
           <input
+          class="field"
           type="number"
           id="edit-price-{{.Id}}"
           name="price"
@@ -37,13 +38,14 @@
       <tr>
         <th><label for="edit-desc-{{.Id}}">Descripción</label></th>
         <td>
-          <textarea id="edit-desc-{{.Id}}" name="desc">{{.Desc}}</textarea>
+          <textarea class="field field-area" id="edit-desc-{{.Id}}" name="desc">{{.Desc}}</textarea>
         </td>
       </tr>
       <tr>
         <th><label for="edit-available-{{.Id}}">Disponible</label></th>
         <td>
           <input
+          class="field-check"
           type="checkbox"
           id="edit-available-{{.Id}}"
           name="available"
@@ -55,7 +57,7 @@
       </tr>
       <tr>
         <td></td>
-        <td><input type="submit" value="Guardar"></td>
+        <td><input class="btn" type="submit" value="Guardar"></td>
       </tr>
     </table>
   </form>

@@ -1,19 +1,30 @@
 {{define "main-account"}}
 
-<article>
-  <h1>Mi cuenta</h1>
-  <ul>
-    <li>
-      <button hx-get="htmx/form-change-password" hx-target="#account-content" hx-swap="innerHTML">
+<article class="page">
+  <h1 class="page-title">Mi cuenta</h1>
+  <ul class="action-list">
+    <li class="action-item">
+      <button
+      class="btn btn-block"
+      hx-get="htmx/form-change-password"
+      hx-target="#account-content"
+      hx-swap="innerHTML"
+      >
         Cambiar contraseña
-    </button>
+      </button>
     </li>
-    <li>
-      <button hx-get="htmx/form-deactivate-account" hx-target="#account-content" hx-swap="innerHTML">
+    <li class="action-item">
+      <button
+      class="btn btn-block"
+      hx-get="htmx/form-deactivate-account"
+      hx-target="#account-content"
+      hx-swap="innerHTML"
+      >
         Desactivar cuenta
       </button>
     </li>
   </ul>
+  <div id="account-content" class="hx-slot"></div>
 </article>
 
 {{end}}
