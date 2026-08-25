@@ -1,0 +1,9 @@
+{{define "button-create-item"}}
+<button
+class="btn btn-block"
+hx-get="htmx/form-create-item"
+hx-target="#{{.}}"
+hx-swap="innerHTML"
+>Crear nuevo item</button>
+<div id="{{.}}" class="hx-slot"></div>
+{{end}}

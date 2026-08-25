@@ -5,13 +5,7 @@
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
   {{if $isStaff}}
-    <button
-    class="btn btn-block"
-    hx-get="htmx/form-create-item"
-    hx-target="#menu-new-item"
-    hx-swap="innerHTML"
-    >Crear nuevo item</button>
-    <div id="menu-new-item" class="hx-slot"></div>
+    {{template "button-create-item" "menu-new-item"}}
   {{end}}
   <div id="menu-item-list">
     {{with .Data}}

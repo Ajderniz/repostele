@@ -18,14 +18,7 @@
         <div id="db-order-list" class="hx-slot"></div>
       </li>
       <li class="action-item">
-        <button
-        class="btn btn-block"
-        hx-get="htmx/form-create-item"
-        hx-target="#db-new-item"
-        hx-swap="innerHTML">
-          Crear nuevo item
-        </button>
-        <div id="db-new-item" class="hx-slot"></div>
+        {{template "button-create-item" "db-new-item"}}
       </li>
     </ul>
     {{if .IsAdmin}}
