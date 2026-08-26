@@ -88,7 +88,6 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   })
 }
 
-// TODO: fix: currently throws 500 when login fails
 func Login(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { serveErr(w, r, Forbidden, err); return }

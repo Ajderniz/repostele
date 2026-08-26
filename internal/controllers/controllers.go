@@ -101,12 +101,22 @@ func unixToTime(unix int64) string {
 	return t.Format("2-1 03:04:05")
 }
 
+func dict(values ...any) map[string]any {
+	d := make(map[string]any, len(values)/2)
+	for i := 0; i+1 < len(values); i += 2 {
+		key, _ := values[i].(string)
+		d[key] = values[i+1]
+	}
+	return d
+}
+
 func InitTemplate() {
 	_Tpl = tpl.New("base")
 	_Tpl.Funcs(tpl.FuncMap{
 		"CallTemplate": callTemplate,
 		"OrderStatusName": orderStatusName,
 		"UnixToTime": unixToTime,
+		"dict": dict,
 	})
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))
@@ -157,7 +167,8 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	var data *_MainData
 	if dataAny != nil {
 		data = dataAny.(*_MainData)
-	} else {
+	}
+	if data == nil {
 		data = &_MainData{}
 	}
 	data.IsStaff = isStaff
