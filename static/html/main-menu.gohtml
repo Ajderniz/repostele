@@ -7,6 +7,14 @@
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
   {{if $isAdmin}}
+    <!--
+    TODO:
+    add more feedback to actions like these when the result should be
+    immediately shown. examples:
+    - right here, when adding a new item to the menu
+    - when performing ANY state-altering action in the dashboard
+    - when logging out
+    -->
     {{template "button-create-item" "menu-new-item"}}
   {{end}}
   <div id="menu-item-list">
@@ -14,14 +22,14 @@
     {{with .Data}}
       {{range .}}
         {{if or .Available $isAdmin}}
-        {{$anyVisible = true}}
-        {{template "menu-item" (dict
-          "Item" .
-          "LoggedIn" $loggedIn
-          "IsStaff" $isStaff
-          "IsAdmin" $isAdmin
-          "OOB" false
-        )}}
+          {{$anyVisible = true}}
+          {{template "menu-item" (dict
+            "Item" .
+            "LoggedIn" $loggedIn
+            "IsStaff" $isStaff
+            "IsAdmin" $isAdmin
+            "OOB" false
+          )}}
         {{end}}
       {{end}}
     {{end}}
