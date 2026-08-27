@@ -12,32 +12,14 @@
   <script src="/csrf.min.js" defer></script>
 </head>
 <body>
-  <header class="site-header">Repostele</header>
-  <!-- TODO: make nav independent & update periodically -->
+  <header id="site-header">Repostele</header>
   {{if .Init}}
-    <nav id="site-nav">
-      <ul id="site-nav-list-left">
-        <li><a href="/menu">Menú</a></li>
-        {{if and .LoggedIn .IsStaff}}
-          <!-- TODO: add icon that shows pending orders -->
-          <li><a href="/dashboard">Panel</a></li>
-        {{end}}
-      </ul>
-      <ul id="site-nav-list-right">
-        {{if .LoggedIn}}
-          <li><a href="/account">Cuenta</a></li>
-          <li>
-            <button
-            id="login-logout"
-            class="site-nav-btn"
-            hx-patch="/logout"
-            >Salir</button>
-          </li>
-        {{else}}
-          <li><a href="/login" id="login-logout">Acceder</a></li>
-        {{end}}
-      </ul>
-    </nav>
+    <nav
+    id="site-nav"
+    hx-get="/htmx/nav"
+    hx-trigger="load, every 30s"
+    hx-swap="innerHTML"
+    ></nav>
   {{end}}
   <main class="site-main">
     {{with .Err}}
@@ -49,7 +31,7 @@
     {{end}}
   </main>
   <!-- TODO: add foldable aside shortcut to compact order list when .IsStaff -->
-  <footer class="site-footer">Footer</footer>
+  <footer id="site-footer">Footer</footer>
 </body>
 </html>
 

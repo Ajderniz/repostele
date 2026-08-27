@@ -19,16 +19,21 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
-func checkSession(r *http.Request) bool {
+func checkSessionUser(r *http.Request) (username string, role models.SessionRole, ok bool) {
   sessionCookie, err := r.Cookie(SESSION_ID)
-  if err != nil { return false }
+  if err != nil { return "", 0, false }
 
   session, err := models.GetSessionFromID(sessionCookie.Value)
-  if err != nil || session.SessionToken == "" { return false }
+  if err != nil || session.SessionToken == "" { return "", 0, false }
 
-  if session.Expires <= time.Now().Unix() { return false }
+  if session.Expires <= time.Now().Unix() { return "", 0, false }
 
-  return true
+  return session.User, session.Role, true
+}
+
+func checkSession(r *http.Request) bool {
+  _, _, ok := checkSessionUser(r)
+  return ok
 }
 
 func openSession(

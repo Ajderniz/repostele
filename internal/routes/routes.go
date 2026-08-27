@@ -23,6 +23,7 @@ func setupFileServer(r *chi.Mux) error {
       http.FileServer(http.Dir(_DYNDIR)),
     ),
   )
+  r.Get("/htmx/nav", controllers.ServeNav)
   r.Get("/"+static.HXDIR+"/{path}", controllers.ServeHTMX)
   return nil
 }

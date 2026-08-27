@@ -1,0 +1,23 @@
+{{define "site-nav"}}
+
+<ul id="site-nav-list-left">
+  <li><a href="/menu">Menú</a></li>
+  <!-- TODO: add icon that shows pending orders -->
+  {{if and .LoggedIn .IsStaff}}<li><a href="/dashboard">Panel</a></li>{{end}}
+</ul>
+<ul id="site-nav-list-right">
+  {{if .LoggedIn}}
+    <li><a href="/account">Cuenta</a></li>
+    <li>
+      <button
+      id="login-logout"
+      class="site-nav-btn"
+      hx-patch="/logout"
+      >Salir</button>
+    </li>
+  {{else}}
+    <li><a href="/login" id="login-logout">Acceder</a></li>
+  {{end}}
+</ul>
+
+{{end}}

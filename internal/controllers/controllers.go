@@ -89,6 +89,33 @@ func InitTemplate() {
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))
 }
 
+func ServeNav(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+
+	username, role, loggedIn := checkSessionUser(r)
+
+	isStaff := false
+	isAdmin := false
+	if loggedIn && role == models.SESSION_ROLE_STAFF {
+		staff, err := models.GetStaffFromUsername(username)
+		if err != nil {
+			slog.Error(err.Error())
+		} else if staff.Username != "" {
+			isStaff = true
+			isAdmin = staff.Admin
+		}
+	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	err := _Tpl.ExecuteTemplate(w, "site-nav", map[string]any{
+		"Init":     models.CheckInit(),
+		"LoggedIn": loggedIn,
+		"IsStaff":  isStaff,
+		"IsAdmin":  isAdmin,
+	})
+	if err != nil { slog.Error(err.Error()); w.WriteHeader(InternalServerError) }
+}
+
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	path := chi.URLParam(r, "path")
 	if r.Header.Get("HX-Request") != "true" || path == "" {

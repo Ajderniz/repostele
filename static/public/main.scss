@@ -68,7 +68,7 @@ svg {
 
 // --- chrome ---
 
-.site-header {
+#site-header {
   display: flex;
   align-items: center;
   gap: 0.55em;
@@ -82,7 +82,7 @@ svg {
   border-bottom: $border solid var(--rule);
 }
 
-.site-header::before {
+#site-header::before {
   content: "";
   flex: 0 0 auto;
   width: 0.9em;
@@ -138,7 +138,7 @@ svg {
   }
 }
 
-.site-footer {
+#site-footer {
   margin-top: auto;
   padding: 0.7rem $pad;
   border-top: $border solid var(--rule);
@@ -842,13 +842,13 @@ svg {
 }
 
 @media (min-width: $bpoint-tablet) {
-  .site-header {
+  #site-header {
     padding-block: 0.7rem;
   }
 }
 
 @media (min-width: $bpoint-desktop) {
-  .site-header {
+  #site-header {
     letter-spacing: 0.08em;
   }
 }
