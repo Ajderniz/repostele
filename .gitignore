@@ -1,3 +1,4 @@
 *.sublime-*
 bin
 .last_build
+*.css*
