@@ -19,7 +19,10 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
-func checkSessionUser(r *http.Request) (username string, role models.SessionRole, ok bool) {
+func checkSessionUser(
+  r *http.Request,
+) (username string, role models.SessionRole, ok bool) {
+
   sessionCookie, err := r.Cookie(SESSION_ID)
   if err != nil { return "", 0, false }
 
@@ -147,8 +150,6 @@ func Logout(w http.ResponseWriter, r *http.Request) {
     w.WriteHeader(OK)
     return
   }
-
-  serveMsg(w, r, _MsgLoggedOut)
 }
 
 func GetActiveSessions(w http.ResponseWriter, r *http.Request) {

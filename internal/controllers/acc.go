@@ -22,7 +22,6 @@ var (
 	_MsgAccNotFound = "Cuenta no encontrada"
   _MsgAccCreated = "Registro exitoso"
 	_MsgLoggedIn = "Inicio de sesión exitoso"
-	_MsgLoggedOut = "Cierre de sesión exitoso"
 	_MsgAccDeactivated = "La cuenta fue desactivada"
 	_MsgUsernameChanged = "Se cambió el nombre de usuario"
 	_MsgPasswordChanged = "Se cambió la contraseña"
