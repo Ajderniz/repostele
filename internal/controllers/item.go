@@ -128,5 +128,13 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   err = models.UpdateItem(id, update)
   if err != nil { serveInternalErrHX(w); return }
 
-  serveResponseHX(w, "Se actualizó el ítem", OK, nil)
+  item, err := models.GetItemFromID(id)
+  if err != nil { serveInternalErrHX(w); return }
+
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  w.WriteHeader(OK)
+  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó el ítem"})
+  _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
+    "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": true,
+  })
 }

@@ -1,0 +1,42 @@
+{{define "menu-item"}}
+<div
+id="menu-item-{{.Item.Id}}"
+class="menu-item {{if not .Item.Available}}unavailable{{end}}"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>
+  <h3 class="menu-item-name">
+    {{.Item.Name}} {{if not .Item.Available}}(no disponible){{end}}
+  </h3>
+  <div class="menu-item-price"><span>₡{{.Item.Price}}</span></div>
+  {{if .Item.ImgPath}}
+  <img class="menu-item-img" src="{{.Item.ImgPath}}" alt="{{.Item.Name}}">
+  {{end}}
+  <p class="menu-item-desc">{{.Item.Desc}}</p>
+  {{if .LoggedIn}}
+    {{if .IsStaff}}
+      {{if .IsAdmin}}
+        <button
+        class="btn btn-block"
+        hx-get="/dashboard/admin/menu/{{.Item.Id}}/edit"
+        hx-target="#item-edit-{{.Item.Id}}"
+        hx-swap="innerHTML"
+        >Editar</button>
+        <div id="item-edit-{{.Item.Id}}" class="hx-slot"></div>
+      {{end}}
+    {{else}}
+      <!--
+      TODO: implement this ofc
+      - somehow add to a cache
+      - then view form probably in a new main-
+      - this order form uses tesseract.min.js and a local script
+      - script scans attached image with 25-digit refnum
+      - prompts user to verify scanned code against real code
+      - if ok, proceed to post order by using code string, not img
+      -->
+      <button class="btn btn-block" type="button">
+        Agregar a la orden
+      </button>
+    {{end}}
+  {{end}}
+</div>
+{{end}}
