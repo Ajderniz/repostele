@@ -93,25 +93,29 @@ svg {
   filter: var(--mark-filter);
 }
 
-.site-nav {
+#site-nav {
   border-bottom: $border solid var(--rule);
+  display: flex;
+  justify-content: space-between;
 }
 
-.site-nav:not(:has(.site-nav-list)) {
-  display: none;
-}
-
-.site-nav-list {
+#site-nav-list-left,
+#site-nav-list-right {
   display: flex;
   flex-wrap: wrap;
   list-style: none;
 }
 
-.site-nav-list > li {
+#site-nav-list-left > li {
   border-right: $border solid var(--rule);
 }
 
-.site-nav-list a,
+#site-nav-list-right > li {
+  border-left: $border solid var(--rule);
+}
+
+#site-nav-list-left a,
+#site-nav-list-right a,
 .site-nav-btn {
   display: block;
   padding: 0.7rem 1.15rem;
@@ -126,7 +130,8 @@ svg {
 }
 
 @media (hover: hover) {
-  .site-nav-list a:hover,
+  #site-nav-list-left a:hover,
+  #site-nav-list-right a:hover,
   .site-nav-btn:hover {
     background: var(--fill);
     color: var(--on-fill);
@@ -744,16 +749,19 @@ svg {
 // --- responsive ---
 
 @media (max-width: $bpoint-phone) {
-  .site-nav-list {
+  #site-nav {
     flex-direction: column;
   }
 
-  .site-nav-list > li {
+  #site-nav-list-left > li,
+  #site-nav-list-right > li {
+    width: 100%;
     border-right: 0;
     border-bottom: $border solid var(--rule);
   }
 
-  .site-nav-list > li:last-child {
+  #site-nav-list-right > li:last-child {
+    border-left: 0;
     border-bottom: 0;
   }
 

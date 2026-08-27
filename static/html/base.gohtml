@@ -14,28 +14,31 @@
 <body>
   <header class="site-header">Repostele</header>
   <!-- TODO: make nav independent & update periodically -->
-  <nav class="site-nav">
-    {{if .Init}}
-      <ul class="site-nav-list">
+  {{if .Init}}
+    <nav id="site-nav">
+      <ul id="site-nav-list-left">
         <li><a href="/menu">Menú</a></li>
-        {{if .LoggedIn}}
+        {{if and .LoggedIn .IsStaff}}
           <!-- TODO: add icon that shows pending orders -->
-          {{if .IsStaff}}<li><a href="/dashboard">Panel</a></li>{{end}}
+          <li><a href="/dashboard">Panel</a></li>
+        {{end}}
+      </ul>
+      <ul id="site-nav-list-right">
+        {{if .LoggedIn}}
           <li><a href="/account">Cuenta</a></li>
           <li>
             <button
             id="login-logout"
             class="site-nav-btn"
             hx-patch="/logout"
-            >Salir
-            </button>
+            >Salir</button>
           </li>
         {{else}}
           <li><a href="/login" id="login-logout">Acceder</a></li>
         {{end}}
       </ul>
-    {{end}}
-  </nav>
+    </nav>
+  {{end}}
   <main class="site-main">
     {{with .Err}}
       <div id="err-msg" class="banner banner-err">
