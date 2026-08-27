@@ -25,7 +25,7 @@ var (
 	_MsgLoggedOut = "Cierre de sesión exitoso"
 	_MsgAccDeactivated = "La cuenta fue desactivada"
 	_MsgUsernameChanged = "Se cambió el nombre de usuario"
-	_MsgPasswordChanged = "Se cambio la contraseña"
+	_MsgPasswordChanged = "Se cambió la contraseña"
 )
 
 func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Fingerprint, err error) {

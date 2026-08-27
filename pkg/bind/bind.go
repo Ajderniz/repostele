@@ -14,8 +14,8 @@ import (
 var _Validate = validator.New(validator.WithRequiredStructEnabled())
 var _Decoder  = schema.NewDecoder()
 
-var _DecodingErr = errors.New("Decoding error")
-var _ValidationErr = errors.New("Validation error")
+var _DecodingErr = errors.New("Error de decodificación")
+var _ValidationErr = errors.New("Error de validación")
 
 func JSON(r *http.Request, dst any) error {
 	if err := json.NewDecoder(r.Body).Decode(dst); err != nil {
@@ -32,7 +32,7 @@ func JSON(r *http.Request, dst any) error {
 func Form(r *http.Request, dst any) error {
 	if err := r.ParseForm(); err != nil { 
 		slog.Error(err.Error())
-		return errors.New("Parsing error")
+		return errors.New("Error de parseo")
 	}
 	if err := _Decoder.Decode(dst, r.Form); err != nil {
 		slog.Error(err.Error())
