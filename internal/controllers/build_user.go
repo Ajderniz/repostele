@@ -48,32 +48,8 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   serveResponse(w, r, &_MainData{Msg: _MsgAccCreated}, Created, nil)
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
-  fp, err := checkLoginAttempts(w, r)
-  if err != nil { serveErr(w, r, Forbidden, err); return }
-
-  username, password, err := getCredsFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
-
-  user, err := models.GetUserFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if user.Username == "" { serveMsg(w, r, _MsgAccNotFound); return }
-
-  err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil { failLogin(w, r, fp); return }
-
-  sessionID, _ := r.Cookie(SESSION_ID)
-
-  err = openSession(
-    w,
-    user.Username,
-    models.SESSION_ROLE_USER,
-    sessionID.Value,
-    fp.Id,
-  )
-  if err != nil { serveInternalErr(w, r); return}
-
-  serveData(w, r, &_MainData{Data: user.Username})
+func UserLogin(w http.ResponseWriter, r *http.Request) {
+  Login(w, r, false)
 }
 
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {

@@ -33,7 +33,8 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.GetFingerprint())
     r.Use(mymiddleware.OptUsername())
-    r.Post("/",    controllers.Login)
+    r.Get( "/",    controllers.ServeMainTemplate)
+    r.Post("/",    controllers.UserLogin)
   })
   r.Route("/logout", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())

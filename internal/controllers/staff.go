@@ -14,7 +14,35 @@ import (
 	"github.com/ajderniz/repostele/pkg/pass"
 )
 
-const _TEST_KEY = "1111111111111111"
+const (
+  _SERVER_NAME = "Staff"
+  _TEST_KEY = "1111111111111111"
+)
+
+func checkInit(
+  w http.ResponseWriter,
+  r *http.Request,
+  section string,
+) (init, redirect bool) {
+  init = true
+  if section == "init" {
+    if models.CheckInit() {
+      http.Redirect(w, r, "/menu", MovedPermanently)
+      redirect = true
+      return
+    }
+    init = false
+  }
+  return
+}
+
+func HandleRoot(w http.ResponseWriter, r *http.Request) {
+  if !models.CheckInit() {
+    http.Redirect(w, r, "/init", PermanentRedirect)
+  } else {
+    http.Redirect(w, r, "/menu", PermanentRedirect)
+  }
+}
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
@@ -88,34 +116,8 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   })
 }
 
-func Login(w http.ResponseWriter, r *http.Request) {
-  fp, err := checkLoginAttempts(w, r)
-  if err != nil { serveErr(w, r, Forbidden, err); return }
-
-  username, password, err := getCredsFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
-
-  staff, err := models.GetStaffFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if staff.Username == "" { serveMsg(w, r, _MsgAccNotFound); return }
-
-  err = pass.CheckPasswordHash(password, staff.PassHash)
-  if err != nil { failLogin(w, r, fp); return }
-
-  sessionIDCookie, _ := r.Cookie(SESSION_ID)
-  sessionID := ""
-  if sessionIDCookie != nil { sessionID = sessionIDCookie.Value }
-
-  err = openSession(
-    w, 
-    staff.Username, 
-    models.SESSION_ROLE_STAFF,
-    sessionID,
-    fp.Id,
-  )
-  if err != nil { serveInternalErr(w, r); return }
-
-  serveMsg(w, r, _MsgLoggedIn)
+func StaffLogin(w http.ResponseWriter, r *http.Request) {
+  Login(w, r, true)
 }
 
 func deactivateStaffAccount(
