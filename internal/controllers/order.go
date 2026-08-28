@@ -143,7 +143,18 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   orders, err := models.GetOrders(params)
   if err != nil { serveInternalErr(w, r); return }
 
-  serveDataHX(w, r, orders, "list-orders")
+  _, role, _ := checkSessionUser(r)
+  isStaff := role == models.SESSION_ROLE_STAFF
+
+  serveDataHX(
+    w,
+    r,
+    map[string]any{
+      "Orders": orders,
+      "IsStaff": isStaff,
+    },
+    "list-orders",
+  )
 }
 
 func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {

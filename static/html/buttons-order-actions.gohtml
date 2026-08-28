@@ -1,0 +1,47 @@
+{{define "buttons-order-actions"}}
+
+{{if .IsStaff}}
+  {{if or (eq .Status 0) (eq .Status 1)}}
+    <button
+    class="btn btn-compact"
+    hx-patch="/dashboard/orders/{{.Id}}/status"
+    hx-vals='{"status":"3"}'
+    hx-target="#msg-{{.Id}}"
+    hx-swap="innerHTML"
+    >Aceptar</button>
+    <button
+    class="btn btn-compact"
+    hx-patch="/dashboard/orders/{{.Id}}/status"
+    hx-vals='{"status":"1"}'
+    hx-target="#msg-{{.Id}}"
+    hx-swap="innerHTML"
+    >Denegar</button>
+  {{else if eq .Status 3}}
+    <button
+    class="btn btn-compact"
+    hx-patch="/dashboard/orders/{{.Id}}/status"
+    hx-vals='{"status":"4"}'
+    hx-target="#msg-{{.Id}}"
+    hx-swap="innerHTML"
+    >Marcar cumplida</button>
+  {{end}}
+{{else}}
+  {{if or (eq .Status 0) (eq .Status 1)}}
+    <!-- TODO: Make #td-ref-num editable in place -->
+    <button
+    class="btn btn-compact"
+    hx-get="/order/..."
+    hx-target="?"
+    hx-swap="innerHTML"
+    >Editar núm. referencia</button>
+    <button
+    class="btn btn-compact"
+    hx-patch="/order/cancel"
+    hx-target="?"
+    hx-swap="innerHTML"
+    >Cancelar</button>
+  {{end}}
+{{end}}
+<span id="msg-{{.Id}}" class="row-msg"></span>
+
+{{end}}

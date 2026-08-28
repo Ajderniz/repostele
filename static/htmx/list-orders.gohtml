@@ -3,7 +3,7 @@
 <div class="hx-container">
   {{template "button-clear"}}
   <h3 class="panel-title">Órdenes</h3>
-  {{if not .}}
+  {{if not .Orders}}
     <p class="empty-msg">No hay órdenes</p>
   {{else}}
     <table class="data-table order-list">
@@ -16,48 +16,35 @@
           <th class="order-col-actions">Acciones</th>
         </tr>
       </thead>
-      {{range .}}
-      <tbody class="order-block" id="order-{{.Id}}">
-        <tr class="order-row">
-          <td class="order-col-id">{{.Id}}</td>
-          <td class="order-col-user">{{.User}}</td>
-          <td class="order-col-total">₡{{.Total}}</td>
-          <td class="order-col-status">{{OrderStatusName .Status}}</td>
-          <td class="order-col-actions">
-            {{if or (eq .Status 0) (eq .Status 1)}}
-              <button
-              class="btn btn-compact"
-              hx-patch="/dashboard/orders/{{.Id}}/status"
-              hx-vals='{"status":"3"}'
-              hx-target="#msg-{{.Id}}"
-              hx-swap="innerHTML"
-              >Aceptar</button>
-              <button
-              class="btn btn-compact"
-              hx-patch="/dashboard/orders/{{.Id}}/status"
-              hx-vals='{"status":"1"}'
-              hx-target="#msg-{{.Id}}"
-              hx-swap="innerHTML"
-              >Denegar</button>
-            {{else if eq .Status 3}}
-              <button
-              class="btn btn-compact"
-              hx-patch="/dashboard/orders/{{.Id}}/status"
-              hx-vals='{"status":"4"}'
-              hx-target="#msg-{{.Id}}"
-              hx-swap="innerHTML"
-              >Marcar cumplida</button>
-            {{end}}
-            <span id="msg-{{.Id}}" class="row-msg"></span>
-          </td>
-        </tr>
-        <tr class="order-ref-row">
-          <td colspan="5">
-            <span class="order-ref-label">Referencia</span>
-            <code class="order-ref-num">{{.RefNum}}</code>
-          </td>
-        </tr>
-      </tbody>
+      {{$isStaff := .IsStaff}}
+      {{range .Orders}}
+        <!--
+        TODO: make each order open a detailed order view page ('table-order')
+        when clicked
+        -->
+        {{if not (or (eq .Status 2) (eq .Status 4))}}
+          <tbody class="order-block" id="order-{{.Id}}">
+            <tr class="order-row">
+              <td class="order-col-id">{{.Id}}</td>
+              {{if $isStaff}}<td class="order-col-user">{{.User}}</td>{{end}}
+              <td class="order-col-total">₡{{.Total}}</td>
+              <td class="order-col-status">{{OrderStatusName .Status}}</td>
+              <td class="order-col-actions">
+                {{template "buttons-order-actions" (dict
+                  "IsStaff" $isStaff
+                  "Status"  .Status
+                  "Id"      .Id
+                )}}
+              </td>
+            </tr>
+            <tr class="order-ref-row">
+              <td colspan="5">
+                <span class="order-ref-label">Referencia</span>
+                <code class="order-ref-num">{{.RefNum}}</code>
+              </td>
+            </tr>
+          </tbody>
+        {{end}}
       {{end}}
     </table>
   {{end}}

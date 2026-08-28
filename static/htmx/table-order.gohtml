@@ -1,0 +1,69 @@
+{{define "table-order"}}
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  {{$isStaff := .IsStaff}}
+  {{with .Order}}
+    <table class="table-order">
+      <tr class="order-row-id">
+        <th>ID</th>
+        <td>{{.Id}}</td>
+      </tr>
+      {{if $isStaff}}
+        <tr class="order-row-user">
+          <th>Usuario</th>
+          <td>{{.User}}</td>
+        </tr>
+      {{end}}
+      <tr class="order-row-time">
+        <th>Hora</th>
+        <td>{{.Time}}</td>
+      </tr>
+      <tr class="order-row-updated">
+        <th>Actualizada</th>
+        <td>{{.Updated}}</td>
+      </tr>
+      <tr class="order-row-items">
+        <th>Desglose</th>
+        <td>
+          <table class="order-items-table">
+            <thead>
+              <th class="order-items-col-name"></th>
+              <th class="order-items-col-price"></th>
+            </thead>
+            <tbody>
+              {{range .Items}}
+                <td class="order-items-col-name">{{.Name}}</td>
+                <td class="order-items-col-price">{{.Price}}</td>
+              {{end}}
+            </tbody>
+            <tfoot class="order-items-total">
+              <th class="order-items-col-name">TOTAL</th>
+              <td class="order-items-col-price">{{.Total}}</td>
+            </tfoot>
+          </table>
+        </td>
+      </tr>
+      <tr class="order-row-status">
+        <th>Estado</th>
+        <td>{{OrderStatusName .Status}}</td>
+      </tr>
+      <tr class="order-row-ref">
+        <th>Referencia</th>
+        <td id="td-ref-num">{{.RefNum}}</td>
+      </tr>
+      <tr class="order-row-actions">
+        <th>Acciones</th>
+        <td>
+          {{template "buttons-order-actions" (dict
+            "IsStaff" $isStaff
+            "Status"  .Status
+            "Id"      .Id
+          )}}
+        </td>
+      </tr>
+    </table>
+  {{end}}
+</div>
+
+{{end}}
