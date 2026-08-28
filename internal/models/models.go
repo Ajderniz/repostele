@@ -36,7 +36,7 @@ type SelectParams struct {
   Start int     `schema:"start,default:0"`
   Limit int     `schema:"limit,default:10"`
   Sort  string  `schema:"sort,default:id"`
-  Dir   SortDir `schema:"dir,deafult:asc"`
+  Dir   SortDir `schema:"dir,default:asc"`
 }
 
 func (params *SelectParams) Fix(fields _SortFields) {
