@@ -49,6 +49,12 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Patch("/password",   controllers.SelfUpdatePassword)
   })
 
+  r.Route("/cart", func(r chi.Router) {
+    r.Use(mymiddleware.CheckInit())
+    r.Use(mymiddleware.RequireAuth())
+    r.Get("/", controllers.ServeMainTemplate)
+  })
+
   r.Route("/order", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireAuth())

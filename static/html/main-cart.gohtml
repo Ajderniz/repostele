@@ -1,0 +1,20 @@
+{{define "main-cart"}}
+
+<article class="page">
+  <h1 class="page-title">Carrito</h1>
+  <div id="cart-list"></div>
+  <div class="cart-summary">
+    <span class="cart-summary-label">Total</span>
+    <span id="cart-total" class="cart-summary-total">₡0</span>
+  </div>
+  <!--
+  TODO: tesseract.min.js OCR step
+  - attach image, scan for 25-digit refnum, prompt to verify
+  - on confirm, POST /order with {ref_num, items} (see PostOrder)
+  -->
+  <button id="cart-continue" class="btn btn-block" type="button" disabled>
+    Continuar
+  </button>
+</article>
+
+{{end}}

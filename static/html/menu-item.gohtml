@@ -25,15 +25,19 @@ class="menu-item {{if not .Item.Available}}unavailable{{end}}"
       {{end}}
     {{else}}
       <!--
-      TODO: implement this ofc
-      - somehow add to a cache
-      - then view form probably in a new main-
-      - this order form uses tesseract.min.js and a local script
-      - script scans attached image with 25-digit refnum
-      - prompts user to verify scanned code against real code
-      - if ok, proceed to post order by using code string, not img
+      TODO: tesseract.min.js OCR step (checkout, on /cart)
+      - scan attached image for 25-digit refnum
+      - prompt user to verify scanned code against real code
+      - if ok, POST /order using code string, not img
       -->
-      <button class="btn btn-block" type="button">
+      <button
+      class="btn btn-block"
+      type="button"
+      data-cart-add
+      data-item-id="{{.Item.Id}}"
+      data-item-name="{{.Item.Name}}"
+      data-item-price="{{.Item.Price}}"
+      >
         Agregar a la orden
       </button>
     {{end}}

@@ -7,6 +7,11 @@
 </ul>
 <ul id="site-nav-list-right">
   {{if .LoggedIn}}
+    {{if not .IsStaff}}
+      <li>
+        <a href="/cart">Carrito<span id="cart-count" class="cart-badge" hidden></span></a>
+      </li>
+    {{end}}
     <li><a href="/account">Cuenta</a></li>
     <li>
       <button
