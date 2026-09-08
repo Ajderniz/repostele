@@ -28,7 +28,7 @@
               <td class="order-col-id">{{.Id}}</td>
               {{if $isStaff}}<td class="order-col-user">{{.User}}</td>{{end}}
               <td class="order-col-total">₡{{.Total}}</td>
-              <td class="order-col-status">{{OrderStatusName .Status}}</td>
+              {{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}
               <td class="order-col-actions">
                 {{template "buttons-order-actions" (dict
                   "IsStaff" $isStaff
@@ -54,4 +54,8 @@
 
 {{define "order-ref-num"}}
 <code id="order-ref-{{.Id}}" class="order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{.RefNum}}</code>
+{{end}}
+
+{{define "order-status"}}
+<td id="order-status-{{.Id}}" class="order-col-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</td>
 {{end}}

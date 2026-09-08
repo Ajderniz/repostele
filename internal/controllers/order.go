@@ -257,12 +257,18 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveOrderErr(w, r, BadRequest, err); return }
   err = models.UpdateOrderRefNum(latestOrder.Id, refNum)
   if err != nil { serveOrderInternalErr(w, r); return }
+  // editing puts a denied order back in the staff review queue
+  err = models.UpdateOrderStatus(latestOrder.Id, models.ORDER_STATUS_UNREVIEWED)
+  if err != nil { serveOrderInternalErr(w, r); return }
 
   if r.Header.Get("HX-Request") == "true" {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó la orden"})
     _Tpl.ExecuteTemplate(w, "order-ref-num", map[string]any{
       "Id": latestOrder.Id, "RefNum": refNum, "OOB": true,
+    })
+    _Tpl.ExecuteTemplate(w, "order-status", map[string]any{
+      "Id": latestOrder.Id, "Status": models.ORDER_STATUS_UNREVIEWED, "OOB": true,
     })
     return
   }
