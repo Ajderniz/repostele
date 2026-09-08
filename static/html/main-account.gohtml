@@ -3,6 +3,7 @@
 <article class="page">
   <h1 class="page-title">Mi cuenta</h1>
   <ul class="action-list">
+    {{if not .IsStaff}}
     <li class="action-item">
       <button
       class="btn btn-block"
@@ -13,6 +14,7 @@
         Mi orden
       </button>
     </li>
+    {{end}}
     <li class="action-item">
       <button
       class="btn btn-block"
