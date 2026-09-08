@@ -45,6 +45,7 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/account", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireAuth())
+    r.Get(  "/",           controllers.ServeMainTemplate)
     r.Patch("/deactivate", controllers.SelfDeactivateAccount)
     r.Patch("/password",   controllers.SelfUpdatePassword)
   })
@@ -58,11 +59,12 @@ func RegisterRoutes(r *chi.Mux) error {
   r.Route("/order", func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.RequireAuth())
-    r.Post( "/",       controllers.PostOrder)
-    r.Get(  "/",       controllers.GetUserOrderList)
-    r.Get(  "/{id}",   controllers.CheckUserOrderFromID)
-    r.Patch("/update", controllers.UpdateUserOrderRefNum)
-    r.Patch("/cancel", controllers.CancelUserOrder)
+    r.Post( "/",          controllers.PostOrder)
+    r.Get(  "/",          controllers.GetUserOrderList)
+    r.Get(  "/edit-form", controllers.GetOrderRefNumEditForm)
+    r.Get(  "/{id}",      controllers.CheckUserOrderFromID)
+    r.Patch("/update",    controllers.UpdateUserOrderRefNum)
+    r.Patch("/cancel",    controllers.CancelUserOrder)
   })
 
   return nil

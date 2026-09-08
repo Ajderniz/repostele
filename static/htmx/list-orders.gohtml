@@ -40,7 +40,7 @@
             <tr class="order-ref-row">
               <td colspan="5">
                 <span class="order-ref-label">Referencia</span>
-                <code class="order-ref-num">{{.RefNum}}</code>
+                {{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}
               </td>
             </tr>
           </tbody>
@@ -50,4 +50,8 @@
   {{end}}
 </div>
 
+{{end}}
+
+{{define "order-ref-num"}}
+<code id="order-ref-{{.Id}}" class="order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{.RefNum}}</code>
 {{end}}

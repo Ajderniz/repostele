@@ -202,9 +202,8 @@ func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
 func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   orders, err := models.GetAllOrdersFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if len(orders) == 0 { serveNoResults(w, r); return }
-  serveData(w, r, orders)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  serveDataHX(w, r, map[string]any{"Orders": orders, "IsStaff": false}, "list-orders")
 }
 
 func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
@@ -227,34 +226,69 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
 
 var _ErrCantModOrder = errors.New("No se puede modificar esta orden")
 
+func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(models.USER_USERNAME).(string)
+  latestOrder, err := models.GetLatestOrderFromUsername(username)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  if latestOrder.RefNum == "" ||
+     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
+      latestOrder.Status != models.ORDER_STATUS_DENIED) {
+    serveOrderErr(w, r, Forbidden, _ErrCantModOrder)
+    return
+  }
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  if err := _Tpl.ExecuteTemplate(w, "form-edit-order-ref", latestOrder); err != nil {
+    slog.Error(err.Error())
+    serveInternalErrHX(w)
+  }
+}
+
 func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
-     latestOrder.Status != models.ORDER_STATUS_DENIED {
-    serveErr(w, r, Forbidden, _ErrCantModOrder)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  if latestOrder.RefNum == "" ||
+     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
+      latestOrder.Status != models.ORDER_STATUS_DENIED) {
+    serveOrderErr(w, r, Forbidden, _ErrCantModOrder)
     return
   }
-  refNum, err := bind.FormValue(r,models.ORDER_REF_NUM,"required,number,len=25")
-  if err != nil { serveResponse(w, r, nil, BadRequest, err); return }
+  refNum, err := bind.FormValue(r, models.ORDER_REF_NUM, "required,number,len=25")
+  if err != nil { serveOrderErr(w, r, BadRequest, err); return }
   err = models.UpdateOrderRefNum(latestOrder.Id, refNum)
-  if err != nil { serveResponse(w, r, nil, InternalServerError, err); return }
+  if err != nil { serveOrderInternalErr(w, r); return }
+
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó la orden"})
+    _Tpl.ExecuteTemplate(w, "order-ref-num", map[string]any{
+      "Id": latestOrder.Id, "RefNum": refNum, "OOB": true,
+    })
+    return
+  }
   serveMsg(w, r, "Se actualizó la orden")
 }
 
 func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
-     latestOrder.Status != models.ORDER_STATUS_DENIED && 
-     latestOrder.Status != models.ORDER_STATUS_ACCEPTED {
-    serveErr(w, r, Forbidden, _ErrCantModOrder)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  if latestOrder.RefNum == "" ||
+     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
+      latestOrder.Status != models.ORDER_STATUS_DENIED &&
+      latestOrder.Status != models.ORDER_STATUS_ACCEPTED) {
+    serveOrderErr(w, r, Forbidden, _ErrCantModOrder)
     return
   }
   err = models.CancelOrder(latestOrder.Id)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveOrderInternalErr(w, r); return }
+
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se canceló la orden"})
+    _Tpl.ExecuteTemplate(w, "oob-delete", "order-"+strconv.Itoa(latestOrder.Id))
+    return
+  }
   serveMsg(w, r, "Se canceló la orden")
 }
 

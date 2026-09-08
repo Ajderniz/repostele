@@ -6,6 +6,16 @@
     <li class="action-item">
       <button
       class="btn btn-block"
+      hx-get="/order"
+      hx-target="#account-content"
+      hx-swap="innerHTML"
+      >
+        Mi orden
+      </button>
+    </li>
+    <li class="action-item">
+      <button
+      class="btn btn-block"
       hx-get="htmx/form-change-password"
       hx-target="#account-content"
       hx-swap="innerHTML"

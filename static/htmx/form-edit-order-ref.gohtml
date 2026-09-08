@@ -1,0 +1,31 @@
+{{define "form-edit-order-ref"}}
+
+<div class="hx-container">
+  {{template "button-clear"}}
+  <form class="page-form" hx-patch="/order/update">
+    <table class="form-table">
+      <tr>
+        <th><label for="edit-ref-{{.Id}}">Núm. referencia</label></th>
+        <td>
+          <input
+          class="field"
+          type="text"
+          id="edit-ref-{{.Id}}"
+          name="ref_num"
+          inputmode="numeric"
+          pattern="[0-9]{25}"
+          maxlength="25"
+          value="{{.RefNum}}"
+          required
+          >
+        </td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><input class="btn" type="submit" value="Guardar"></td>
+      </tr>
+    </table>
+  </form>
+</div>
+
+{{end}}

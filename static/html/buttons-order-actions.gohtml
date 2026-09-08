@@ -27,19 +27,20 @@
   {{end}}
 {{else}}
   {{if or (eq .Status 0) (eq .Status 1)}}
-    <!-- TODO: Make #td-ref-num editable in place -->
     <button
     class="btn btn-compact"
-    hx-get="/order/..."
-    hx-target="?"
+    hx-get="/order/edit-form"
+    hx-target="#order-edit-{{.Id}}"
     hx-swap="innerHTML"
     >Editar núm. referencia</button>
     <button
     class="btn btn-compact"
     hx-patch="/order/cancel"
-    hx-target="?"
+    hx-target="#msg-{{.Id}}"
     hx-swap="innerHTML"
+    hx-confirm="¿Cancelar esta orden?"
     >Cancelar</button>
+    <div id="order-edit-{{.Id}}" class="hx-slot"></div>
   {{end}}
 {{end}}
 <span id="msg-{{.Id}}" class="row-msg"></span>
