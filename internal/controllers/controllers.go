@@ -96,6 +96,7 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 
 	isStaff := false
 	isAdmin := false
+	pendingOrders := 0
 	if loggedIn && role == models.SESSION_ROLE_STAFF {
 		staff, err := models.GetStaffFromUsername(username)
 		if err != nil {
@@ -103,15 +104,18 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 		} else if staff.Username != "" {
 			isStaff = true
 			isAdmin = staff.Admin
+			count, err := models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
+			if err != nil { slog.Error(err.Error()) } else { pendingOrders = count }
 		}
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := _Tpl.ExecuteTemplate(w, "site-nav", map[string]any{
-		"Init":     models.CheckInit(),
-		"LoggedIn": loggedIn,
-		"IsStaff":  isStaff,
-		"IsAdmin":  isAdmin,
+		"Init":          models.CheckInit(),
+		"LoggedIn":      loggedIn,
+		"IsStaff":       isStaff,
+		"IsAdmin":       isAdmin,
+		"PendingOrders": pendingOrders,
 	})
 	if err != nil { slog.Error(err.Error()); w.WriteHeader(InternalServerError) }
 }

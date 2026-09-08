@@ -2,14 +2,17 @@
 
 <ul id="site-nav-list-left">
   <li><a href="/menu">Menú</a></li>
-  <!-- TODO: add icon that shows pending orders -->
-  {{if and .LoggedIn .IsStaff}}<li><a href="/dashboard">Panel</a></li>{{end}}
+  {{if and .LoggedIn .IsStaff}}
+    <li>
+      <a href="/dashboard">Panel<span class="nav-badge" {{if not .PendingOrders}}hidden{{end}}>{{.PendingOrders}}</span></a>
+    </li>
+  {{end}}
 </ul>
 <ul id="site-nav-list-right">
   {{if .LoggedIn}}
     {{if not .IsStaff}}
       <li>
-        <a href="/cart">Carrito<span id="cart-count" class="cart-badge" hidden></span></a>
+        <a href="/cart">Carrito<span id="cart-count" class="nav-badge" hidden></span></a>
       </li>
     {{end}}
     <li><a href="/account">Cuenta</a></li>

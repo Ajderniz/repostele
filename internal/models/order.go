@@ -93,7 +93,19 @@ func InsertOrder(order Order) error {
   return nil
 }
 
-var _OrderSortFields = _SortFields{ 
+func CountOrdersByStatus(status OrderStatus) (int, error) {
+  var count int
+  err := dbGet(&count,
+    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" = ?",
+    status,
+  )
+  if err != nil {
+    return 0, errors.New("No se pudo contar las órdenes")
+  }
+  return count, nil
+}
+
+var _OrderSortFields = _SortFields{
   ORDER_ID, _ORDER_USER, _ORDER_TOTAL, _ORDER_TIME, ORDER_STATUS, ORDER_UPDATED,
 }
 
