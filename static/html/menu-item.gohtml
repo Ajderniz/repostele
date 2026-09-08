@@ -24,12 +24,6 @@ class="menu-item {{if not .Item.Available}}unavailable{{end}}"
         <div id="item-edit-{{.Item.Id}}" class="hx-slot"></div>
       {{end}}
     {{else}}
-      <!--
-      TODO: tesseract.min.js OCR step (checkout, on /cart)
-      - scan attached image for 25-digit refnum
-      - prompt user to verify scanned code against real code
-      - if ok, POST /order using code string, not img
-      -->
       <button
       class="btn btn-block"
       type="button"

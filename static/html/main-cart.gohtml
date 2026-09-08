@@ -7,14 +7,27 @@
     <span class="cart-summary-label">Total</span>
     <span id="cart-total" class="cart-summary-total">₡0</span>
   </div>
-  <!--
-  TODO: tesseract.min.js OCR step
-  - attach image, scan for 25-digit refnum, prompt to verify
-  - on confirm, POST /order with {ref_num, items} (see PostOrder)
-  -->
+
+  <h2 class="section-title">Comprobante SINPE</h2>
+  <input type="file" id="ref-img-input" accept="image/*" class="field-file">
+  <p id="ref-status" class="empty-msg" hidden></p>
+  <div id="ref-confirm" hidden>
+    <label for="ref-num-input">Código detectado (verificar antes de enviar)</label>
+    <input
+    type="text"
+    id="ref-num-input"
+    class="field"
+    inputmode="numeric"
+    pattern="[0-9]{25}"
+    maxlength="25"
+    placeholder="25 dígitos"
+    >
+  </div>
+
   <button id="cart-continue" class="btn btn-block" type="button" disabled>
-    Continuar
+    Confirmar y enviar orden
   </button>
+  <div id="order-result" class="hx-slot"></div>
 </article>
 
 {{end}}

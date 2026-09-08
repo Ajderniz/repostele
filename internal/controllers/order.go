@@ -71,13 +71,35 @@ type _OrderRequest struct {
 var _ErrNoItems = errors.New("No se ordenaron suficientes ítemes")
 var _ErrOrderIDMax = errors.New("Se excedió el límite de órdenes diarias")
 
+// PostOrder is reached from the cart page via a plain fetch() call (not
+// htmx), which sets HX-Request itself to get the small div-response
+// fragment back instead of a full-page render — there's no main-order
+// template, so the non-HX path here is (like the rest of /order's
+// full-page GETs) only exercised by direct, non-JS requests.
+func serveOrderErr(w http.ResponseWriter, r *http.Request, status int, err error) {
+  if r.Header.Get("HX-Request") == "true" {
+    serveResponseHX(w, err.Error(), status, nil)
+    return
+  }
+  serveErr(w, r, status, err)
+}
+
+func serveOrderInternalErr(w http.ResponseWriter, r *http.Request) {
+  if r.Header.Get("HX-Request") == "true" {
+    serveInternalErrHX(w)
+    return
+  }
+  serveInternalErr(w, r)
+}
+
 func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-  if latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
+  if err != nil { serveOrderInternalErr(w, r); return }
+  if latestOrder.RefNum != "" &&
+     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
      latestOrder.Status != models.ORDER_STATUS_FULFILLED {
-    serveErr(w, r, TooManyRequests, errors.New(
+    serveOrderErr(w, r, TooManyRequests, errors.New(
       "Se permite solo una orden pendiente por usuario"),
     )
     return
@@ -85,7 +107,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
 
   request := _OrderRequest{}
   if err := bind.JSON(r, &request); err != nil {
-    serveBadRequest(w, r, err)
+    serveOrderErr(w, r, BadRequest, err)
     return
   }
 
@@ -100,17 +122,17 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   }
   if len(items) == 0 {
     slog.Error(_ErrNoItems.Error())
-    serveBadRequest(w, r, _ErrNoItems)
+    serveOrderErr(w, r, BadRequest, _ErrNoItems)
     return
   }
 
-  if _OrderDate == 0 || _OrderCounter == 0 { 
-    if err := initOrderId(); err != nil { serveInternalErr(w, r); return }
+  if _OrderDate == 0 || _OrderCounter == 0 {
+    if err := initOrderId(); err != nil { serveOrderInternalErr(w, r); return }
   }
 
   if _ORDER_COUNTER_MAX - 1 < _OrderCounter {
     slog.Error(_ErrOrderIDMax.Error())
-    serveInternalErr(w, r)
+    serveOrderInternalErr(w, r)
     return
   }
 
@@ -124,15 +146,19 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     Status: models.ORDER_STATUS_UNREVIEWED,
     Items:  items,
   })
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveOrderInternalErr(w, r); return }
 
+  updateOrderID()
+
+  if r.Header.Get("HX-Request") == "true" {
+    serveResponseHX(w, "Orden enviada. Esperando aprobación.", Created, nil)
+    return
+  }
   serveResponse(w, r, &_MainData{
     Msg: "Orden enviada. Esperando aprobación.",
     Data: orderId,
     }, Created, nil,
   )
-
-  updateOrderID()
 }
 
 func GetAllOrders(w http.ResponseWriter, r *http.Request) {
