@@ -197,9 +197,12 @@ func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  sessions, err := models.GetActiveSessions(params)
+  sessions, err := models.GetActiveSessions(&params)
   if err != nil { serveInternalErr(w, r); return }
 
-  if len(sessions) <= 0 { serveNoResults(w, r); return }
-  serveDataHX(w, r, sessions, "list-sessions")
+  serveDataHX(w, r, map[string]any{
+    "Sessions": sessions,
+    "Params":   params,
+    "HasNext":  len(sessions) == params.Limit,
+  }, "list-sessions")
 }

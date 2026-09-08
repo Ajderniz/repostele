@@ -31,7 +31,6 @@ const (
 
 type _SortFields []string
 
-// TODO: make these more accessible through UI (dashboard, HTMX too)
 type SelectParams struct {
   Start int     `schema:"start,default:0"`
   Limit int     `schema:"limit,default:10"`
@@ -110,9 +109,9 @@ func dbUpdateTableField(
 }
 
 func dbSelectList(
-  dst any, 
-  sel, from string, 
-  params SelectParams, 
+  dst any,
+  sel, from string,
+  params *SelectParams,
   sortFields _SortFields,
 ) error {
 

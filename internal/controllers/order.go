@@ -166,7 +166,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetOrders(params)
+  orders, err := models.GetOrders(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   _, role, _ := checkSessionUser(r)
@@ -176,8 +176,10 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
     w,
     r,
     map[string]any{
-      "Orders": orders,
+      "Orders":  orders,
       "IsStaff": isStaff,
+      "Params":  params,
+      "HasNext": len(orders) == params.Limit,
     },
     "list-orders",
   )

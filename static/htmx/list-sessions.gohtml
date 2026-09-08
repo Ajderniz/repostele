@@ -3,18 +3,20 @@
 <div class="hx-container">
   {{template "button-clear"}}
   <h3 class="panel-title">Sesiones activas</h3>
-  {{if not .}}
+  {{if not .Sessions}}
     <p class="empty-msg">No hay sesiones activas</p>
   {{else}}
+    {{$endpoint := "/dashboard/admin/sessions"}}
+    {{$target := "#db-session-list"}}
     <table class="data-table">
       <tr>
-        <th>Usuario</th>
-        <th>Rol</th>
-        <th>Inicio</th>
-        <th>Expira</th>
+        {{template "sort-th" (dict "Field" "user"    "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "role"    "Label" "Rol"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "starts"  "Label" "Inicio"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "expires" "Label" "Expira"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
         <th>Acciones</th>
       </tr>
-      {{range .}}
+      {{range .Sessions}}
       <tr id="session-{{.User}}">
         <td>{{.User}}</td>
         <td>{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</td>
@@ -33,6 +35,7 @@
       </tr>
       {{end}}
     </table>
+    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
     <button
     class="btn btn-block"
     hx-patch="/dashboard/admin/sessions/close"

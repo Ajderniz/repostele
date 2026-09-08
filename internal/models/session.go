@@ -133,15 +133,17 @@ var _SessionSortFields = []string{
   _SESSION_USER, _SESSION_ROLE, _SESSION_STARTS, _SESSION_EXPIRES,
 }
 
-func GetActiveSessions(params SelectParams) ([]Session, error) {
+func GetActiveSessions(params *SelectParams) ([]Session, error) {
   params.Fix(_SessionSortFields)
   sessions := []Session{}
   err := dbSelect(&sessions,
     "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+_SESSION_STARTS+","+
               _SESSION_EXPIRES+" "+
     "FROM "+_SESSIONS+" "+
-    "WHERE ? < "+_SESSION_EXPIRES,
-    time.Now().Unix(),
+    "WHERE ? < "+_SESSION_EXPIRES+" "+
+    "ORDER BY "+params.Sort+" "+string(params.Dir)+" "+
+    "LIMIT ?, ?",
+    time.Now().Unix(), params.Start, params.Limit,
   )
   if dbSelectErr(err) != nil {
     slog.Error(err.Error())

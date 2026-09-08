@@ -30,6 +30,13 @@ func unixToTime(unix int64) string {
 	return t.Format("2-1 03:04:05")
 }
 
+func add(a, b int) int { return a + b }
+
+func subClamped(a, b int) int {
+	if a-b < 0 { return 0 }
+	return a - b
+}
+
 func dict(values ...any) map[string]any {
 	d := make(map[string]any, len(values)/2)
 	for i := 0; i+1 < len(values); i += 2 {

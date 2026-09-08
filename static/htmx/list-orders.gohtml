@@ -6,22 +6,30 @@
   {{if not .Orders}}
     <p class="empty-msg">No hay órdenes</p>
   {{else}}
+    {{$isStaff := .IsStaff}}
+    {{$endpoint := "/dashboard/orders"}}
+    {{$target := "#db-order-list"}}
     <table class="data-table order-list">
       <thead>
         <tr>
-          <th class="order-col-id">ID</th>
-          <th class="order-col-user">Usuario</th>
-          <th class="order-col-total">Total</th>
-          <th class="order-col-status">Estado</th>
+          {{if $isStaff}}
+            {{template "sort-th" (dict "Field" "id"     "Label" "ID"      "Class" "order-col-id"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+            {{template "sort-th" (dict "Field" "user"   "Label" "Usuario" "Class" "order-col-user"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+            {{template "sort-th" (dict "Field" "total"  "Label" "Total"   "Class" "order-col-total"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+            {{template "sort-th" (dict "Field" "status" "Label" "Estado"  "Class" "order-col-status" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+          {{else}}
+            <th class="order-col-id">ID</th>
+            <th class="order-col-total">Total</th>
+            <th class="order-col-status">Estado</th>
+          {{end}}
           <th class="order-col-actions">Acciones</th>
         </tr>
       </thead>
-      {{$isStaff := .IsStaff}}
+      <!--
+      TODO: make each order open a detailed order view page ('table-order')
+      when clicked
+      -->
       {{range .Orders}}
-        <!--
-        TODO: make each order open a detailed order view page ('table-order')
-        when clicked
-        -->
         {{if not (or (eq .Status 2) (eq .Status 4))}}
           <tbody class="order-block" id="order-{{.Id}}">
             <tr class="order-row">
@@ -47,6 +55,9 @@
         {{end}}
       {{end}}
     </table>
+    {{if $isStaff}}
+      {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
+    {{end}}
   {{end}}
 </div>
 

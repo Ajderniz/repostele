@@ -3,12 +3,19 @@
 <div class="hx-container">
   {{template "button-clear"}}
   <h3 class="panel-title">Usuarios</h3>
-  {{if not .}}
+  {{if not .Users}}
     <p class="empty-msg">No hay usuarios</p>
   {{else}}
+    {{$endpoint := "/dashboard/admin/users"}}
+    {{$target := "#db-user-list"}}
     <table class="data-table">
-      <tr><th>Usuario</th><th>Creado</th><th>Activo</th><th>Acciones</th></tr>
-      {{range .}}
+      <tr>
+        {{template "sort-th" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        <th>Acciones</th>
+      </tr>
+      {{range .Users}}
       <tr id="user-{{.Username}}">
         <td>{{.Username}}</td>
         <td>{{UnixToTime .TimeCreated}}</td>
@@ -29,6 +36,7 @@
       </tr>
       {{end}}
     </table>
+    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
   {{end}}
 </div>
 

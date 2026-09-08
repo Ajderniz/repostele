@@ -84,6 +84,8 @@ func InitTemplate() {
 		"OrderStatusName": orderStatusName,
 		"UnixToTime": unixToTime,
 		"dict": dict,
+		"add": add,
+		"subClamped": subClamped,
 	})
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HTMDIR+"/*"))
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))

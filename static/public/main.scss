@@ -546,6 +546,23 @@ svg {
   text-transform: uppercase;
 }
 
+.data-table th a {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  .data-table th a:hover {
+    text-decoration: underline;
+  }
+}
+
+.list-pagination {
+  display: flex;
+  gap: 0.5rem;
+}
+
 .data-table td {
   overflow-wrap: anywhere;
 }

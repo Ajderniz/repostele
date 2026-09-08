@@ -45,7 +45,7 @@ func InsertItem(item Item) error {
   return nil
 }
 
-func GetItems(params SelectParams) ([]Item, error) {
+func GetItems(params *SelectParams) ([]Item, error) {
   items := []Item{}
   err := dbSelectList(&items, "*", _ITEMS, params, _ItemSortFields)
   if err != nil {

@@ -10,19 +10,21 @@
   hx-swap="innerHTML"
   >Crear nueva cuenta</button>
   <div id="staff-new-account" class="hx-slot"></div>
-  {{if not .}}
+  {{if not .Staff}}
     <p class="empty-msg">No hay personal</p>
   {{else}}
+    {{$endpoint := "/dashboard/admin/staff"}}
+    {{$target := "#db-staff-list"}}
     <table class="data-table">
       <tr>
-        <th>Usuario</th>
-        <th>Nombre</th>
-        <th>Creado</th>
-        <th>Activo</th>
-        <th>Admin</th>
+        {{template "sort-th" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "full_name"    "Label" "Nombre"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-th" (dict "Field" "admin"        "Label" "Admin"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
         <th>Acciones</th>
       </tr>
-      {{range .}}
+      {{range .Staff}}
       <tr id="staff-{{.Username}}">
         <td>{{.Username}}</td>
         <td>{{.FullName}}</td>
@@ -45,6 +47,7 @@
       </tr>
       {{end}}
     </table>
+    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
   {{end}}
 </div>
 

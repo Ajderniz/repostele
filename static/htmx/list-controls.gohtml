@@ -1,0 +1,36 @@
+{{define "sort-th"}}
+{{$isSorted := eq .Params.Sort .Field}}
+{{$nextDir := "ASC"}}
+{{if and $isSorted (eq .Params.Dir "ASC")}}{{$nextDir = "DESC"}}{{end}}
+<th class="{{.Class}}">
+  <a
+  href="#"
+  hx-get="{{.Endpoint}}?start=0&limit={{.Params.Limit}}&sort={{.Field}}&dir={{$nextDir}}"
+  hx-target="{{.Target}}"
+  hx-swap="innerHTML"
+  >{{.Label}}{{if $isSorted}} {{if eq .Params.Dir "DESC"}}▼{{else}}▲{{end}}{{end}}</a>
+</th>
+{{end}}
+
+{{define "list-pagination"}}
+{{if or .Params.Start .HasNext}}
+<div class="list-pagination">
+  {{if .Params.Start}}
+    <button
+    class="btn btn-compact"
+    hx-get="{{.Endpoint}}?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}&sort={{.Params.Sort}}&dir={{.Params.Dir}}"
+    hx-target="{{.Target}}"
+    hx-swap="innerHTML"
+    >« Anterior</button>
+  {{end}}
+  {{if .HasNext}}
+    <button
+    class="btn btn-compact"
+    hx-get="{{.Endpoint}}?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}&sort={{.Params.Sort}}&dir={{.Params.Dir}}"
+    hx-target="{{.Target}}"
+    hx-swap="innerHTML"
+    >Siguiente »</button>
+  {{end}}
+</div>
+{{end}}
+{{end}}
