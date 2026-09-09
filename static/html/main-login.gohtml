@@ -3,22 +3,21 @@
 {{with .Msg}}
   {{template "div-msg" .}}
 {{else}}
-  <form action="/login" id="login-form" class="page-form" method="post">
-    <table class="form-table">
-      <tr>
-        <th><label for="username">Usuario</label></th>
-        <td>{{template "input-username"}}</td>
-      </tr>
-      <tr>
-        <th><label for="password">Contraseña</label></th>
-        <td>{{template "input-password" "password"}}</td>
-      </tr>
-      <tr>
-        <td></td>
-        <td><input class="btn" type="submit" value="Enviar"></td>
-      </tr>
-    </table>
-  </form>
+  <div id="login-panel">
+    {{template "form-login"}}
+    {{if .IsUserApp}}
+      <p class="auth-switch">
+        ¿No tenés cuenta?
+        <button
+        type="button"
+        class="link-btn"
+        hx-get="htmx/form-register-user"
+        hx-target="#login-panel"
+        hx-swap="innerHTML"
+        >Registrate</button>
+      </p>
+    {{end}}
+  </div>
 {{end}}
 
 {{end}}

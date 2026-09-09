@@ -1,0 +1,28 @@
+{{define "form-register-user"}}
+<form hx-post="/register" hx-target="#login-panel" hx-swap="innerHTML" class="page-form">
+  <table class="form-table">
+    <tr>
+      <th><label for="username">Nombre de usuario</label></th>
+      <td>{{template "input-username"}}</td>
+    </tr>
+    <tr>
+      <th><label for="password">Contraseña</label></th>
+      <td>{{template "input-password" "password"}}</td>
+    </tr>
+    <tr>
+      <td></td>
+      <td><input class="btn" type="submit" value="Crear cuenta"></td>
+    </tr>
+  </table>
+</form>
+<p class="auth-switch">
+  ¿Ya tenés cuenta?
+  <button
+  type="button"
+  class="link-btn"
+  hx-get="htmx/form-login"
+  hx-target="#login-panel"
+  hx-swap="innerHTML"
+  >Iniciar sesión</button>
+</p>
+{{end}}

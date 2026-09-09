@@ -35,11 +35,12 @@ const (
 )
 
 type _MainData struct {
-	Data     any
-	Msg      string
-	LoggedIn bool
-	IsStaff  bool
-	IsAdmin  bool
+	Data      any
+	Msg       string
+	LoggedIn  bool
+	IsStaff   bool
+	IsAdmin   bool
+	IsUserApp bool
 }
 
 type _TplData struct {
@@ -195,6 +196,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	data.IsStaff = isStaff
 	data.IsAdmin = isAdmin
 	data.LoggedIn = loggedIn
+	data.IsUserApp = _SERVER_NAME == "User"
 
 	errAny := r.Context().Value(_ERR)
 	var errStr string

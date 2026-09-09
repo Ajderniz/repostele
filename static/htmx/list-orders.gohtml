@@ -32,7 +32,7 @@
               <td class="order-col-id">
                 <button
                 type="button"
-                class="order-id-link"
+                class="link-btn"
                 hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
                 hx-target="#order-detail-{{.Id}}"
                 hx-swap="innerHTML"

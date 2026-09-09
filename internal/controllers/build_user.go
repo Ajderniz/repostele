@@ -26,25 +26,47 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/menu", PermanentRedirect)
 }
 
+// registerFormErr re-renders the register form with the error above it,
+// since the form's own hx-target is #login-panel (not a shared *HX helper's
+// div-response slot) — losing the fields on error would be a worse UX than
+// the extra render.
+func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err error) {
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    w.WriteHeader(status)
+    _Tpl.ExecuteTemplate(w, "div-msg", err.Error())
+    _Tpl.ExecuteTemplate(w, "form-register-user", nil)
+    return
+  }
+  serveErr(w, r, status, err)
+}
+
 func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   fp := r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
   if _MAX_REG_ACCS <= fp.AccsCreated {
-    serveErr(w, r, Forbidden, errors.New("Se alcanzó el límite de creación de cuentas"))
+    registerFormErr(w, r, Forbidden, errors.New("Se alcanzó el límite de creación de cuentas"))
     return
   }
 
   username, password, err := getCredsFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
+  if err != nil { registerFormErr(w, r, BadRequest, err); return }
 
   user := models.User{}
   user.Username = username
   user.PassHash, err = pass.HashPassword(password)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { registerFormErr(w, r, InternalServerError, _ErrInternal); return }
   user.TimeCreated = time.Now().Unix()
 
   err = models.InsertUserAccount(user, fp)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { registerFormErr(w, r, InternalServerError, err); return }
 
+  if r.Header.Get("HX-Request") == "true" {
+    w.Header().Set("Content-Type", "text/html; charset=utf-8")
+    w.WriteHeader(Created)
+    _Tpl.ExecuteTemplate(w, "div-msg", _MsgAccCreated)
+    _Tpl.ExecuteTemplate(w, "form-login", nil)
+    return
+  }
   serveResponse(w, r, &_MainData{Msg: _MsgAccCreated}, Created, nil)
 }
 
