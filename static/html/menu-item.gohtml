@@ -2,7 +2,7 @@
 <div
 id="menu-item-{{.Item.Id}}"
 class="menu-item {{if not .Item.Available}}unavailable{{end}}"
-{{if .OOB}}hx-swap-oob="true"{{end}}
+{{if .OOB}}hx-swap-oob="{{.OOB}}"{{end}}
 >
   <h3 class="menu-item-name">
     {{.Item.Name}} {{if not .Item.Available}}(no disponible){{end}}

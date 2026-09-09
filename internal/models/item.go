@@ -34,15 +34,17 @@ const (
 
 var _ItemSortFields = []string { ITEM_ID, _ITEM_NAME, _ITEM_PRICE, _ITEM_TIME_MOD }
 
-func InsertItem(item Item) error {
-  _, err := dbBeginNamedExecAndCommit(
+func InsertItem(item Item) (int, error) {
+  result, err := dbBeginNamedExecAndCommit(
     "INSERT INTO "+_ITEMS+" ("+_ITEM_FIELDS+") "+
     "VALUES "+"(:"+_ITEM_NAME+",:"+_ITEM_PRICE+",:"+_ITEM_TIME_MOD+",:"+
       _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
     &item,
   )
-  if err != nil { return errors.New("No se pudo publicar el nuevo ítem") }
-  return nil
+  if err != nil { return 0, errors.New("No se pudo publicar el nuevo ítem") }
+  id, err := result.LastInsertId()
+  if err != nil { return 0, errors.New("No se pudo publicar el nuevo ítem") }
+  return int(id), nil
 }
 
 func GetItems(params *SelectParams) ([]Item, error) {

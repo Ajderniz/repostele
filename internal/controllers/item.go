@@ -50,14 +50,24 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     Desc:      desc,
     ImgPath:   imgPath,
   }
-  err = models.InsertItem(item)
+  id, err := models.InsertItem(item)
   if err != nil { serveInternalErrHX(w); return }
+  item.Id = id
 
-  serveResponseHX(w, "Se creó el item", Created, &_NextAction{
+  msg := "Se creó el item"
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  w.WriteHeader(Created)
+  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg, NextAction: &_NextAction{
     URL: "htmx/form-create-item",
     Name: "Crear otro",
     HTMX: true,
+  }})
+  _Tpl.ExecuteTemplate(w, "toast", msg)
+  w.Write([]byte(`<div hx-swap-oob="beforeend:#menu-item-list">`))
+  _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
+    "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": "",
   })
+  w.Write([]byte(`</div>`))
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {
