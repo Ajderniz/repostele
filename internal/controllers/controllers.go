@@ -122,6 +122,27 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 	if err != nil { slog.Error(err.Error()); w.WriteHeader(InternalServerError) }
 }
 
+const _ASIDE_ORDERS_LIMIT = 5
+
+func GetAsideOrders(w http.ResponseWriter, r *http.Request) {
+	if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+
+	username, role, loggedIn := checkSessionUser(r)
+	if !loggedIn || role != models.SESSION_ROLE_STAFF { http.NotFound(w, r); return }
+
+	staff, err := models.GetStaffFromUsername(username)
+	if err != nil || staff.Username == "" { http.NotFound(w, r); return }
+
+	orders, err := models.GetPendingOrders(_ASIDE_ORDERS_LIMIT)
+	if err != nil { serveInternalErrHX(w); return }
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if err := _Tpl.ExecuteTemplate(w, "aside-orders", map[string]any{"Orders": orders}); err != nil {
+		slog.Error(err.Error())
+		serveInternalErrHX(w)
+	}
+}
+
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	path := chi.URLParam(r, "path")
 	if r.Header.Get("HX-Request") != "true" || path == "" {

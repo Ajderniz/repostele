@@ -13,6 +13,7 @@
   <script src="/tesseract.min.js" defer></script>
   <script src="/cart.min.js" defer></script>
   <script src="/toast.min.js" defer></script>
+  <script src="/aside.min.js" defer></script>
 </head>
 <body>
   <header id="site-header">Repostele</header>
@@ -33,7 +34,21 @@
       {{CallTemplate .MainName .MainData}}
     {{end}}
   </main>
-  <!-- TODO: add foldable aside shortcut to compact order list when .IsStaff -->
+  {{if .IsStaff}}
+    <aside id="staff-aside" class="staff-aside">
+      <button type="button" id="staff-aside-toggle" class="staff-aside-toggle">
+        Órdenes pendientes
+      </button>
+      <div
+      id="staff-aside-content"
+      class="staff-aside-content"
+      hidden
+      hx-get="/htmx/aside-orders"
+      hx-trigger="load, every 30s"
+      hx-swap="innerHTML"
+      ></div>
+    </aside>
+  {{end}}
   <div id="toast-wrap"><div id="toast" class="toast" hidden></div></div>
   <footer id="site-footer">Footer</footer>
 </body>

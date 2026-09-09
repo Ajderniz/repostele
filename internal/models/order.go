@@ -212,6 +212,21 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
   return order, nil
 }
 
+func GetPendingOrders(limit int) ([]Order, error) {
+  orders := []Order{}
+  err := dbSelect(&orders,
+    "SELECT * FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_STATUS+" = ? "+
+    "ORDER BY "+ORDER_ID+" DESC "+
+    "LIMIT ?",
+    ORDER_STATUS_UNREVIEWED, limit,
+  )
+  if err != nil {
+    return []Order{}, errors.New("No se pudo acceder a las órdenes pendientes")
+  }
+  return orders, nil
+}
+
 func GetLatestOrderID() (int, error) {
   var id int
   err := dbGet(&id,
