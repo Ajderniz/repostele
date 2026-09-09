@@ -3,6 +3,7 @@ package controllers
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 	"time"
 
@@ -186,7 +187,7 @@ func Logout(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   if r.Header.Get("HX-Request") == "true" {
-    w.Header().Set("HX-Redirect", "/login")
+    w.Header().Set("HX-Redirect", "/login?msg="+url.QueryEscape("Sesión cerrada"))
     w.WriteHeader(OK)
     return
   }

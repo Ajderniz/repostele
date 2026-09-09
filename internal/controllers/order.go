@@ -277,6 +277,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   if r.Header.Get("HX-Request") == "true" {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó la orden"})
+    _Tpl.ExecuteTemplate(w, "toast", "Se actualizó la orden")
     _Tpl.ExecuteTemplate(w, "order-ref-num", map[string]any{
       "Id": latestOrder.Id, "RefNum": refNum, "OOB": true,
     })
@@ -305,6 +306,7 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   if r.Header.Get("HX-Request") == "true" {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se canceló la orden"})
+    _Tpl.ExecuteTemplate(w, "toast", "Se canceló la orden")
     _Tpl.ExecuteTemplate(w, "oob-delete", "order-"+strconv.Itoa(latestOrder.Id))
     return
   }

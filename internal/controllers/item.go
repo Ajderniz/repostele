@@ -134,6 +134,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   w.WriteHeader(OK)
   _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó el ítem"})
+  _Tpl.ExecuteTemplate(w, "toast", "Se actualizó el ítem")
   _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
     "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": true,
   })

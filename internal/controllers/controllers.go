@@ -246,6 +246,7 @@ func serveResponseHX(
 	data := _HXData {Msg: msg, NextAction: nextAction }
 	w.WriteHeader(status)
 	_Tpl.ExecuteTemplate(w, "div-response", data)
+	_Tpl.ExecuteTemplate(w, "toast", msg)
 }
 
 func serveBadRequestHX(w http.ResponseWriter, msg string) {
