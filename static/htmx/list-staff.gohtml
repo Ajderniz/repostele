@@ -29,21 +29,9 @@
         <td>{{.Username}}</td>
         <td>{{.FullName}}</td>
         <td>{{UnixToTime .TimeCreated}}</td>
-        <td>{{if .Active}}Sí{{else}}No{{end}}</td>
+        {{template "staff-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
         <td>{{if .Admin}}Sí{{else}}No{{end}}</td>
-        <td>
-          {{if .Active}}
-          <button
-          class="btn btn-compact"
-          hx-patch="/dashboard/admin/staff/deactivate/{{.Username}}"
-          hx-vals='{"username":"{{.Username}}"}'
-          hx-target="#msg-staff-{{.Username}}"
-          hx-swap="innerHTML"
-          hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
-          >Desactivar</button>
-          {{end}}
-          <span id="msg-staff-{{.Username}}" class="row-msg"></span>
-        </td>
+        {{template "staff-actions-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
       </tr>
       {{end}}
     </table>
@@ -51,4 +39,24 @@
   {{end}}
 </div>
 
+{{end}}
+
+{{define "staff-active-cell"}}
+<td id="staff-active-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Sí{{else}}No{{end}}</td>
+{{end}}
+
+{{define "staff-actions-cell"}}
+<td id="staff-actions-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
+  {{if .Active}}
+  <button
+  class="btn btn-compact"
+  hx-patch="/dashboard/admin/staff/deactivate/{{.Username}}"
+  hx-vals='{"username":"{{.Username}}"}'
+  hx-target="#msg-staff-{{.Username}}"
+  hx-swap="innerHTML"
+  hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
+  >Desactivar</button>
+  {{end}}
+  <span id="msg-staff-{{.Username}}" class="row-msg"></span>
+</td>
 {{end}}

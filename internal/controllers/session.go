@@ -118,11 +118,11 @@ func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   err = models.CloseSessionForUsername(username)
   if err != nil { serveInternalErrHX(w); return }
 
-  serveResponseHX(w, "La sesión fue cerrada", OK, &_NextAction{
-    URL: "/",
-    Name: "Volver al inicio",
-    HTMX: false,
-  })
+  msg := "La sesión fue cerrada"
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg})
+  _Tpl.ExecuteTemplate(w, "toast", msg)
+  _Tpl.ExecuteTemplate(w, "oob-delete", "session-"+username)
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {

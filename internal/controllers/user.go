@@ -75,9 +75,13 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil {
     serveResponseHX(w, err.Error(), status, &nextAction)
     return
-}
+  }
 
-  serveResponseHX(w,_MsgAccDeactivated, OK, &nextAction)
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: _MsgAccDeactivated})
+  _Tpl.ExecuteTemplate(w, "toast", _MsgAccDeactivated)
+  _Tpl.ExecuteTemplate(w, "user-active-cell", map[string]any{"Username": username, "Active": false, "OOB": true})
+  _Tpl.ExecuteTemplate(w, "user-actions-cell", map[string]any{"Username": username, "Active": false, "OOB": true})
 }
 
 func GetUserList(w http.ResponseWriter, r *http.Request) {

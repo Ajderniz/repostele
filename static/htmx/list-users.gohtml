@@ -19,20 +19,8 @@
       <tr id="user-{{.Username}}">
         <td>{{.Username}}</td>
         <td>{{UnixToTime .TimeCreated}}</td>
-        <td>{{if .Active}}Sí{{else}}No{{end}}</td>
-        <td>
-          {{if .Active}}
-          <button
-          class="btn btn-compact"
-          hx-patch="/dashboard/admin/users/deactivate/{{.Username}}"
-          hx-vals='{"username":"{{.Username}}"}'
-          hx-target="#msg-user-{{.Username}}"
-          hx-swap="innerHTML"
-          hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
-          >Desactivar</button>
-          {{end}}
-          <span id="msg-user-{{.Username}}" class="row-msg"></span>
-        </td>
+        {{template "user-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+        {{template "user-actions-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
       </tr>
       {{end}}
     </table>
@@ -40,4 +28,24 @@
   {{end}}
 </div>
 
+{{end}}
+
+{{define "user-active-cell"}}
+<td id="user-active-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Sí{{else}}No{{end}}</td>
+{{end}}
+
+{{define "user-actions-cell"}}
+<td id="user-actions-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
+  {{if .Active}}
+  <button
+  class="btn btn-compact"
+  hx-patch="/dashboard/admin/users/deactivate/{{.Username}}"
+  hx-vals='{"username":"{{.Username}}"}'
+  hx-target="#msg-user-{{.Username}}"
+  hx-swap="innerHTML"
+  hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
+  >Desactivar</button>
+  {{end}}
+  <span id="msg-user-{{.Username}}" class="row-msg"></span>
+</td>
 {{end}}
