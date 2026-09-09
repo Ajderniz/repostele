@@ -194,11 +194,21 @@ func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {
   return order, OK, nil
 }
 
+func serveOrderDetail(w http.ResponseWriter, r *http.Request, order models.Order, isStaff bool) {
+  details, err := models.GetOrderItemDetails(order.Id)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  serveDataHX(w, r, map[string]any{
+    "Order":       order,
+    "IsStaff":     isStaff,
+    "ItemDetails": details,
+  }, "table-order")
+}
+
 func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
   order, status, err := getOrderFromIdUrlParam(r)
-  if err != nil { serveErr(w, r, status, err); return }
+  if err != nil { serveOrderErr(w, r, status, err); return }
   if order.RefNum == "" { serveNoResults(w, r); return }
-  serveData(w, r, order)
+  serveOrderDetail(w, r, order, true)
 }
 
 func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
@@ -210,20 +220,21 @@ func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
 
 func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   idStr := chi.URLParam(r, models.ORDER_ID)
-  id, err := strconv.Atoi(idStr);
+  id, err := strconv.Atoi(idStr)
   if err != nil {
     slog.Error(err.Error())
-    serveBadRequest(w, r, errors.New("ID de orden inválido"))
+    serveOrderErr(w, r, BadRequest, errors.New("ID de orden inválido"))
+    return
   }
 
   order, err := models.GetOrderFromID(id)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveOrderInternalErr(w, r); return }
   if order.User == "" { serveNoResults(w, r); return }
 
   username := r.Context().Value(models.USER_USERNAME).(string)
   if username != order.User { serveNoResults(w, r); return }
 
-  serveData(w, r, order)
+  serveOrderDetail(w, r, order, false)
 }
 
 var _ErrCantModOrder = errors.New("No se puede modificar esta orden")

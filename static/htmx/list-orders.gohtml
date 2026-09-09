@@ -25,15 +25,19 @@
           <th class="order-col-actions">Acciones</th>
         </tr>
       </thead>
-      <!--
-      TODO: make each order open a detailed order view page ('table-order')
-      when clicked
-      -->
       {{range .Orders}}
         {{if not (or (eq .Status 2) (eq .Status 4))}}
           <tbody class="order-block" id="order-{{.Id}}">
             <tr class="order-row">
-              <td class="order-col-id">{{.Id}}</td>
+              <td class="order-col-id">
+                <button
+                type="button"
+                class="order-id-link"
+                hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
+                hx-target="#order-detail-{{.Id}}"
+                hx-swap="innerHTML"
+                >{{.Id}}</button>
+              </td>
               {{if $isStaff}}<td class="order-col-user">{{.User}}</td>{{end}}
               <td class="order-col-total">₡{{.Total}}</td>
               {{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}
@@ -49,6 +53,11 @@
               <td colspan="5">
                 <span class="order-ref-label">Referencia</span>
                 {{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}
+              </td>
+            </tr>
+            <tr class="order-detail-row">
+              <td colspan="5">
+                <div id="order-detail-{{.Id}}" class="hx-slot"></div>
               </td>
             </tr>
           </tbody>

@@ -140,6 +140,29 @@ func getItemsFromOrderID(id int) (ItemIdQuant, error) {
   return items, nil
 }
 
+type OrderItemDetail struct {
+  Name  string  `db:"name"`
+  Price float32 `db:"price"`
+  Quant int     `db:"quant"`
+}
+
+func GetOrderItemDetails(orderId int) ([]OrderItemDetail, error) {
+  details := []OrderItemDetail{}
+  err := _DB.Select(&details,
+    "SELECT i."+_ITEM_NAME+" AS name, i."+_ITEM_PRICE+" AS price, "+
+      "oi."+_ORDER_ITEM_QUANT+" AS quant "+
+    "FROM "+_ORDER_ITEMS+" oi "+
+    "JOIN "+_ITEMS+" i ON i."+ITEM_ID+" = oi."+_ORDER_ITEM_ITEM_ID+" "+
+    "WHERE oi."+_ORDER_ITEM_ORDER_ID+" = ?",
+    orderId,
+  )
+  if err != nil {
+    slog.Error(err.Error())
+    return nil, errors.New("No se pudo acceder al desglose de la orden")
+  }
+  return details, nil
+}
+
 func GetOrderFromID(id int) (Order, error) {
   order := Order{}
   err := dbGet(&order,

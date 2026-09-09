@@ -594,6 +594,16 @@ svg {
   white-space: nowrap;
 }
 
+.order-id-link {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .order-list .order-col-user,
 .order-list .order-col-status {
   white-space: normal;
@@ -656,6 +666,57 @@ svg {
   line-height: 1.35;
   overflow-wrap: anywhere;
   user-select: all;
+}
+
+// --- order detail ---
+
+.order-detail-row > td {
+  padding-block: 0.5rem;
+}
+
+.table-order {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-order th,
+.table-order td {
+  padding: 0.45rem 0.75rem 0.45rem 0;
+  text-align: left;
+  vertical-align: top;
+}
+
+.table-order th {
+  width: 8rem;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.table-order tr + tr th,
+.table-order tr + tr td {
+  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+}
+
+.order-items-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.order-items-table th,
+.order-items-table td {
+  padding: 0.2rem 0.5rem 0.2rem 0;
+  text-align: left;
+}
+
+.order-items-col-price {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-items-total th,
+.order-items-total td {
+  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  font-weight: 700;
 }
 
 // --- menu ---
