@@ -7,14 +7,14 @@
     {{template "form-login"}}
     {{if .IsUserApp}}
       <p class="auth-switch">
-        ¿No tenés cuenta?
+        ¿Aún no tiene cuenta?
         <button
         type="button"
         class="link-btn"
         hx-get="htmx/form-register-user"
         hx-target="#login-panel"
         hx-swap="innerHTML"
-        >Registrate</button>
+        >Regístrese aquí</button>
       </p>
     {{end}}
   </div>
