@@ -5,12 +5,35 @@ $bpoint-desktop: 1440px;
 $bpoint-tablet: 1024px;
 $bpoint-phone: 600px;
 
-$font-heading: Helvetica, "Helvetica Neue", Arial, ui-sans-serif, sans-serif;
+$font-heading: "Trebuchet MS", "Lucida Grande", Verdana, ui-sans-serif, sans-serif;
 $font-body: Georgia, "Palatino Linotype", Palatino, "Times New Roman", Times, ui-serif, serif;
 
 $border: 2px;
 $pad: 1rem;
 $max-main: 800px;
+
+$radius-lg: 6px;
+$radius-md: 5px;
+$radius-sm: 4px;
+
+@mixin pressed-shadow {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.25),
+    inset 0 -3px 3px rgba(0, 0, 0, 0.25),
+    0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+@mixin shell-shadow {
+  box-shadow:
+    0 12px 0 -6px rgba(0, 0, 0, 0.12),
+    0 14px 26px rgba(0, 0, 0, 0.24);
+}
+
+@mixin card-shadow {
+  box-shadow:
+    0 6px 0 -3px rgba(0, 0, 0, 0.12),
+    0 8px 16px rgba(0, 0, 0, 0.2);
+}
 
 *,
 *::before,
@@ -30,12 +53,14 @@ $max-main: 800px;
 :root {
   --muted: color-mix(in srgb, var(--fg) 58%, var(--bg));
   --rule: var(--fg);
+  --rule-soft: color-mix(in srgb, var(--fg) 22%, var(--bg));
   --fill: var(--fg);
   --on-fill: var(--bg);
 }
 
 html {
-  background: var(--bg);
+  background-color: var(--floor);
+  background-image: repeating-linear-gradient(45deg, var(--floor-dot) 0, var(--floor-dot) 1.5px, transparent 1.5px, transparent 13px);
   color: var(--fg);
   font-size: 100%;
   line-height: 1.5;
@@ -54,6 +79,8 @@ body {
   color: var(--fg);
   font-family: $font-body;
   border: $border solid var(--rule);
+  border-radius: $radius-lg;
+  @include shell-shadow;
 }
 
 img,
@@ -86,7 +113,7 @@ svg {
   line-height: 0.9;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  border-bottom: $border solid var(--rule);
+  border-bottom: $border dashed var(--rule);
 }
 
 #site-header::before {
@@ -101,7 +128,7 @@ svg {
 }
 
 #site-nav {
-  border-bottom: $border solid var(--rule);
+  border-bottom: $border dashed var(--rule);
   display: flex;
   justify-content: space-between;
 }
@@ -114,11 +141,11 @@ svg {
 }
 
 #site-nav-list-left > li {
-  border-right: $border solid var(--rule);
+  border-right: 1px dashed var(--rule-soft);
 }
 
 #site-nav-list-right > li {
-  border-left: $border solid var(--rule);
+  border-left: 1px dashed var(--rule-soft);
 }
 
 #site-nav-list-left a,
@@ -144,13 +171,14 @@ svg {
   .site-nav-btn:hover {
     background: var(--fill);
     color: var(--on-fill);
+    @include pressed-shadow;
   }
 }
 
 #site-footer {
   margin-top: auto;
   padding: 0.7rem $pad;
-  border-top: $border solid var(--rule);
+  border-top: $border dashed var(--rule);
   font-size: 0.85rem;
   color: var(--muted);
 }
@@ -341,8 +369,10 @@ svg {
   color: var(--on-fill);
   background: var(--fill);
   border: $border solid var(--rule);
+  border-radius: $radius-sm;
   text-decoration: none;
   cursor: pointer;
+  @include pressed-shadow;
 }
 
 .btn-block {
@@ -380,14 +410,14 @@ svg {
 }
 
 .btn-danger {
-  color: var(--fg);
-  background: var(--bg);
+  color: var(--on-fill);
+  background: var(--danger);
 }
 
 @media (hover: hover) {
   .btn-danger:hover {
-    color: var(--on-fill);
-    background: var(--fill);
+    color: var(--fg);
+    background: var(--bg);
   }
 }
 
@@ -443,7 +473,7 @@ svg {
 
 .form-table tr + tr th,
 .form-table tr + tr td {
-  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  border-top: 1px solid var(--rule-soft);
 }
 
 // --- dashboard / account ---
@@ -575,7 +605,7 @@ svg {
   flex-wrap: wrap;
   gap: 0.4rem 1rem;
   padding-bottom: 0.5rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  border-bottom: 1px solid var(--rule-soft);
 }
 
 .sort-link {
@@ -615,13 +645,11 @@ svg {
 }
 
 .row-card {
-  padding-block: 0.85rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
-}
-
-.row-card:last-child {
-  border-bottom: 0;
-  padding-bottom: 0;
+  padding: 0.85rem;
+  background: var(--bg);
+  border: $border dashed var(--rule);
+  border-radius: $radius-md;
+  @include card-shadow;
 }
 
 .row-card-head {
@@ -646,6 +674,11 @@ svg {
   text-transform: uppercase;
   color: var(--muted);
   white-space: nowrap;
+  padding: 0.15rem 0.5rem;
+  background: var(--floor);
+  border: 1px solid var(--rule-soft);
+  border-radius: 999px;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .row-card-fields {
@@ -744,7 +777,7 @@ svg {
 
 .table-order tr + tr th,
 .table-order tr + tr td {
-  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  border-top: 1px solid var(--rule-soft);
 }
 
 .order-items-table {
@@ -765,7 +798,7 @@ svg {
 
 .order-items-total th,
 .order-items-total td {
-  border-top: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  border-top: 1px solid var(--rule-soft);
   font-weight: 700;
 }
 
@@ -784,7 +817,10 @@ svg {
   gap: 0.35rem;
   min-width: 0;
   padding: 0.7rem;
-  border: $border solid var(--rule);
+  background: var(--bg);
+  border: $border dashed var(--rule);
+  border-radius: $radius-md;
+  @include card-shadow;
 }
 
 .menu-item.unavailable {
@@ -880,6 +916,12 @@ svg {
   text-align: center;
   color: var(--on-fill);
   background: var(--fill);
+  border: 1px solid var(--rule);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 #cart-list {
@@ -897,7 +939,7 @@ svg {
   align-items: center;
   gap: 0.5rem 0.75rem;
   padding-block: 0.65rem;
-  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
+  border-bottom: 1px solid var(--rule-soft);
 }
 
 .cart-row-name {
@@ -1012,7 +1054,7 @@ svg {
   #site-nav-list-right > li {
     width: 100%;
     border-right: 0;
-    border-bottom: $border solid var(--rule);
+    border-bottom: 1px dashed var(--rule-soft);
   }
 
   #site-nav-list-right > li:last-child {
