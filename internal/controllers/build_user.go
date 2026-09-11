@@ -48,7 +48,7 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  username, password, err := getCredsFromForm(r)
+  username, password, err := getRegisterCredsFromForm(r)
   if err != nil { registerFormErr(w, r, BadRequest, err); return }
 
   user := models.User{}

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/ajderniz/repostele/pkg/bind"
@@ -21,6 +22,19 @@ func getCredsFromForm(r *http.Request) (username, password string, err error) {
   if err != nil { return }
   password, err = bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   return
+}
+
+func getRegisterCredsFromForm(r *http.Request) (username, password string, err error) {
+  username, err = bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { return }
+  password1, err := bind.FormValue(r, _CREDS_PASSWORD+"-1", _CREDS_VALIDATE)
+  if err != nil { return "", "", err }
+  password2, err := bind.FormValue(r, _CREDS_PASSWORD+"-2", _CREDS_VALIDATE)
+  if err != nil { return "", "", err }
+  if password1 != password2 {
+    return "", "", errors.New("Las contraseñas no coinciden")
+  }
+  return username, password1, nil
 }
 
 func getNewUsernameFromForm(r *http.Request) (password, newUsername string, err error) {
