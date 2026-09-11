@@ -41,6 +41,8 @@ type _MainData struct {
 	IsStaff   bool
 	IsAdmin   bool
 	IsUserApp bool
+	Params    models.SelectParams
+	HasNext   bool
 }
 
 type _TplData struct {

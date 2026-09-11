@@ -31,6 +31,16 @@
       </p>
     {{end}}
   </div>
+  {{if or .Params.Start .HasNext}}
+    <div class="list-pagination">
+      {{if .Params.Start}}
+        <a class="btn btn-compact" href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}">« Anterior</a>
+      {{end}}
+      {{if .HasNext}}
+        <a class="btn btn-compact" href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}">Siguiente »</a>
+      {{end}}
+    </div>
+  {{end}}
 </article>
 
 {{end}}

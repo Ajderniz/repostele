@@ -77,9 +77,12 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
   var data _MainData
 
-  data.Data, err = models.GetItems(&params)
+  items, err := models.GetItems(&params)
   if err != nil{ serveInternalErr(w, r); return }
-  if len(data.Data.([]models.Item)) <= 0 { data.Msg = _MsgEmpty }
+  data.Data = items
+  data.Params = params
+  data.HasNext = len(items) == params.Limit
+  if len(items) <= 0 { data.Msg = _MsgEmpty }
 
   serveResponse(w, r, &data, OK, nil)
 }
