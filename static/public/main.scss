@@ -551,18 +551,18 @@ svg {
   font-weight: 800;
   line-height: 1;
   letter-spacing: 0;
-  color: var(--fg);
-  background: var(--bg);
-  border: 0;
-  border-left: $border solid var(--rule);
-  border-bottom: $border solid var(--rule);
+  color: var(--on-fill);
+  background: var(--fill);
+  border: $border solid var(--rule);
+  border-radius: $radius-sm;
   cursor: pointer;
+  @include pressed-shadow;
 }
 
 @media (hover: hover) {
   .button-clear:hover {
-    background: var(--fill);
-    color: var(--on-fill);
+    background: var(--bg);
+    color: var(--fg);
   }
 }
 
