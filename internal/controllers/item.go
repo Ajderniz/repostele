@@ -3,6 +3,8 @@ package controllers
 import (
 	"net/http"
   "log/slog"
+  "os"
+  "path/filepath"
 	"strconv"
 	"time"
 
@@ -121,6 +123,12 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   id, err := strconv.Atoi(idStr)
   if err != nil { serveBadRequestHX(w, "ID inválido"); return }
 
+  err = r.ParseMultipartForm(_MAX_UPLOAD_MEM)
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
+
+  oldItem, err := models.GetItemFromID(id)
+  if err != nil { serveInternalErrHX(w); return }
+
   update := models.ItemUpdate{
     Name: r.FormValue("name"),
     Desc: r.FormValue("desc"),
@@ -138,8 +146,23 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
     update.Available = &avail
   }
 
+  file, header, err := r.FormFile("img")
+  if err == nil {
+    filename, err := upload.SaveImage(file, header, static.IMGDIR)
+    if err != nil { serveBadRequestHX(w, err.Error()); return }
+    update.ImgPath = "/" + static.IMGDIR + "/" + filename
+  } else if err != http.ErrMissingFile {
+    serveBadRequestHX(w, err.Error()); return
+  }
+
   err = models.UpdateItem(id, update)
   if err != nil { serveInternalErrHX(w); return }
+
+  if update.ImgPath != "" && oldItem.ImgPath != "" {
+    if err := os.Remove(filepath.Join(static.IMGDIR, filepath.Base(oldItem.ImgPath))); err != nil {
+      slog.Error(err.Error())
+    }
+  }
 
   item, err := models.GetItemFromID(id)
   if err != nil { serveInternalErrHX(w); return }

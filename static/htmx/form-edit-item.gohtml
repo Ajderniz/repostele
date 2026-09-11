@@ -5,6 +5,7 @@
   <form
   class="page-form"
   hx-patch="/dashboard/admin/menu/{{.Id}}"
+  hx-encoding="multipart/form-data"
   >
     <table class="form-table">
       <tr>
@@ -39,6 +40,21 @@
         <th><label for="edit-desc-{{.Id}}">Descripción</label></th>
         <td>
           <textarea class="field field-area" id="edit-desc-{{.Id}}" name="desc">{{.Desc}}</textarea>
+        </td>
+      </tr>
+      <tr>
+        <th><label for="edit-img-{{.Id}}">Imagen</label></th>
+        <td>
+          {{if .ImgPath}}
+            <img src="{{.ImgPath}}" alt="{{.Name}}" class="edit-item-preview">
+          {{end}}
+          <input
+          class="field-file"
+          type="file"
+          id="edit-img-{{.Id}}"
+          name="img"
+          accept="image/jpeg,image/png,image/gif,image/webp"
+          >
         </td>
       </tr>
       <tr>

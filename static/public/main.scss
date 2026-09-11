@@ -302,6 +302,14 @@ svg {
   cursor: pointer;
 }
 
+.edit-item-preview {
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: cover;
+  margin-bottom: 0.5rem;
+  border: $border solid var(--rule);
+}
+
 .field-file {
   width: 100%;
   padding: 0.55rem;
