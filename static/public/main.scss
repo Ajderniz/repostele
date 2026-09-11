@@ -840,7 +840,9 @@ svg {
 // --- cart ---
 
 .nav-badge {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
   min-width: 1.3rem;
   margin-left: 0.4rem;
   padding: 0 0.35rem;
@@ -851,6 +853,10 @@ svg {
   text-align: center;
   color: var(--on-fill);
   background: var(--fill);
+}
+
+.nav-badge-icon {
+  flex: 0 0 auto;
 }
 
 #cart-list {
