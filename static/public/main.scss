@@ -636,6 +636,7 @@ svg {
 .list-pagination {
   display: flex;
   gap: 0.5rem;
+  justify-content: space-between;
 }
 
 .row-card-list {

@@ -6,8 +6,28 @@
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
-  {{if $isAdmin}}
-    {{template "button-create-item" "menu-new-item"}}
+  {{if $isAdmin}}{{template "button-create-item" "menu-new-item"}}{{end}}
+  {{block "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
+    {{if or .Params.Start .HasNext}}
+      <div class="list-pagination">
+        {{if .Params.Start}}
+          <a
+          class="btn btn-compact pag-prev"
+          href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+          >« Anterior</a>
+        {{else}}
+          <div class="pag-prev"></div>
+        {{end}}
+        {{if .HasNext}}
+          <a
+          class="btn btn-compact pag-next"
+          href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+          >Siguiente »</a>
+        {{else}}
+          <div class="pag-next"></div>
+        {{end}}
+      </div>
+    {{end}}
   {{end}}
   <div id="menu-item-list">
     {{$anyVisible := false}}
@@ -31,16 +51,8 @@
       </p>
     {{end}}
   </div>
-  {{if or .Params.Start .HasNext}}
-    <div class="list-pagination">
-      {{if .Params.Start}}
-        <a class="btn btn-compact" href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}">« Anterior</a>
-      {{end}}
-      {{if .HasNext}}
-        <a class="btn btn-compact" href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}">Siguiente »</a>
-      {{end}}
-    </div>
-  {{end}}
+  {{template "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
 </article>
 
 {{end}}
+
