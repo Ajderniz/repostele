@@ -35,14 +35,15 @@ const (
 )
 
 type _MainData struct {
-	Data      any
-	Msg       string
-	LoggedIn  bool
-	IsStaff   bool
-	IsAdmin   bool
-	IsUserApp bool
-	Params    models.SelectParams
-	HasNext   bool
+	Data          any
+	Msg           string
+	LoggedIn      bool
+	IsStaff       bool
+	IsAdmin       bool
+	IsUserApp     bool
+	Params        models.SelectParams
+	HasNext       bool
+	PendingOrders int
 }
 
 type _TplData struct {

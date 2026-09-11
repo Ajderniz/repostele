@@ -3,6 +3,7 @@
 package controllers
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -42,6 +43,13 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
   } else {
     http.Redirect(w, r, "/menu", PermanentRedirect)
   }
+}
+
+func GetDashboard(w http.ResponseWriter, r *http.Request) {
+  count, err := models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
+  if err != nil { slog.Error(err.Error()) }
+  ctx := context.WithValue(r.Context(), _MAIN_DATA, &_MainData{PendingOrders: count})
+  ServeMainTemplate(w, r.WithContext(ctx))
 }
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {

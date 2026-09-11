@@ -338,8 +338,27 @@ svg {
 }
 
 .btn-block {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   width: 100%;
   text-align: left;
+}
+
+.btn-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  min-width: 1.3rem;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  font-family: $font-heading;
+  font-size: 0.7rem;
+  font-weight: 800;
+  line-height: 1.3rem;
+  color: var(--fg);
+  background: var(--bg);
 }
 
 .btn-compact {
@@ -853,10 +872,6 @@ svg {
   text-align: center;
   color: var(--on-fill);
   background: var(--fill);
-}
-
-.nav-badge-icon {
-  flex: 0 0 auto;
 }
 
 #cart-list {

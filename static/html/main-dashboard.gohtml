@@ -14,6 +14,7 @@
         hx-target="#db-order-list"
         hx-swap="innerHTML">
         Lista de ordenes
+        <span class="btn-badge" {{if not .PendingOrders}}hidden{{end}}>{{.PendingOrders}}</span>
         </button>
         <div id="db-order-list" class="hx-slot"></div>
       </li>
