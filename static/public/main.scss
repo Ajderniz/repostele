@@ -20,6 +20,13 @@ $max-main: 800px;
   padding: 0;
 }
 
+// authored `display` rules on the same element (.nav-badge, #ref-confirm,
+// etc.) tie or beat [hidden]'s specificity, which silently defeats it —
+// force it to always win.
+[hidden] {
+  display: none !important;
+}
+
 :root {
   --muted: color-mix(in srgb, var(--fg) 58%, var(--bg));
   --rule: var(--fg);

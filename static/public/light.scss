@@ -1,9 +1,13 @@
-// Light theme. Matches the favicon: black mark on a white field.
+// Light theme: "retro paper". Warm beige page, dark coffee-brown ink,
+// a rust-brown accent for fills. Matches the favicon: black mark shown
+// as-is against the light page.
 
 @mixin tokens {
   color-scheme: light;
-  --bg: #ffffff;
-  --fg: #000000;
+  --bg: #f2e6cd;
+  --fg: #3a2a1c;
+  --fill: #8a3d1e;
+  --on-fill: #f2e6cd;
   --mark-filter: none;
 }
 

@@ -1,9 +1,13 @@
-// Dark theme. Inverts the favicon: white mark on a black field.
+// Dark theme: "dark roast". Near-black warm brown page, parchment
+// text, a lighter amber accent for fills. Inverts the favicon mark
+// (black mark drawn white) to stay visible against the dark page.
 
 @mixin tokens {
   color-scheme: dark;
-  --bg: #000000;
-  --fg: #ffffff;
+  --bg: #241811;
+  --fg: #ecdcc0;
+  --fill: #c9793a;
+  --on-fill: #241811;
   --mark-filter: invert(1);
 }
 
