@@ -348,10 +348,6 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg})
   _Tpl.ExecuteTemplate(w, "toast", msg)
-  if order.Status == models.ORDER_STATUS_UNREVIEWED {
-    // no longer needs a first look; drop it from the staff aside shortcut
-    _Tpl.ExecuteTemplate(w, "oob-delete", "aside-order-"+strconv.Itoa(order.Id))
-  }
   if setStatus == models.ORDER_STATUS_CANCELLED || setStatus == models.ORDER_STATUS_FULFILLED {
     _Tpl.ExecuteTemplate(w, "oob-delete", "order-"+strconv.Itoa(order.Id))
   } else {
