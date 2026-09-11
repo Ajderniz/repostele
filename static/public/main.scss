@@ -124,7 +124,9 @@ svg {
 #site-nav-list-left a,
 #site-nav-list-right a,
 .site-nav-btn {
-  display: block;
+  display: flex;
+  align-items: center;
+  height: 100%;
   padding: 0.7rem 1.15rem;
   font-family: $font-body;
   font-size: 1rem;
