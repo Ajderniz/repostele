@@ -8,36 +8,45 @@
   {{else}}
     {{$endpoint := "/dashboard/admin/sessions"}}
     {{$target := "#db-session-list"}}
-    <table class="data-table">
-      <tr>
-        {{template "sort-th" (dict "Field" "user"    "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "role"    "Label" "Rol"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "starts"  "Label" "Inicio"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "expires" "Label" "Expira"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        <th>Acciones</th>
-      </tr>
+    <div class="sort-bar">
+      {{template "sort-link" (dict "Field" "user"    "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "role"    "Label" "Rol"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "starts"  "Label" "Inicio"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "expires" "Label" "Expira"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+    </div>
+    <ul class="row-card-list">
       {{range .Sessions}}
-      <tr id="session-{{.User}}">
-        <td>{{.User}}</td>
-        <td>{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</td>
-        <td>{{UnixToTime .Starts}}</td>
-        <td>{{UnixToTime .Expires}}</td>
-        <td>
+      <li class="row-card" id="session-{{.User}}">
+        <div class="row-card-head">
+          <span class="row-card-id">{{.User}}</span>
+          <span class="row-card-status">{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</span>
+        </div>
+        <dl class="row-card-fields">
+          <div class="row-card-field">
+            <dt>Inicio</dt>
+            <dd>{{UnixToTime .Starts}}</dd>
+          </div>
+          <div class="row-card-field">
+            <dt>Expira</dt>
+            <dd>{{UnixToTime .Expires}}</dd>
+          </div>
+        </dl>
+        <div class="row-card-actions">
           <button
-          class="btn btn-compact"
+          class="btn btn-compact btn-danger"
           hx-patch="/dashboard/admin/sessions/close/{{.User}}"
           hx-target="#msg-session-{{.User}}"
           hx-swap="innerHTML"
           hx-confirm="¿Cerrar la sesión de {{.User}}?"
           >Cerrar sesión</button>
           <span id="msg-session-{{.User}}" class="row-msg"></span>
-        </td>
-      </tr>
+        </div>
+      </li>
       {{end}}
-    </table>
+    </ul>
     {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
     <button
-    class="btn btn-block"
+    class="btn btn-block btn-danger"
     hx-patch="/dashboard/admin/sessions/close"
     hx-vals='{"users":"true","staff":"true"}'
     hx-target="#db-session-list"

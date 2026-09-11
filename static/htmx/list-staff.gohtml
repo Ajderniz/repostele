@@ -15,26 +15,38 @@
   {{else}}
     {{$endpoint := "/dashboard/admin/staff"}}
     {{$target := "#db-staff-list"}}
-    <table class="data-table">
-      <tr>
-        {{template "sort-th" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "full_name"    "Label" "Nombre"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "admin"        "Label" "Admin"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        <th>Acciones</th>
-      </tr>
+    <div class="sort-bar">
+      {{template "sort-link" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "full_name"    "Label" "Nombre"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "admin"        "Label" "Admin"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+    </div>
+    <ul class="row-card-list">
       {{range .Staff}}
-      <tr id="staff-{{.Username}}">
-        <td>{{.Username}}</td>
-        <td>{{.FullName}}</td>
-        <td>{{UnixToTime .TimeCreated}}</td>
-        {{template "staff-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
-        <td>{{if .Admin}}Sí{{else}}No{{end}}</td>
+      <li class="row-card" id="staff-{{.Username}}">
+        <div class="row-card-head">
+          <span class="row-card-id">{{.Username}}</span>
+          {{template "staff-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+        </div>
+        <dl class="row-card-fields">
+          <div class="row-card-field">
+            <dt>Nombre</dt>
+            <dd>{{.FullName}}</dd>
+          </div>
+          <div class="row-card-field">
+            <dt>Creado</dt>
+            <dd>{{UnixToTime .TimeCreated}}</dd>
+          </div>
+          <div class="row-card-field">
+            <dt>Admin</dt>
+            <dd>{{if .Admin}}Sí{{else}}No{{end}}</dd>
+          </div>
+        </dl>
         {{template "staff-actions-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
-      </tr>
+      </li>
       {{end}}
-    </table>
+    </ul>
     {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
   {{end}}
 </div>
@@ -42,14 +54,14 @@
 {{end}}
 
 {{define "staff-active-cell"}}
-<td id="staff-active-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Sí{{else}}No{{end}}</td>
+<span id="staff-active-{{.Username}}" class="row-card-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Activo{{else}}Inactivo{{end}}</span>
 {{end}}
 
 {{define "staff-actions-cell"}}
-<td id="staff-actions-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div id="staff-actions-{{.Username}}" class="row-card-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
   {{if .Active}}
   <button
-  class="btn btn-compact"
+  class="btn btn-compact btn-danger"
   hx-patch="/dashboard/admin/staff/deactivate/{{.Username}}"
   hx-vals='{"username":"{{.Username}}"}'
   hx-target="#msg-staff-{{.Username}}"
@@ -58,5 +70,5 @@
   >Desactivar</button>
   {{end}}
   <span id="msg-staff-{{.Username}}" class="row-msg"></span>
-</td>
+</div>
 {{end}}

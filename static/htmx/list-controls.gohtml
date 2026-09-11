@@ -1,15 +1,14 @@
-{{define "sort-th"}}
+{{define "sort-link"}}
 {{$isSorted := eq .Params.Sort .Field}}
 {{$nextDir := "ASC"}}
 {{if and $isSorted (eq .Params.Dir "ASC")}}{{$nextDir = "DESC"}}{{end}}
-<th class="{{.Class}}">
-  <a
-  href="#"
-  hx-get="{{.Endpoint}}?start=0&limit={{.Params.Limit}}&sort={{.Field}}&dir={{$nextDir}}"
-  hx-target="{{.Target}}"
-  hx-swap="innerHTML"
-  >{{.Label}}{{if $isSorted}} {{if eq .Params.Dir "DESC"}}▼{{else}}▲{{end}}{{end}}</a>
-</th>
+<button
+type="button"
+class="sort-link{{if $isSorted}} sort-link-active{{end}}"
+hx-get="{{.Endpoint}}?start=0&limit={{.Params.Limit}}&sort={{.Field}}&dir={{$nextDir}}"
+hx-target="{{.Target}}"
+hx-swap="innerHTML"
+>{{.Label}}{{if $isSorted}} {{if eq .Params.Dir "DESC"}}▼{{else}}▲{{end}}{{end}}</button>
 {{end}}
 
 {{define "list-pagination"}}

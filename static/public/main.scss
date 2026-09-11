@@ -343,6 +343,18 @@ svg {
   overflow-wrap: anywhere;
 }
 
+.btn-danger {
+  color: var(--fg);
+  background: var(--bg);
+}
+
+@media (hover: hover) {
+  .btn-danger:hover {
+    color: var(--on-fill);
+    background: var(--fill);
+  }
+}
+
 @media (hover: hover) {
   .btn:hover,
   .field-file:hover {
@@ -520,41 +532,37 @@ svg {
   font-size: 0.85rem;
 }
 
-// --- data tables ---
+// --- row cards (orders / staff / users / sessions) ---
 
-.data-table {
-  width: 100%;
-  table-layout: auto;
-  border-collapse: collapse;
-  font-size: 0.9rem;
-  line-height: 1.35;
-}
-
-.data-table th,
-.data-table td {
-  padding: 0.5rem 0.7rem 0.5rem 0;
-  text-align: left;
-  vertical-align: middle;
+.sort-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+  padding-bottom: 0.5rem;
   border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
 }
 
-.data-table th {
+.sort-link {
+  font: inherit;
   font-family: $font-heading;
   font-size: 0.72rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-}
-
-.data-table th a {
-  color: inherit;
-  text-decoration: none;
+  color: var(--muted);
+  background: none;
+  border: 0;
+  padding: 0;
   cursor: pointer;
 }
 
+.sort-link-active {
+  color: var(--fg);
+}
+
 @media (hover: hover) {
-  .data-table th a:hover {
-    text-decoration: underline;
+  .sort-link:hover {
+    color: var(--fg);
   }
 }
 
@@ -563,35 +571,77 @@ svg {
   gap: 0.5rem;
 }
 
-.data-table td {
-  overflow-wrap: anywhere;
+.row-card-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
-.data-table th:last-child,
-.data-table td:last-child {
-  white-space: normal;
-  overflow-wrap: anywhere;
+.row-card {
+  padding-block: 0.85rem;
+  border-bottom: 1px solid color-mix(in srgb, var(--fg) 22%, var(--bg));
 }
 
-.data-table .btn {
-  white-space: normal;
-  overflow-wrap: anywhere;
-  max-width: 100%;
+.row-card:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
 }
 
-.order-list {
-  table-layout: auto;
-  width: 100%;
+.row-card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
 }
 
-.order-list th,
-.order-list td {
-  overflow: visible;
+.row-card-id {
+  font-family: $font-heading;
+  font-weight: 800;
+  font-size: 1rem;
 }
 
-.order-list .order-col-id {
-  width: 3.5rem;
+.row-card-status {
+  font-family: $font-heading;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
   white-space: nowrap;
+}
+
+.row-card-fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+  margin-bottom: 0.6rem;
+}
+
+.row-card-field {
+  min-width: 0;
+}
+
+.row-card-field dt {
+  font-family: $font-heading;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.row-card-field dd {
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.row-card-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .link-btn {
@@ -607,47 +657,6 @@ svg {
 .auth-switch {
   margin-top: 1rem;
   font-size: 0.9rem;
-}
-
-.order-list .order-col-user,
-.order-list .order-col-status {
-  white-space: normal;
-  overflow-wrap: break-word;
-}
-
-.order-list .order-col-total {
-  white-space: nowrap;
-  overflow-wrap: normal;
-}
-
-.order-list th.order-col-actions,
-.order-list td.order-col-actions {
-  white-space: nowrap;
-}
-
-.order-list .order-row td.order-col-actions {
-  display: flex;
-  flex-wrap: nowrap;
-  align-items: center;
-  gap: 0.3rem;
-}
-
-.order-list .order-col-actions .btn {
-  flex: 0 0 auto;
-  white-space: nowrap;
-  overflow-wrap: normal;
-  max-width: none;
-}
-
-.order-list .order-row td {
-  border-bottom: 0;
-  padding-bottom: 0.2rem;
-}
-
-.order-list .order-ref-row td {
-  white-space: normal;
-  padding: 0.15rem 0 0.85rem;
-  border-bottom: $border solid var(--rule);
 }
 
 .order-ref-label {
@@ -728,7 +737,7 @@ svg {
 
 #menu-item-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
   align-items: start;
 }
@@ -1010,43 +1019,9 @@ svg {
   }
 
   #menu-item-list {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
   }
 
-  .data-table {
-    width: 100%;
-    table-layout: auto;
-  }
-
-  .data-table th,
-  .data-table td {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    padding-right: 0.4rem;
-  }
-
-  .data-table th:last-child,
-  .data-table td:last-child {
-    width: auto;
-    min-width: 5.5rem;
-  }
-
-  .order-list th.order-col-actions,
-  .order-list td.order-col-actions {
-    width: auto;
-    white-space: normal;
-  }
-
-  .order-list .order-row td.order-col-actions {
-    display: flex;
-    flex-wrap: wrap;
-  }
-
-  .order-list .order-col-actions .btn {
-    white-space: normal;
-    overflow-wrap: anywhere;
-    max-width: 100%;
-  }
 }
 
 @media (min-width: $bpoint-tablet) {

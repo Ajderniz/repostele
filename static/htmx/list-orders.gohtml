@@ -14,57 +14,50 @@
   {{if not $anyVisible}}
     <p class="empty-msg">No hay órdenes</p>
   {{else}}
-    <table class="data-table order-list">
-      <thead>
-        <tr>
-          {{if $isStaff}}
-            {{template "sort-th" (dict "Field" "id"     "Label" "ID"      "Class" "order-col-id"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-            {{template "sort-th" (dict "Field" "user"   "Label" "Usuario" "Class" "order-col-user"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-            {{template "sort-th" (dict "Field" "total"  "Label" "Total"   "Class" "order-col-total"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-            {{template "sort-th" (dict "Field" "status" "Label" "Estado"  "Class" "order-col-status" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-          {{else}}
-            <th class="order-col-id">ID</th>
-            <th class="order-col-total">Total</th>
-            <th class="order-col-status">Estado</th>
-          {{end}}
-          <th class="order-col-actions">Acciones</th>
-        </tr>
-      </thead>
-      {{$colspan := 4}}
-      {{if $isStaff}}{{$colspan = 5}}{{end}}
+    {{if $isStaff}}
+      <div class="sort-bar">
+        {{template "sort-link" (dict "Field" "id"     "Label" "ID"      "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-link" (dict "Field" "user"   "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-link" (dict "Field" "total"  "Label" "Total"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+        {{template "sort-link" (dict "Field" "status" "Label" "Estado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      </div>
+    {{end}}
+    <ul class="row-card-list">
       {{range .Orders}}
         {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
-          <tbody class="order-block" id="order-{{.Id}}">
-            <tr class="order-row">
-              <td class="order-col-id">
-                <button
-                type="button"
-                class="link-btn"
-                hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
-                hx-target="#order-detail-{{.Id}}"
-                hx-swap="innerHTML"
-                >{{.Id}}</button>
-              </td>
-              {{if $isStaff}}<td class="order-col-user">{{.User}}</td>{{end}}
-              <td class="order-col-total">₡{{.Total}}</td>
+          <li class="row-card" id="order-{{.Id}}">
+            <div class="row-card-head">
+              <button
+              type="button"
+              class="link-btn row-card-id"
+              hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
+              hx-target="#order-detail-{{.Id}}"
+              hx-swap="innerHTML"
+              >#{{.Id}}</button>
               {{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}
-              {{template "order-actions" (dict "Id" .Id "Status" .Status "IsStaff" $isStaff "OOB" false)}}
-            </tr>
-            <tr class="order-ref-row">
-              <td colspan="{{$colspan}}">
-                <span class="order-ref-label">Referencia</span>
-                {{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}
-              </td>
-            </tr>
-            <tr class="order-detail-row">
-              <td colspan="{{$colspan}}">
-                <div id="order-detail-{{.Id}}" class="hx-slot"></div>
-              </td>
-            </tr>
-          </tbody>
+            </div>
+            <dl class="row-card-fields">
+              {{if $isStaff}}
+                <div class="row-card-field">
+                  <dt>Usuario</dt>
+                  <dd>{{.User}}</dd>
+                </div>
+              {{end}}
+              <div class="row-card-field">
+                <dt>Total</dt>
+                <dd>₡{{.Total}}</dd>
+              </div>
+              <div class="row-card-field">
+                <dt>Referencia</dt>
+                <dd>{{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}</dd>
+              </div>
+            </dl>
+            {{template "order-actions" (dict "Id" .Id "Status" .Status "IsStaff" $isStaff "OOB" false)}}
+            <div id="order-detail-{{.Id}}" class="hx-slot"></div>
+          </li>
         {{end}}
       {{end}}
-    </table>
+    </ul>
     {{if $isStaff}}
       {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
     {{end}}
@@ -78,15 +71,15 @@
 {{end}}
 
 {{define "order-status"}}
-<td id="order-status-{{.Id}}" class="order-col-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</td>
+<span id="order-status-{{.Id}}" class="row-card-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
 {{end}}
 
 {{define "order-actions"}}
-<td id="order-actions-{{.Id}}" class="order-col-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div id="order-actions-{{.Id}}" class="row-card-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
   {{template "buttons-order-actions" (dict
     "IsStaff" .IsStaff
     "Status"  .Status
     "Id"      .Id
   )}}
-</td>
+</div>
 {{end}}

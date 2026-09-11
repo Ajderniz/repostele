@@ -8,22 +8,28 @@
   {{else}}
     {{$endpoint := "/dashboard/admin/users"}}
     {{$target := "#db-user-list"}}
-    <table class="data-table">
-      <tr>
-        {{template "sort-th" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        {{template "sort-th" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-        <th>Acciones</th>
-      </tr>
+    <div class="sort-bar">
+      {{template "sort-link" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+    </div>
+    <ul class="row-card-list">
       {{range .Users}}
-      <tr id="user-{{.Username}}">
-        <td>{{.Username}}</td>
-        <td>{{UnixToTime .TimeCreated}}</td>
-        {{template "user-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+      <li class="row-card" id="user-{{.Username}}">
+        <div class="row-card-head">
+          <span class="row-card-id">{{.Username}}</span>
+          {{template "user-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+        </div>
+        <dl class="row-card-fields">
+          <div class="row-card-field">
+            <dt>Creado</dt>
+            <dd>{{UnixToTime .TimeCreated}}</dd>
+          </div>
+        </dl>
         {{template "user-actions-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
-      </tr>
+      </li>
       {{end}}
-    </table>
+    </ul>
     {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
   {{end}}
 </div>
@@ -31,14 +37,14 @@
 {{end}}
 
 {{define "user-active-cell"}}
-<td id="user-active-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Sí{{else}}No{{end}}</td>
+<span id="user-active-{{.Username}}" class="row-card-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Activo{{else}}Inactivo{{end}}</span>
 {{end}}
 
 {{define "user-actions-cell"}}
-<td id="user-actions-{{.Username}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div id="user-actions-{{.Username}}" class="row-card-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
   {{if .Active}}
   <button
-  class="btn btn-compact"
+  class="btn btn-compact btn-danger"
   hx-patch="/dashboard/admin/users/deactivate/{{.Username}}"
   hx-vals='{"username":"{{.Username}}"}'
   hx-target="#msg-user-{{.Username}}"
@@ -47,5 +53,5 @@
   >Desactivar</button>
   {{end}}
   <span id="msg-user-{{.Username}}" class="row-msg"></span>
-</td>
+</div>
 {{end}}
