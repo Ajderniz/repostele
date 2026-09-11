@@ -60,7 +60,8 @@ $radius-sm: 4px;
 
 html {
   background-color: var(--floor);
-  background-image: repeating-linear-gradient(45deg, var(--floor-dot) 0, var(--floor-dot) 1.5px, transparent 1.5px, transparent 13px);
+  /*background-image: repeating-linear-gradient(45deg, var(--floor-dot) 0, var(--floor-dot) 1.5px, transparent 1.5px, transparent 13px);*/
+  background-image: url("/paper.png");
   color: var(--fg);
   font-size: 100%;
   line-height: 1.5;
@@ -75,7 +76,7 @@ body {
   margin-inline: auto;
   display: flex;
   flex-direction: column;
-  background: var(--bg);
+  background-color: var(--bg);
   color: var(--fg);
   font-family: $font-body;
   border: $border solid var(--rule);
