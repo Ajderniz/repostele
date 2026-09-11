@@ -56,6 +56,7 @@ func RegisterRoutes(r *chi.Mux) error {
 
     r.Route("/orders", func(r chi.Router) {
       r.Get(  "/",            controllers.GetAllOrders)
+      r.Get(  "/history",     controllers.GetOrderHistory)
       r.Get(  "/{id}",        controllers.GetOrderFromID)
       r.Patch("/{id}/status", controllers.UpdateOrderStatus)
     })

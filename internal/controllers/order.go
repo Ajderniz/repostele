@@ -176,10 +176,36 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
     w,
     r,
     map[string]any{
-      "Orders":  orders,
-      "IsStaff": isStaff,
-      "Params":  params,
-      "HasNext": len(orders) == params.Limit,
+      "Orders":   orders,
+      "IsStaff":  isStaff,
+      "Params":   params,
+      "HasNext":  len(orders) == params.Limit,
+      "Endpoint": "/dashboard/orders",
+      "Target":   "#db-order-list",
+    },
+    "list-orders",
+  )
+}
+
+func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
+  params := models.SelectParams{}
+  err := bind.Form(r, &params)
+  if err != nil { serveBadRequest(w, r, err); return }
+
+  orders, err := models.GetOrders(&params)
+  if err != nil { serveInternalErr(w, r); return }
+
+  serveDataHX(
+    w,
+    r,
+    map[string]any{
+      "Orders":      orders,
+      "IsStaff":     true,
+      "ShowHistory": true,
+      "Params":      params,
+      "HasNext":     len(orders) == params.Limit,
+      "Endpoint":    "/dashboard/orders/history",
+      "Target":      "#db-order-history",
     },
     "list-orders",
   )
@@ -215,7 +241,7 @@ func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   orders, err := models.GetAllOrdersFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
-  serveDataHX(w, r, map[string]any{"Orders": orders, "IsStaff": false}, "list-orders")
+  serveDataHX(w, r, map[string]any{"Orders": orders, "IsStaff": false, "ShowHistory": true}, "list-orders")
 }
 
 func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {

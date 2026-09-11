@@ -17,6 +17,16 @@
         </button>
         <div id="db-order-list" class="hx-slot"></div>
       </li>
+      <li class="action-item">
+        <button
+        class="btn btn-block"
+        hx-get="/dashboard/orders/history"
+        hx-target="#db-order-history"
+        hx-swap="innerHTML">
+        Historial de órdenes
+        </button>
+        <div id="db-order-history" class="hx-slot"></div>
+      </li>
     </ul>
     {{if .IsAdmin}}
     <h2 class="section-title">Acciones de administrador</h2>

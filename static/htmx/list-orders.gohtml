@@ -3,12 +3,17 @@
 <div class="hx-container">
   {{template "button-clear"}}
   <h3 class="panel-title">Órdenes</h3>
-  {{if not .Orders}}
+  {{$isStaff := .IsStaff}}
+  {{$showHistory := .ShowHistory}}
+  {{$endpoint := .Endpoint}}
+  {{$target := .Target}}
+  {{$anyVisible := false}}
+  {{range .Orders}}
+    {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}{{$anyVisible = true}}{{end}}
+  {{end}}
+  {{if not $anyVisible}}
     <p class="empty-msg">No hay órdenes</p>
   {{else}}
-    {{$isStaff := .IsStaff}}
-    {{$endpoint := "/dashboard/orders"}}
-    {{$target := "#db-order-list"}}
     <table class="data-table order-list">
       <thead>
         <tr>
@@ -25,8 +30,10 @@
           <th class="order-col-actions">Acciones</th>
         </tr>
       </thead>
+      {{$colspan := 4}}
+      {{if $isStaff}}{{$colspan = 5}}{{end}}
       {{range .Orders}}
-        {{if not (or (eq .Status 2) (eq .Status 4))}}
+        {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
           <tbody class="order-block" id="order-{{.Id}}">
             <tr class="order-row">
               <td class="order-col-id">
@@ -44,13 +51,13 @@
               {{template "order-actions" (dict "Id" .Id "Status" .Status "IsStaff" $isStaff "OOB" false)}}
             </tr>
             <tr class="order-ref-row">
-              <td colspan="5">
+              <td colspan="{{$colspan}}">
                 <span class="order-ref-label">Referencia</span>
                 {{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}
               </td>
             </tr>
             <tr class="order-detail-row">
-              <td colspan="5">
+              <td colspan="{{$colspan}}">
                 <div id="order-detail-{{.Id}}" class="hx-slot"></div>
               </td>
             </tr>
