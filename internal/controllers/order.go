@@ -166,7 +166,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetOrders(&params)
+  orders, err := models.GetPendingOrders(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   _, role, _ := checkSessionUser(r)

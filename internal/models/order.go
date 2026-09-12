@@ -109,9 +109,17 @@ var _OrderSortFields = _SortFields{
   ORDER_ID, _ORDER_USER, _ORDER_TOTAL, _ORDER_TIME, ORDER_STATUS, ORDER_UPDATED,
 }
 
-func GetOrders(params *SelectParams) ([]Order, error) {
+func GetPendingOrders(params *SelectParams) ([]Order, error) {
   orders := []Order{}
-  err := dbSelectList(&orders, "*", _ORDERS, params, _OrderSortFields)
+  params.Fix(_OrderSortFields)
+  err := dbSelect(&orders,
+    "SELECT * FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_STATUS+" IN (?, ?, ?) "+
+    "ORDER BY "+params.Sort+" "+string(params.Dir)+
+    " LIMIT ?, ?",
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+    params.Start, params.Limit,
+  )
   if err != nil { return []Order{}, _ErrGetOrders }
   return orders, nil
 }
