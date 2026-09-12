@@ -44,6 +44,7 @@ type _MainData struct {
 	Params        models.SelectParams
 	HasNext       bool
 	PendingOrders int
+	CurrentOrder  *models.Order
 }
 
 type _TplData struct {

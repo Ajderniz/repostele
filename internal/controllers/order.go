@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"encoding/csv"
 	"errors"
 	"log/slog"
 	"math"
@@ -209,6 +210,32 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
     },
     "list-orders",
   )
+}
+
+func ExportOrderHistory(w http.ResponseWriter, r *http.Request) {
+  params := models.SelectParams{}
+  err := bind.Form(r, &params)
+  if err != nil { serveBadRequest(w, r, err); return }
+
+  orders, err := models.GetAllOrderHistory(&params)
+  if err != nil { serveInternalErr(w, r); return }
+
+  w.Header().Set("Content-Type", "text/csv; charset=utf-8")
+  w.Header().Set("Content-Disposition", `attachment; filename="historial-ordenes.csv"`)
+
+  cw := csv.NewWriter(w)
+  cw.Write([]string{"ID", "Usuario", "Total", "Núm. referencia", "Fecha", "Estado"})
+  for _, o := range orders {
+    cw.Write([]string{
+      strconv.Itoa(o.Id),
+      o.User,
+      strconv.FormatFloat(float64(o.Total), 'f', 2, 32),
+      o.RefNum,
+      time.Unix(o.Time, 0).Format("2006-01-02 15:04:05"),
+      orderStatusName(o.Status),
+    })
+  }
+  cw.Flush()
 }
 
 func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {

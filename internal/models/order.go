@@ -139,6 +139,19 @@ func GetOrderHistory(params *SelectParams) ([]Order, error) {
   return orders, nil
 }
 
+func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
+  orders := []Order{}
+  params.Fix(_OrderSortFields)
+  err := dbSelect(&orders,
+    "SELECT * FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_STATUS+" IN (?, ?) "+
+    "ORDER BY "+params.Sort+" "+string(params.Dir),
+    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
+  )
+  if err != nil { return []Order{}, _ErrGetOrders }
+  return orders, nil
+}
+
 func getItemsFromOrderID(id int) (ItemIdQuant, error) {
   ois := []struct{
     ItemId int `db:"item_id"`

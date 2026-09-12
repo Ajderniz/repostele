@@ -7,6 +7,9 @@
   {{$showHistory := .ShowHistory}}
   {{$endpoint := .Endpoint}}
   {{$target := .Target}}
+  {{if and $isStaff $showHistory}}
+    <a class="btn btn-compact" href="/dashboard/orders/history/export?sort={{.Params.Sort}}&dir={{.Params.Dir}}" download>Exportar CSV</a>
+  {{end}}
   {{$anyVisible := false}}
   {{range .Orders}}
     {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}{{$anyVisible = true}}{{end}}
@@ -25,36 +28,7 @@
     <ul class="row-card-list">
       {{range .Orders}}
         {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
-          <li class="row-card" id="order-{{.Id}}">
-            <div class="row-card-head">
-              <button
-              type="button"
-              class="link-btn row-card-id"
-              hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
-              hx-target="#order-detail-{{.Id}}"
-              hx-swap="innerHTML"
-              >#{{.Id}}</button>
-              {{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}
-            </div>
-            <dl class="row-card-fields">
-              {{if $isStaff}}
-                <div class="row-card-field">
-                  <dt>Usuario</dt>
-                  <dd>{{.User}}</dd>
-                </div>
-              {{end}}
-              <div class="row-card-field">
-                <dt>Total</dt>
-                <dd>₡{{.Total}}</dd>
-              </div>
-              <div class="row-card-field">
-                <dt>Referencia</dt>
-                <dd>{{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}</dd>
-              </div>
-            </dl>
-            {{template "order-actions" (dict "Id" .Id "Status" .Status "IsStaff" $isStaff "OOB" false)}}
-            <div id="order-detail-{{.Id}}" class="hx-slot"></div>
-          </li>
+          {{template "order-row" (dict "Order" . "IsStaff" $isStaff)}}
         {{end}}
       {{end}}
     </ul>
@@ -64,6 +38,41 @@
   {{end}}
 </div>
 
+{{end}}
+
+{{define "order-row"}}
+{{$o := .Order}}
+{{$isStaff := .IsStaff}}
+<li class="row-card" id="order-{{$o.Id}}">
+  <div class="row-card-head">
+    <button
+    type="button"
+    class="link-btn row-card-id"
+    hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}{{else}}/order/{{$o.Id}}{{end}}"
+    hx-target="#order-detail-{{$o.Id}}"
+    hx-swap="innerHTML"
+    >#{{$o.Id}}</button>
+    {{template "order-status" (dict "Id" $o.Id "Status" $o.Status "OOB" false)}}
+  </div>
+  <dl class="row-card-fields">
+    {{if $isStaff}}
+      <div class="row-card-field">
+        <dt>Usuario</dt>
+        <dd>{{$o.User}}</dd>
+      </div>
+    {{end}}
+    <div class="row-card-field">
+      <dt>Total</dt>
+      <dd>₡{{$o.Total}}</dd>
+    </div>
+    <div class="row-card-field">
+      <dt>Referencia</dt>
+      <dd>{{template "order-ref-num" (dict "Id" $o.Id "RefNum" $o.RefNum "OOB" false)}}</dd>
+    </div>
+  </dl>
+  {{template "order-actions" (dict "Id" $o.Id "Status" $o.Status "IsStaff" $isStaff "OOB" false)}}
+  <div id="order-detail-{{$o.Id}}" class="hx-slot"></div>
+</li>
 {{end}}
 
 {{define "order-ref-num"}}

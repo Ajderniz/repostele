@@ -86,6 +86,18 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   data.HasNext = len(items) == params.Limit
   if len(items) <= 0 { data.Msg = _MsgEmpty }
 
+  username, role, loggedIn := checkSessionUser(r)
+  if loggedIn && role != models.SESSION_ROLE_STAFF {
+    order, err := models.GetLatestOrderFromUsername(username)
+    if err != nil {
+      slog.Error(err.Error())
+    } else if order.RefNum != "" &&
+       order.Status != models.ORDER_STATUS_CANCELLED &&
+       order.Status != models.ORDER_STATUS_FULFILLED {
+      data.CurrentOrder = &order
+    }
+  }
+
   serveResponse(w, r, &data, OK, nil)
 }
 
