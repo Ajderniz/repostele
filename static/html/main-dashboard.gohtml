@@ -33,7 +33,7 @@
     <h2 class="section-title">Acciones de administrador</h2>
     <ul class="action-list" data-accordion="dashboard">
       <li class="action-item">
-      {{template "button-create-item" "db-new-item"}}
+      {{template "button-create-item" (dict "Target" "db-new-item" "HasNext" false)}}
       </li>
       <li class="action-item">
         <button

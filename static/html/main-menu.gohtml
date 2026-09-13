@@ -6,7 +6,7 @@
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
-  {{if $isAdmin}}{{template "button-create-item" "menu-new-item"}}{{end}}
+  {{if $isAdmin}}{{template "button-create-item" (dict "Target" "menu-new-item" "HasNext" .HasNext)}}{{end}}
   {{if and $loggedIn (not $isStaff) .CurrentOrder}}
     <div class="hx-container">
       <h3 class="panel-title">Tu orden actual</h3>
@@ -54,7 +54,7 @@
       {{end}}
     {{end}}
     {{if not $anyVisible}}
-      <p class="empty-msg">
+      <p id="menu-empty-msg" class="empty-msg">
       {{if $topMsg}}{{$topMsg}}{{else}}No hay ítemes disponibles{{end}}
       </p>
     {{end}}

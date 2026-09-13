@@ -20,6 +20,13 @@ const (
   _MAX_UPLOAD_MEM = 10 << 20 // 10 MiB, incl. non-file form fields
 )
 
+func GetItemCreateForm(w http.ResponseWriter, r *http.Request) {
+  if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+  onLastPage := r.URL.Query().Get("hasNext") != "true"
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  _Tpl.ExecuteTemplate(w, "form-create-item", map[string]any{"OnLastPage": onLastPage})
+}
+
 func PostItem(w http.ResponseWriter, r *http.Request) {
   err := r.ParseMultipartForm(_MAX_UPLOAD_MEM)
   if err != nil { serveBadRequestHX(w, err.Error()); return }
@@ -65,11 +72,16 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     HTMX: true,
   }})
   _Tpl.ExecuteTemplate(w, "toast", msg)
-  w.Write([]byte(`<div hx-swap-oob="beforeend:#menu-item-list">`))
-  _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
-    "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": "",
-  })
-  w.Write([]byte(`</div>`))
+
+  onLastPage := r.FormValue("on_last_page") == "true"
+  if onLastPage {
+    w.Write([]byte(`<p id="menu-empty-msg" hx-swap-oob="delete"></p>`))
+    w.Write([]byte(`<div hx-swap-oob="beforeend:#menu-item-list">`))
+    _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
+      "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": "",
+    })
+    w.Write([]byte(`</div>`))
+  }
 }
 
 func GetItems(w http.ResponseWriter, r *http.Request) {

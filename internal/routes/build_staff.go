@@ -14,6 +14,8 @@ func RegisterRoutes(r *chi.Mux) error {
   err := setupFileServer(r)
   if err != nil { return err }
 
+  r.Get("/htmx/form-create-item", controllers.GetItemCreateForm)
+
   r.Get( "/",     controllers.HandleRoot)
   r.Route("/init", func(r chi.Router){
     r.Get( "/",     controllers.ServeMainTemplate)
