@@ -54,7 +54,6 @@ type _DashStats struct {
 	OrdersToday int
 	SalesToday  float32
 	InQueue     int
-	ActiveItems int
 }
 
 type _TplData struct {

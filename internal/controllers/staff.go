@@ -70,8 +70,6 @@ func getDashStats() _DashStats {
   stats.OrdersToday, stats.SalesToday = day.Orders, day.Sales
   queue, err := models.GetPendingQueueStats()
   if err != nil { slog.Error(err.Error()) } else { stats.InQueue = queue.Count }
-  stats.ActiveItems, err = models.CountAvailableItems()
-  if err != nil { slog.Error(err.Error()) }
   return stats
 }
 
