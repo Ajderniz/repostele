@@ -14,6 +14,7 @@
   <script src="/cart.min.js" defer></script>
   <script src="/toast.min.js" defer></script>
   <script src="/accordion.min.js" defer></script>
+  <script src="/notif.js" defer></script>
 </head>
 <body>
   <header id="site-header">Repostele</header>
@@ -35,6 +36,15 @@
     {{end}}
   </main>
   <div id="toast-wrap"><div id="toast" class="toast" hidden></div></div>
+  <div
+  id="notif-poll"
+  data-token=""
+  hx-get="/htmx/notif"
+  hx-trigger="load, every 10s, notif-sync"
+  hx-vals="js:{...notifParams()}"
+  hx-swap="none"
+  hidden
+  ></div>
   <footer id="site-footer">Footer</footer>
 </body>
 </html>

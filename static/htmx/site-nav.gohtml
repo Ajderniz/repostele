@@ -4,7 +4,7 @@
   <li><a href="/menu">Menú</a></li>
   {{if and .LoggedIn .IsStaff}}
     <li>
-      <a href="/dashboard">Panel<span class="nav-badge" {{if not .PendingOrders}}hidden{{end}}>{{.PendingOrders}}</span></a>
+      <a href="/dashboard">Panel{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>
     </li>
   {{end}}
 </ul>
@@ -29,3 +29,5 @@
 </ul>
 
 {{end}}
+
+{{define "pending-badge"}}<span id="{{.Id}}" class="nav-badge" {{if .OOB}}hx-swap-oob="true"{{end}} {{if not .Count}}hidden{{end}}>{{.Count}}</span>{{end}}

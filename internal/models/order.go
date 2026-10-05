@@ -105,6 +105,25 @@ func CountOrdersByStatus(status OrderStatus) (int, error) {
   return count, nil
 }
 
+type PendingQueueStats struct {
+  Count      int   `db:"count"`
+  MaxID      int   `db:"max_id"`
+  MaxUpdated int64 `db:"max_updated"`
+}
+
+func GetPendingQueueStats() (PendingQueueStats, error) {
+  var stats PendingQueueStats
+  err := dbGet(&stats,
+    "SELECT COUNT(*) AS count, COALESCE(MAX("+ORDER_ID+"), 0) AS max_id, "+
+    "COALESCE(MAX("+ORDER_UPDATED+"), 0) AS max_updated "+
+    "FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_STATUS+" IN (?, ?, ?)",
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+  )
+  if err != nil { return PendingQueueStats{}, errors.New("No se pudo consultar la cola de órdenes") }
+  return stats, nil
+}
+
 var _OrderSortFields = _SortFields{
   ORDER_ID, _ORDER_USER, _ORDER_TOTAL, _ORDER_TIME, ORDER_STATUS, ORDER_UPDATED,
 }

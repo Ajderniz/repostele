@@ -24,6 +24,7 @@ func setupFileServer(r *chi.Mux) error {
     ),
   )
   r.Get("/htmx/nav", controllers.ServeNav)
+  r.Get("/htmx/notif", controllers.ServeNotif)
   r.Get("/"+static.HXDIR+"/{path}", controllers.ServeHTMX)
   return nil
 }

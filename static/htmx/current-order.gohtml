@@ -1,0 +1,12 @@
+{{define "current-order"}}
+<div id="current-order" {{if .OOB}}hx-swap-oob="true"{{end}}>
+  {{with .Order}}
+    <div class="hx-container">
+      <h3 class="panel-title">Tu orden actual</h3>
+      <ul class="row-card-list">
+        {{template "order-row" (dict "Order" . "IsStaff" false)}}
+      </ul>
+    </div>
+  {{end}}
+</div>
+{{end}}

@@ -7,13 +7,8 @@
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
   {{if $isAdmin}}{{template "button-create-item" (dict "Target" "menu-new-item" "HasNext" .HasNext)}}{{end}}
-  {{if and $loggedIn (not $isStaff) .CurrentOrder}}
-    <div class="hx-container">
-      <h3 class="panel-title">Tu orden actual</h3>
-      <ul class="row-card-list">
-        {{template "order-row" (dict "Order" .CurrentOrder "IsStaff" false)}}
-      </ul>
-    </div>
+  {{if and $loggedIn (not $isStaff)}}
+    {{template "current-order" (dict "Order" .CurrentOrder "OOB" false)}}
   {{end}}
   {{block "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
     {{if or .Params.Start .HasNext}}
