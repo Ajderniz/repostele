@@ -7,32 +7,40 @@
     <span id="cart-step-2">2 Pago</span>
     <span id="cart-step-3">3 Enviar</span>
   </div>
-  <div id="cart-list"></div>
-  <div class="cart-summary">
-    <span class="cart-summary-label">Total</span>
-    <span id="cart-total" class="cart-summary-total">₡0</span>
+  <div class="raised cart-box">
+    <div id="cart-list"></div>
+    <div class="cart-summary">
+      <span class="cart-summary-label">Total</span>
+      <span id="cart-total" class="cart-summary-total">₡0</span>
+    </div>
   </div>
 
   <h2 class="section-title">Comprobante SINPE</h2>
-  <input type="file" id="ref-img-input" accept="image/*" class="field-file">
-  <p id="ref-status" class="empty-msg" hidden></p>
-  <div id="ref-confirm" hidden>
-    <label for="ref-num-input">Código detectado (verificar antes de enviar)</label>
-    <input
-    type="text"
-    id="ref-num-input"
-    class="field"
-    inputmode="numeric"
-    pattern="[0-9]{25}"
-    maxlength="25"
-    placeholder="25 dígitos"
-    >
+  <div class="carved sinpe-box">
+    <img id="ref-preview" class="sinpe-thumb" alt="Comprobante SINPE" hidden>
+    <div class="sinpe-body">
+      <input type="file" id="ref-img-input" accept="image/*" class="field-file">
+      <p id="ref-status" class="empty-msg" hidden></p>
+      <div id="ref-confirm" hidden>
+        <label for="ref-num-input">Código detectado · verificar antes de enviar</label>
+        <input
+        type="text"
+        id="ref-num-input"
+        class="field order-ref-input"
+        inputmode="numeric"
+        pattern="[0-9]{25}"
+        maxlength="25"
+        placeholder="25 dígitos"
+        >
+      </div>
+    </div>
   </div>
 
   <p id="cart-missing" class="cart-missing" hidden></p>
-  <button id="cart-continue" class="btn btn-block" type="button" disabled>
+  <button id="cart-continue" class="btn btn-block btn-primary" type="button" disabled>
     Confirmar y enviar orden
   </button>
+  <p class="cart-back"><a href="/menu" class="link-danger">Volver al menú</a></p>
   <div id="order-result" class="hx-slot"></div>
 </article>
 
