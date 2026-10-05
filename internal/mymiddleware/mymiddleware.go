@@ -25,18 +25,16 @@ var (
 func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, error){
   sessionCookie, err := r.Cookie(controllers.SESSION_ID)
   if err != nil {
-    slog.Error(err.Error())
     return models.Session{}, http.StatusUnauthorized, _ErrAuth
   }
 
   session, err := models.GetSessionFromID(sessionCookie.Value)
+  if errors.Is(err, models.ErrSessionNotFound) {
+    return models.Session{}, http.StatusNotFound, _ErrGetSession
+  }
   if err != nil {
     slog.Error(err.Error())
     return models.Session{}, http.StatusInternalServerError, _ErrGetSession
-  }
-  if session.SessionToken == "" {
-    slog.Error(_ErrGetSession.Error())
-    return models.Session{}, http.StatusNotFound, _ErrGetSession
   }
 
   if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -82,8 +80,9 @@ func RequireAuth() func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       session, status, err := getSession(w, r)
       if err != nil {
-        if status == http.StatusUnauthorized { w.WriteHeader(status); return }
-        w.WriteHeader(http.StatusInternalServerError)
+        // Unknown or expired sessions (401/404) mean "log in again"; only real failures are 500.
+        if status == http.StatusInternalServerError { w.WriteHeader(status); return }
+        w.WriteHeader(http.StatusUnauthorized)
         return
       }
       ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)

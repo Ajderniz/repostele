@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -11,8 +10,6 @@ import (
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 )
-
-var _ErrSessionID = errors.New("'"+SESSION_ID+"' blank")
 
 const (
   _TOKEN_LENGTH = 32
@@ -48,7 +45,8 @@ func openSession(
 ) error {
 
   sessionToken, err := pass.GenerateToken(_TOKEN_LENGTH)
-  csrfToken,    err := pass.GenerateToken(_TOKEN_LENGTH)
+  if err != nil { return err }
+  csrfToken, err := pass.GenerateToken(_TOKEN_LENGTH)
   if err != nil { return err }
 
   expires := time.Now().Add(24 * time.Hour)
@@ -127,6 +125,7 @@ func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
   userStr, err := bind.FormValue(r, "users", "boolean")
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
   staffStr, err := bind.FormValue(r, "staff", "boolean")
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 

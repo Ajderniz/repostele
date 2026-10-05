@@ -29,6 +29,7 @@ const (
 	PermanentRedirect = http.StatusPermanentRedirect
 	BadRequest = http.StatusBadRequest
 	Unauthorized = http.StatusUnauthorized
+	NotFound = http.StatusNotFound
 	Forbidden = http.StatusForbidden
 	Conflict = http.StatusConflict
 	TooManyRequests = http.StatusTooManyRequests
@@ -60,9 +61,6 @@ type _TplData struct {
 	Title    string
 	Server   string
 	Init     bool
-	LoggedIn bool
-	IsStaff  bool
-	IsAdmin  bool
 	MainName string
 	MainData *_MainData
 	Err      string
@@ -210,9 +208,6 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		Title: titleCaser.String(section),
 		Server: _SERVER_NAME,
 		Init: init, 
-		LoggedIn: loggedIn,
-		IsStaff: isStaff,
-		IsAdmin: isAdmin,
 		MainName: "main-"+section,
 		MainData: data,
 		Err: errStr,

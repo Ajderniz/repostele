@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
@@ -12,7 +13,8 @@ func updateUserPassword(username, oldPassword, newPassword string) (int, error){
   if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
 
   user, err := models.GetUserFromUsername(username)
-  if err != nil || user.Username == "" {return InternalServerError,err}
+  if err != nil { return InternalServerError, err }
+  if user.Username == "" { return NotFound, errors.New(_MsgAccNotFound) }
 
   err = pass.CheckPasswordHash(oldPassword, user.PassHash)
   if err != nil { return Unauthorized, err }
@@ -28,6 +30,7 @@ func updateUserPassword(username, oldPassword, newPassword string) (int, error){
 
 func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { serveBadRequest(w, r, err); return }
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { serveBadRequest(w, r, err); return }
 

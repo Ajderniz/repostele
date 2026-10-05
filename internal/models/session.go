@@ -1,12 +1,13 @@
 package models
 
 import (
-	"database/sql"
 	"errors"
 	"log/slog"
 	"strconv"
 	"time"
 )
+
+var ErrSessionNotFound = errors.New("La sesión no existe")
 
 type SessionRole int
 const (
@@ -70,10 +71,13 @@ func GetSessionFromID(sid string) (Session, error) {
   )
   if err != nil {
     slog.Error(err.Error())
-    if err == sql.ErrNoRows {return Session{},errors.New("La sesión no existe")}
     return Session{}, errors.New(
       "No se pudo acceder a la información de la sesión",
     )
+  }
+  // dbGet maps sql.ErrNoRows to nil, so a missing row shows up as an empty token.
+  if session.SessionToken == "" {
+    return Session{}, ErrSessionNotFound
   }
   return session, nil
 }

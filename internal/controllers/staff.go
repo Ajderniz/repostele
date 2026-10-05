@@ -123,6 +123,7 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
   list, err := models.GetStaff(&models.SelectParams{
     Start: 0, Limit: 1, Sort: models.USER_USERNAME, Dir: models.SORT_DIR_ASC,
   })
+  if err != nil { serveInternalErr(w, r); return }
   if 1 <= len(list) {
     slog.Error(_ErrAlreadyInit.Error())
     http.Redirect(w, r, "/", MovedPermanently)
@@ -249,7 +250,8 @@ func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
   if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
 
   staff, err := models.GetStaffFromUsername(username)
-  if err != nil||staff.Username == ""{return InternalServerError,err}
+  if err != nil { return InternalServerError, err }
+  if staff.Username == "" { return NotFound, errors.New(_MsgAccNotFound) }
 
   err = pass.CheckPasswordHash(oldPassword, staff.PassHash)
   if err != nil { return Unauthorized, err }
@@ -265,6 +267,7 @@ func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
 
 func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
   username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { serveBadRequest(w, r, err); return }
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { serveBadRequest(w, r, err); return }
 
