@@ -372,7 +372,11 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se canceló la orden"})
     _Tpl.ExecuteTemplate(w, "toast", "Se canceló la orden")
-    _Tpl.ExecuteTemplate(w, "oob-delete", "order-"+strconv.Itoa(latestOrder.Id))
+    // Row stays (customer list shows history); status and actions update in place.
+    _Tpl.ExecuteTemplate(w, "order-status", map[string]any{"Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "OOB": true})
+    _Tpl.ExecuteTemplate(w, "order-actions", map[string]any{
+      "Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "IsStaff": false, "OOB": true,
+    })
     return
   }
   serveMsg(w, r, "Se canceló la orden")
@@ -413,12 +417,9 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg})
   _Tpl.ExecuteTemplate(w, "toast", msg)
-  if setStatus == models.ORDER_STATUS_CANCELLED || setStatus == models.ORDER_STATUS_FULFILLED {
-    _Tpl.ExecuteTemplate(w, "oob-delete", "order-"+strconv.Itoa(order.Id))
-  } else {
-    _Tpl.ExecuteTemplate(w, "order-status", map[string]any{"Id": order.Id, "Status": setStatus, "OOB": true})
-    _Tpl.ExecuteTemplate(w, "order-actions", map[string]any{
-      "Id": order.Id, "Status": setStatus, "IsStaff": true, "OOB": true,
-    })
-  }
+  // Rows update in place; the order lists re-sync from the server on order-changed.
+  _Tpl.ExecuteTemplate(w, "order-status", map[string]any{"Id": order.Id, "Status": setStatus, "OOB": true})
+  _Tpl.ExecuteTemplate(w, "order-actions", map[string]any{
+    "Id": order.Id, "Status": setStatus, "IsStaff": true, "OOB": true,
+  })
 }
