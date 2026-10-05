@@ -1,8 +1,8 @@
 // Order lists (staff queue, customer orders): highlight the picked order, open its
 // detail in the side aside (inline when the aside is hidden), reload on order-changed.
 
-const ORDER_LISTS = ['queue-list', 'orders-list'];
-const ORDER_LIST_PATH = /^\/(order|dashboard\/orders)(\?|$)/;
+const ORDER_LISTS = ['queue-list', 'orders-list', 'dash-panel'];
+const ORDER_LIST_PATH = /^\/(order|dashboard\/orders(\/history)?)(\?|$)/;
 
 document.addEventListener('htmx:afterRequest', function (e) {
   const el = e.detail.elt;
@@ -22,10 +22,20 @@ document.addEventListener('htmx:afterRequest', function (e) {
 document.addEventListener('order-changed', function () {
   ORDER_LISTS.forEach(function (id) {
     const list = document.getElementById(id);
-    if (list && list.dataset.orderSrc && list.children.length) {
-      htmx.ajax('GET', list.dataset.orderSrc, { target: list, swap: 'innerHTML' });
-    }
+    if (!list || !list.dataset.orderSrc || !list.children.length) return;
+    // Reload replaces the rows (and any inline card); reopen the picked one after settle.
+    const picked = list.querySelector('.order-entry-selected');
+    list.dataset.pickedId = picked ? picked.id : '';
+    htmx.ajax('GET', list.dataset.orderSrc, { target: list, swap: 'innerHTML' });
   });
+});
+
+document.addEventListener('htmx:afterSettle', function (e) {
+  const list = e.detail.target;
+  if (!list || !list.dataset || !list.dataset.pickedId) return;
+  const row = document.getElementById(list.dataset.pickedId);
+  delete list.dataset.pickedId;
+  if (row) row.click();
 });
 
 document.addEventListener('htmx:beforeSwap', function (e) {

@@ -5,19 +5,13 @@
   {{with .Msg}}
     {{template "div-msg" .}}
   {{else}}
-    <div class="dash-tiles">
-      <div class="dash-tile">
-        <b>{{.Stats.OrdersToday}}</b>
-        <span>Órdenes hoy</span>
-      </div>
-      <div class="dash-tile">
-        <b>₡{{printf "%.0f" .Stats.SalesToday}}</b>
-        <span>Ventas hoy</span>
-      </div>
-      <a class="dash-tile" href="/queue">
-        <b>{{.Stats.InQueue}}</b>
-        <span>En cola</span>
-      </a>
+    <div
+    class="dash-tiles"
+    hx-get="/dashboard/stats"
+    hx-trigger="order-changed from:body, counts-changed from:body"
+    hx-swap="innerHTML"
+    >
+      {{template "dash-tiles" .Stats}}
     </div>
 
     <div class="dash-tabs">

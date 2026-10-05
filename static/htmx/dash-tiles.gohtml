@@ -1,0 +1,14 @@
+{{define "dash-tiles"}}
+<div class="dash-tile">
+  <b>{{.OrdersToday}}</b>
+  <span>Órdenes hoy</span>
+</div>
+<div class="dash-tile">
+  <b>₡{{printf "%.0f" .SalesToday}}</b>
+  <span>Ventas hoy</span>
+</div>
+<a class="dash-tile" href="/queue">
+  <b>{{.InQueue}}</b>
+  <span>En cola</span>
+</a>
+{{end}}

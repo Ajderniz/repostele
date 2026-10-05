@@ -3,7 +3,13 @@
 {{$isStaff := .IsStaff}}
 {{$items := .ItemDetails}}
 {{with .Order}}
-  <table class="table-order">
+  <table
+  class="table-order"
+  hx-get="{{if $isStaff}}/dashboard/orders/{{.Id}}{{else}}/order/{{.Id}}{{end}}"
+  hx-trigger="order-changed from:body"
+  hx-target="this"
+  hx-swap="outerHTML"
+  >
     <tr class="order-row-id">
       <th>ID</th>
       <td>{{.Id}}</td>
@@ -61,7 +67,7 @@
       <tr class="order-row-actions">
         <td colspan="2">
           <div class="order-detail-actions">
-            {{template "buttons-order-actions" (dict "Id" .Id "Status" .Status "IsStaff" true)}}
+            {{template "buttons-order-actions" (dict "Id" .Id "Status" .Status "IsStaff" true "Card" true)}}
           </div>
         </td>
       </tr>

@@ -63,6 +63,10 @@ func GetQueueCounts(w http.ResponseWriter, r *http.Request) {
   serveDataHX(w, r, c, "queue-counts")
 }
 
+func GetDashTiles(w http.ResponseWriter, r *http.Request) {
+  serveDataHX(w, r, getDashStats(), "dash-tiles")
+}
+
 func getDashStats() _DashStats {
   var stats _DashStats
   day, err := models.GetDayStats(startOfToday())
