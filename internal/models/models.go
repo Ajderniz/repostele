@@ -13,6 +13,35 @@ import (
 
 const _DB_FILEPATH = "./data.db"
 
+// Indexes for the hot lookups (latest order per user, queue by status, order items, user sessions).
+// Idempotent, so it runs on every start and also covers DBs created before they existed.
+var _INDEXES = []string{
+  "CREATE INDEX IF NOT EXISTS idx_orders_user_time ON orders(user, time)",
+  "CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)",
+  "CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id)",
+  "CREATE INDEX IF NOT EXISTS idx_sessions_user ON sessions(user)",
+}
+
+func ensureIndexes() error {
+  for _, q := range _INDEXES {
+    if _, err := _DB.Exec(q); err != nil { return err }
+  }
+  return nil
+}
+
+// PurgeExpired drops sessions and fingerprints whose expiry has passed.
+// Expired fingerprints are already ignored by lookups (see GetFingerPrintFromID), so this is safe.
+func PurgeExpired(now int64) error {
+  _, err := _DB.Exec(
+    "DELETE FROM "+_SESSIONS+" WHERE "+_SESSION_EXPIRES+" <= ?", now,
+  )
+  if err != nil { return err }
+  _, err = _DB.Exec(
+    "DELETE FROM "+_FINGERPRINTS+" WHERE "+_FINGERPRINT_EXPIRES+" <= ?", now,
+  )
+  return err
+}
+
 var (
   _DB *sqlx.DB
 

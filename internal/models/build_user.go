@@ -16,5 +16,5 @@ func OpenDB() error {
   _, err = os.Stat(_DB_FILEPATH)
   if err != nil { return err }
 
-  return nil
+  return ensureIndexes()
 }

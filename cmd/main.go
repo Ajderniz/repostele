@@ -50,6 +50,12 @@ func main() {
 	err = models.OpenDB()
 	if err != nil { log.Fatal(err.Error()) }
 
+	purge := func() {
+		if err := models.PurgeExpired(time.Now().Unix()); err != nil { slog.Error(err.Error()) }
+	}
+	purge()
+	go func() { for range time.Tick(time.Hour) { purge() } }()
+
 	r := chi.NewRouter()
 
 	chiLogFormat := httplog.SchemaECS.Concise(true)

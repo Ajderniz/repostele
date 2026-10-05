@@ -40,5 +40,5 @@ func OpenDB() error {
     }
   }
 
-  return nil
+  return ensureIndexes()
 }
