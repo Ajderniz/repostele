@@ -1003,6 +1003,7 @@ svg {
 }
 
 .menu-stepper .btn {
+  margin: 0;
   padding: 0.25rem 0.6rem;
   min-width: 2.2rem;
   font-family: $font-heading;
@@ -1025,6 +1026,8 @@ svg {
 }
 
 .menu-stepper-q {
+  display: flex;
+  align-items: center;
   min-width: 2rem;
   padding: 0.25rem 0.3rem;
   text-align: center;
