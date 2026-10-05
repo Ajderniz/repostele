@@ -72,7 +72,6 @@ $radius-sm: 4px;
   --muted: color-mix(in srgb, var(--fg) 75%, var(--paper));
   --rule: var(--fg);
   --rule-soft: color-mix(in srgb, var(--fg) 22%, var(--paper));
-  --fill: var(--fg);
   --on-fill: var(--paper);
 }
 
@@ -1314,7 +1313,7 @@ svg {
 }
 
 .order-track span.done {
-  color: var(--fg);
+  color: var(--ok);
   border-color: var(--ok);
 }
 
@@ -1890,5 +1889,29 @@ svg {
     height: auto;
     aspect-ratio: 16 / 9;
   }
+}
+
+// --- mockup color codes ---
+
+.order-entry-selected {
+  outline: 2px solid var(--fill);
+  outline-offset: 2px;
+}
+
+.row-card-status.status-unreviewed {
+  color: var(--warn);
+}
+
+.row-card-status.status-accepted {
+  color: var(--ok);
+}
+
+.row-card-status.status-denied {
+  color: var(--fill);
+}
+
+.btn-primary {
+  background: var(--fill);
+  color: var(--on-fill);
 }
 

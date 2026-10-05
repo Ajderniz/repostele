@@ -80,7 +80,7 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
 {{end}}
 
 {{define "order-status"}}
-<span id="order-status-{{.Id}}" class="row-card-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
+<span id="order-status-{{.Id}}" class="row-card-status{{if eq .Status 0}} status-unreviewed{{else if eq .Status 1}} status-denied{{else if eq .Status 3}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
 {{end}}
 
 {{define "order-actions"}}

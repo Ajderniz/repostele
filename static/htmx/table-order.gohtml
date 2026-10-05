@@ -51,7 +51,7 @@
     </tr>
     <tr class="order-row-status">
       <th>Estado</th>
-      <td>{{OrderStatusName .Status}}</td>
+      <td>{{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}</td>
     </tr>
     <tr class="order-row-ref">
       <th>Referencia</th>

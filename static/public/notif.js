@@ -10,6 +10,10 @@ document.addEventListener('htmx:afterRequest',function(e){
     return;
   }
   const cfg=e.detail.requestConfig||{};
+  if(el&&el.classList&&el.classList.contains('order-entry')&&cfg.verb==='get'){
+    document.querySelectorAll('.order-entry-selected').forEach(x=>x.classList.remove('order-entry-selected'));
+    el.classList.add('order-entry-selected');
+  }
   if(cfg.verb&&cfg.verb!=='get'&&e.detail.successful){
     const poll=document.getElementById('notif-poll');
     if(poll){poll.dataset.silent='1';htmx.trigger(poll,'notif-sync')}

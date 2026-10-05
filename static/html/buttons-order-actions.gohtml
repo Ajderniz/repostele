@@ -3,7 +3,7 @@
 {{if .IsStaff}}
   {{if or (eq .Status 0) (eq .Status 1)}}
     <button
-    class="btn btn-compact"
+    class="btn btn-compact btn-primary"
     hx-patch="/dashboard/orders/{{.Id}}/status"
     hx-vals='{"status":"3"}'
     hx-target="#msg-{{.Id}}"
@@ -18,7 +18,7 @@
     >Denegar</button>
   {{else if eq .Status 3}}
     <button
-    class="btn btn-compact"
+    class="btn btn-compact btn-primary"
     hx-patch="/dashboard/orders/{{.Id}}/status"
     hx-vals='{"status":"4"}'
     hx-target="#msg-{{.Id}}"
