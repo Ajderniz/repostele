@@ -27,7 +27,7 @@
   <ul class="order-list">
     {{range .Orders}}
       {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
-        {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Inline" $showHistory)}}
+        {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Inline" (and $isStaff $showHistory))}}
       {{end}}
     {{end}}
   </ul>
