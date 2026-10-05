@@ -200,30 +200,6 @@ func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
   return orders, nil
 }
 
-func getItemsFromOrderID(id int) (ItemIdQuant, error) {
-  ois := []struct{
-    ItemId int `db:"item_id"`
-    Quant  int `db:"quant"`
-  }{}
-  err := _DB.Select(&ois,
-    "SELECT "+_ORDER_ITEM_ITEM_ID+", "+_ORDER_ITEM_QUANT+" "+
-    "FROM "+_ORDER_ITEMS+" "+
-    "WHERE "+_ORDER_ITEM_ORDER_ID+" = ?",
-    id,
-  )
-  if err != nil {
-    slog.Error(err.Error())
-    return nil, errors.New(
-      "No se pudo acceder a la lista de ítemes de la orden",
-    )
-  }
-
-  items := make(ItemIdQuant, len(ois))
-  for _, oi := range ois { items[oi.ItemId] = oi.Quant }
-
-  return items, nil
-}
-
 type OrderItemDetail struct {
   Name  string  `db:"name"`
   Price float32 `db:"price"`
@@ -258,9 +234,6 @@ func GetOrderFromID(id int) (Order, error) {
   if err != nil{
     return Order{},errors.New("No se pudo acceder la orden consultada")
   }
-
-  order.Items, err = getItemsFromOrderID(id)
-  if err != nil { return Order{}, err }
 
   return order, nil
 }
