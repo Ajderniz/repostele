@@ -1531,3 +1531,119 @@ body:has(.menu-layout) {
   color: var(--muted);
 }
 
+// --- order entries ---
+
+.order-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.order-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.3rem 0.75rem;
+  padding: 0.6rem 0.8rem;
+  min-width: 0;
+  background: var(--bg);
+  border-radius: $radius-md;
+  @include card-shadow;
+}
+
+.order-entry-main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.order-entry-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.6rem;
+}
+
+.order-entry-head .row-card-id {
+  font-size: 0.95rem;
+}
+
+.order-entry-user {
+  font-size: 0.9rem;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+
+.order-entry-meta {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 0.2rem 0.6rem;
+  font-size: 0.9rem;
+}
+
+.order-entry-total {
+  font-family: $font-heading;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.order-entry-meta .order-ref-num {
+  display: inline;
+  margin-top: 0;
+  font-size: 0.85rem;
+  letter-spacing: 0.03em;
+}
+
+.order-entry-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.order-entry-detail {
+  grid-column: 1 / -1;
+}
+
+.order-entry-detail:not(:empty) {
+  margin-top: 0.3rem;
+}
+
+.order-entry-current {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.order-entry-current .order-entry-actions {
+  justify-content: flex-start;
+}
+
+.order-entry-current .order-entry-meta .order-ref-num {
+  flex: 1 1 100%;
+  width: 100%;
+}
+
+.order-entry-current .order-ref-num {
+  display: block;
+  margin-top: 0.35rem;
+  padding: 0.45rem 0.6rem;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+  letter-spacing: 0.06em;
+  background: var(--paper);
+  border-radius: $radius-sm;
+  @include carved-shadow;
+}
+
+@media (max-width: 600px) {
+  .order-entry {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .order-entry-actions {
+    justify-content: flex-start;
+  }
+}
+
