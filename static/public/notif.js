@@ -35,7 +35,10 @@ document.addEventListener('order-changed',function(){
 });
 document.addEventListener('htmx:beforeSwap',function(e){
   const el=e.detail.requestConfig&&e.detail.requestConfig.elt;
-  if(el&&el.dataset.asideTarget&&window.matchMedia('(max-width: 859px)').matches){
+  if(!el||!el.dataset.asideTarget)return;
+  // Use the aside only where CSS shows it (container query), else fall back to inline detail.
+  const aside=document.getElementById(el.dataset.asideTarget);
+  if(aside&&getComputedStyle(aside).display==='none'){
     e.detail.target=document.getElementById('order-detail-'+el.dataset.id);
     e.detail.shouldSwap=true;
   }
