@@ -46,10 +46,10 @@
 class="order-entry{{if $track}} order-entry-current{{end}}"
 id="order-{{$o.Id}}"
 hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}{{else}}/order/{{$o.Id}}{{end}}"
-hx-target="{{if $isStaff}}#queue-detail{{else}}#order-detail-{{$o.Id}}{{end}}"
+hx-target="{{if $track}}#order-detail-{{$o.Id}}{{else if $isStaff}}#queue-detail{{else}}#orders-detail{{end}}"
 hx-swap="innerHTML"
 hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail')]"
-{{if $isStaff}}data-queue-detail data-id="{{$o.Id}}"{{end}}
+{{if not $track}}data-aside-target="{{if $isStaff}}queue-detail{{else}}orders-detail{{end}}" data-id="{{$o.Id}}"{{end}}
 >
   <div class="order-entry-main">
     <div class="order-entry-head">

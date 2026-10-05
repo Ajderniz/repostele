@@ -35,7 +35,7 @@ document.addEventListener('order-changed',function(){
 });
 document.addEventListener('htmx:beforeSwap',function(e){
   const el=e.detail.requestConfig&&e.detail.requestConfig.elt;
-  if(el&&el.dataset.queueDetail!==undefined&&window.matchMedia('(max-width: 859px)').matches){
+  if(el&&el.dataset.asideTarget&&window.matchMedia('(max-width: 859px)').matches){
     e.detail.target=document.getElementById('order-detail-'+el.dataset.id);
     e.detail.shouldSwap=true;
   }
