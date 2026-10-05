@@ -69,7 +69,7 @@ $radius-sm: 4px;
 }
 
 :root {
-  --muted: color-mix(in srgb, var(--fg) 58%, var(--paper));
+  --muted: color-mix(in srgb, var(--fg) 75%, var(--paper));
   --rule: var(--fg);
   --rule-soft: color-mix(in srgb, var(--fg) 22%, var(--paper));
   --fill: var(--fg);
@@ -668,7 +668,7 @@ svg {
 
 .row-card-status {
   font-family: $font-heading;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -693,7 +693,7 @@ svg {
 
 .row-card-field dt {
   font-family: $font-heading;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -914,7 +914,7 @@ svg {
   margin-left: 0.4rem;
   padding: 0 0.35rem;
   font-family: $font-heading;
-  font-size: 0.7rem;
+  font-size: 0.8rem;
   font-weight: 800;
   line-height: 1.3rem;
   text-align: center;
