@@ -112,12 +112,16 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     return
   }
 
+  ids := make([]int, 0, len(request.Items))
+  for itemId := range request.Items { ids = append(ids, itemId) }
+  found, err := models.GetItemsFromIDs(ids)
+  if err != nil { serveOrderInternalErr(w, r); return }
+
   var total float32
   items := models.ItemIdQuant{}
   for itemId, quant := range request.Items {
-    item, err := models.GetItemFromID(itemId)
-    if err != nil  { slog.Error(err.Error()); continue }
-    if item.Name == "" { slog.Error("Ítem inválido"); continue }
+    item, ok := found[itemId]
+    if !ok || item.Name == "" { slog.Error("Ítem inválido"); continue }
     total += item.Price * float32(quant)
     items[item.Id] = quant
   }
@@ -332,10 +336,8 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   }
   refNum, err := bind.FormValue(r, models.ORDER_REF_NUM, "required,number,len=25")
   if err != nil { serveOrderErr(w, r, BadRequest, err); return }
-  err = models.UpdateOrderRefNum(latestOrder.Id, refNum)
-  if err != nil { serveOrderInternalErr(w, r); return }
   // editing puts a denied order back in the staff review queue
-  err = models.UpdateOrderStatus(latestOrder.Id, models.ORDER_STATUS_UNREVIEWED)
+  err = models.UpdateOrderRefNumAndStatus(latestOrder.Id, refNum, models.ORDER_STATUS_UNREVIEWED)
   if err != nil { serveOrderInternalErr(w, r); return }
 
   if r.Header.Get("HX-Request") == "true" {

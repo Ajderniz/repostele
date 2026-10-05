@@ -311,8 +311,16 @@ func GetLatestOrderID() (int, error) {
 }
 
 
-func UpdateOrderRefNum(id int, refNum string) error {
-  return updateOrderField(id, ORDER_REF_NUM, refNum)
+// One UPDATE for a ref edit plus its status change.
+func UpdateOrderRefNumAndStatus(id int, refNum string, status OrderStatus) error {
+  _, err := dbBeginExecAndCommit(
+    "UPDATE "+_ORDERS+" "+
+    "SET "+ORDER_REF_NUM+" = ?, "+ORDER_STATUS+" = ?, "+ORDER_UPDATED+" = ? "+
+    "WHERE "+ORDER_ID+" = ?",
+    refNum, status, time.Now().Unix(), id,
+  )
+  if err != nil { return _ErrUpdateOrder }
+  return nil
 }
 
 func UpdateOrderStatus(id int, status OrderStatus) error {

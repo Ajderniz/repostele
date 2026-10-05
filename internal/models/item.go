@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -73,6 +74,23 @@ func GetItemFromID(id int) (Item, error) {
   )
   if err != nil { return Item{}, errors.New("No se pudo acceder al ítem") }
   return item, nil
+}
+
+// GetItemsFromIDs loads several items in one query. Unknown ids are absent from the map.
+func GetItemsFromIDs(ids []int) (map[int]Item, error) {
+  items := map[int]Item{}
+  if len(ids) == 0 { return items, nil }
+
+  query, args, err := sqlx.In(
+    "SELECT * FROM "+_ITEMS+" WHERE "+ITEM_ID+" IN (?)", ids,
+  )
+  if err != nil { return nil, errors.New("No se pudo acceder a los ítemes") }
+
+  list := []Item{}
+  err = dbSelect(&list, query, args...)
+  if err != nil { return nil, errors.New("No se pudo acceder a los ítemes") }
+  for _, it := range list { items[it.Id] = it }
+  return items, nil
 }
 
 type ItemUpdate struct {
