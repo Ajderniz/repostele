@@ -37,10 +37,8 @@ const (
   _ORDER_TIME    = "time"
   ORDER_STATUS   = "status"
   ORDER_UPDATED  = "updated"
-  //_ORDER_FIELDS  = "user, total, ref_num, time, status"
 
   _ORDER_ITEMS         = "order_items"
-  //_ORDER_ITEM_PK      = "id"
   _ORDER_ITEM_ORDER_ID = "order_id"
   _ORDER_ITEM_ITEM_ID  = "item_id"
   _ORDER_ITEM_QUANT    = "quant"

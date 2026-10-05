@@ -11,7 +11,6 @@ const (
   _CREDS_VALIDATE     = "required,min=4,max=16,alphanum"
   
   _CREDS_USERNAME     = "username"
-  _CREDS_NEW_USERNAME = "new-username"
   _CREDS_PASSWORD     = "password"
   _CREDS_OLD_PASSWORD = "old-password"
   _CREDS_NEW_PASSWORD = "new-password"
@@ -35,13 +34,6 @@ func getRegisterCredsFromForm(r *http.Request) (username, password string, err e
     return "", "", errors.New("Las contraseñas no coinciden")
   }
   return username, password1, nil
-}
-
-func getNewUsernameFromForm(r *http.Request) (password, newUsername string, err error) {
-  password, err = bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { return }
-  newUsername, err = bind.FormValue(r, _CREDS_NEW_USERNAME, _CREDS_VALIDATE)
-  return
 }
 
 func getNewPasswordFromForm(r *http.Request) (oldPassword, newPassword string, err error) {

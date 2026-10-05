@@ -15,15 +15,12 @@ const (
 var (
 	_ErrBadCreds = errors.New("Credenciales inválidos")
 	_ErrAlreadyInit  = errors.New("El sistema ya está configurado")
-	_ErrSameUsername = errors.New("El usuario ya existe")
 	_ErrSamePassword = errors.New("La contraseña es idéntica a la anterior")
-  _ErrGetAcc = errors.New("No se pudo acceder a la información de la cuenta")
 
 	_MsgAccNotFound = "Cuenta no encontrada"
   _MsgAccCreated = "Registro exitoso"
 	_MsgLoggedIn = "Inicio de sesión exitoso"
 	_MsgAccDeactivated = "La cuenta fue desactivada"
-	_MsgUsernameChanged = "Se cambió el nombre de usuario"
 	_MsgPasswordChanged = "Se cambió la contraseña"
 )
 
