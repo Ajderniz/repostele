@@ -1,6 +1,6 @@
 function notifParams(){const p=document.getElementById('notif-poll');return{token:p.dataset.token||'',silent:p.dataset.silent||''}}
 const _ORDER_LIST_PATH=/^\/(order|dashboard\/orders)(\?|$)/;
-const _ORDER_LISTS=['queue-list','account-content'];
+const _ORDER_LISTS=['queue-list','orders-list'];
 document.addEventListener('htmx:afterRequest',function(e){
   const el=e.detail.elt;
   if(el&&el.id==='notif-poll'){

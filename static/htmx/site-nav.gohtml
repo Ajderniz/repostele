@@ -2,6 +2,9 @@
 
 <ul id="site-nav-list-left">
   <li><a href="/menu">Menú</a></li>
+  {{if and .LoggedIn (not .IsStaff)}}
+    <li><a href="/orders">Mis órdenes</a></li>
+  {{end}}
   {{if and .LoggedIn .IsStaff}}
     <li>
       <a href="/queue">Cola{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>

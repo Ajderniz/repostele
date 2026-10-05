@@ -1,41 +1,41 @@
 {{define "main-account"}}
 
 <article class="page">
-  <h1 class="page-title">Mi cuenta</h1>
-  <ul class="action-list">
-    {{if not .IsStaff}}
-    <li class="action-item">
-      <button
-      class="btn btn-block"
-      hx-get="/order"
-      hx-target="#account-content"
-      hx-swap="innerHTML"
-      >
-        Mis órdenes
-      </button>
-    </li>
-    {{end}}
-    <li class="action-item">
-      <button
-      class="btn btn-block"
-      hx-get="htmx/form-change-password"
-      hx-target="#account-content"
-      hx-swap="innerHTML"
-      >
-        Cambiar contraseña
-      </button>
-    </li>
-    <li class="action-item">
-      <button
-      class="btn btn-block btn-danger"
-      hx-get="htmx/form-deactivate-account"
-      hx-target="#account-content"
-      hx-swap="innerHTML"
-      >
-        Desactivar cuenta
-      </button>
-    </li>
-  </ul>
+  <h1 class="page-title">Cuenta</h1>
+  <div class="account-profile raised">
+    <div class="account-avatar">{{printf "%.1s" .Username}}</div>
+    <div>
+      <div class="account-name">{{.Username}}</div>
+      <div class="account-role">{{if .IsAdmin}}Administrador{{else if .IsStaff}}Personal{{else}}Cliente{{end}}</div>
+    </div>
+  </div>
+
+  <h2 class="section-title">Ajustes</h2>
+  <button
+  type="button"
+  class="set-row"
+  hx-get="htmx/form-change-password"
+  hx-target="#account-content"
+  hx-swap="innerHTML"
+  >
+    <span>Cambiar contraseña<small>Requiere la contraseña actual</small></span>
+    <span class="chev" aria-hidden="true">›</span>
+  </button>
+
+  <div class="danger-zone">
+    <h2 class="section-title danger-title">Zona de peligro</h2>
+    <button
+    type="button"
+    class="set-row set-row-danger"
+    hx-get="htmx/form-deactivate-account"
+    hx-target="#account-content"
+    hx-swap="innerHTML"
+    >
+      <span>Desactivar cuenta<small>Pide la contraseña y confirmación</small></span>
+      <span class="chev" aria-hidden="true">›</span>
+    </button>
+  </div>
+
   <div id="account-content" class="hx-slot"></div>
 </article>
 

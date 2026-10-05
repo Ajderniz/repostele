@@ -1442,3 +1442,92 @@ body:has(.menu-layout) {
   }
 }
 
+// --- account ---
+
+.account-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.9rem 1rem;
+  margin: 0.4rem 0 0.6rem;
+}
+
+.account-avatar {
+  flex: none;
+  width: 3.4rem;
+  height: 3.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--btn-bg);
+  font-family: $font-heading;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  @include carved-shadow;
+}
+
+.account-name {
+  font-family: $font-heading;
+  font-size: 1.15rem;
+  font-weight: 800;
+  overflow-wrap: anywhere;
+}
+
+.account-role {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.set-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.8rem 0.2rem;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--fg);
+  font-family: $font-heading;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+}
+
+.set-row small {
+  display: block;
+  font-family: $font-body;
+  font-size: 0.85rem;
+  font-weight: normal;
+  color: var(--muted);
+}
+
+.set-row .chev {
+  font-size: 1.3rem;
+  color: var(--muted);
+}
+
+.danger-zone {
+  margin-top: 1.4rem;
+  padding-left: 0.8rem;
+  border-left: 4px solid var(--danger);
+}
+
+.danger-title {
+  color: var(--danger);
+  margin: 0.2rem 0 0.2rem;
+}
+
+.set-row-danger {
+  color: var(--danger);
+  border-bottom: 0;
+}
+
+.set-row-danger small {
+  color: var(--muted);
+}
+

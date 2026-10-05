@@ -1,0 +1,14 @@
+{{define "main-orders"}}
+
+<article class="page">
+  <h1 class="page-title">Mis órdenes</h1>
+  <div
+  id="orders-list"
+  class="hx-slot"
+  hx-get="/order"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+  ></div>
+</article>
+
+{{end}}

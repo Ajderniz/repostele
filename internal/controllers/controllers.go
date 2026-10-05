@@ -45,6 +45,7 @@ type _MainData struct {
 	HasNext       bool
 	CurrentOrder  *models.Order
 	Stats         *_DashStats
+	Username      string
 }
 
 type _DashStats struct {
@@ -185,6 +186,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		data = &_MainData{}
 	}
 	data.IsStaff = isStaff
+	if usernameAny != nil { data.Username = usernameAny.(string) }
 	data.IsAdmin = isAdmin
 	data.LoggedIn = loggedIn
 	data.IsUserApp = _SERVER_NAME == "User"
