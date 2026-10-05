@@ -6,6 +6,7 @@ import (
 	tpl "html/template"
 	"log/slog"
 	"net/http"
+	"net/url"
 	"slices"
 	"strings"
 
@@ -125,6 +126,12 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	// htmx sends the page URL the nav was loaded on; its first segment marks the active link.
+	section := ""
+	if cur, err := url.Parse(r.Header.Get("HX-Current-URL")); err == nil {
+		section, _, _ = strings.Cut(strings.TrimPrefix(cur.Path, "/"), "/")
+	}
+
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err := _Tpl.ExecuteTemplate(w, "site-nav", map[string]any{
 		"Init":          models.CheckInit(),
@@ -132,6 +139,7 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 		"IsStaff":       isStaff,
 		"IsAdmin":       isAdmin,
 		"PendingOrders": pendingOrders,
+		"Section":       section,
 	})
 	if err != nil { slog.Error(err.Error()); w.WriteHeader(InternalServerError) }
 }

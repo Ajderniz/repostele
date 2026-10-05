@@ -1,25 +1,25 @@
 {{define "site-nav"}}
 
 <ul id="site-nav-list-left">
-  <li><a href="/menu">Menú</a></li>
+  <li><a href="/menu"{{if eq .Section "menu"}} aria-current="page"{{end}}>Menú</a></li>
   {{if and .LoggedIn (not .IsStaff)}}
-    <li><a href="/orders">Mis órdenes</a></li>
+    <li><a href="/orders"{{if eq .Section "orders"}} aria-current="page"{{end}}>Mis órdenes</a></li>
   {{end}}
   {{if and .LoggedIn .IsStaff}}
     <li>
-      <a href="/queue">Cola{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>
+      <a href="/queue"{{if eq .Section "queue"}} aria-current="page"{{end}}>Cola{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>
     </li>
-    <li><a href="/dashboard">Panel</a></li>
+    <li><a href="/dashboard"{{if eq .Section "dashboard"}} aria-current="page"{{end}}>Panel</a></li>
   {{end}}
 </ul>
 <ul id="site-nav-list-right">
   {{if .LoggedIn}}
     {{if not .IsStaff}}
       <li>
-        <a href="/cart">Carrito<span id="cart-count" class="nav-badge" hidden></span></a>
+        <a href="/cart"{{if eq .Section "cart"}} aria-current="page"{{end}}>Carrito<span id="cart-count" class="nav-badge" hidden></span></a>
       </li>
     {{end}}
-    <li><a href="/account">Cuenta</a></li>
+    <li><a href="/account"{{if eq .Section "account"}} aria-current="page"{{end}}>Cuenta</a></li>
     <li>
       <button
       id="login-logout"

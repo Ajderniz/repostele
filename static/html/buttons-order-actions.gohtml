@@ -10,7 +10,7 @@
     hx-swap="innerHTML"
     >Aceptar</button>
     <button
-    class="btn btn-compact btn-danger"
+    class="btn btn-compact"
     hx-patch="/dashboard/orders/{{.Id}}/status"
     hx-vals='{"status":"1"}'
     hx-target="#msg-{{.Id}}"
@@ -32,14 +32,14 @@
     hx-get="/order/edit-form"
     hx-target="#order-ref-slot-{{.Id}}"
     hx-swap="outerHTML"
-    >Editar núm. referencia</button>
+    >Editar referencia</button>
     <button
     class="link-btn-danger"
     hx-patch="/order/cancel"
     hx-target="#msg-{{.Id}}"
     hx-swap="innerHTML"
     hx-confirm="¿Cancelar esta orden?"
-    >Cancelar</button>
+    >Cancelar orden</button>
   {{end}}
 {{end}}
 <span id="msg-{{.Id}}" class="row-msg"></span>

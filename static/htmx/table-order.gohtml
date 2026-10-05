@@ -54,8 +54,8 @@
       <td>{{template "order-status" (dict "Id" .Id "Status" .Status "OOB" false)}}</td>
     </tr>
     <tr class="order-row-ref">
-      <th>Referencia</th>
-      <td><span class="order-ref">{{.RefNum}}</span></td>
+      <th>Referencia SINPE</th>
+      <td><span class="order-ref order-ref-num">{{GroupRef .RefNum}}</span></td>
     </tr>
     {{if $isStaff}}
       <tr class="order-row-actions">
