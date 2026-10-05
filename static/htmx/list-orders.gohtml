@@ -27,7 +27,7 @@
   <ul class="order-list">
     {{range .Orders}}
       {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
-        {{template "order-row" (dict "Order" . "IsStaff" $isStaff)}}
+        {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Inline" $showHistory)}}
       {{end}}
     {{end}}
   </ul>
@@ -42,14 +42,15 @@
 {{$o := .Order}}
 {{$isStaff := .IsStaff}}
 {{$track := .Track}}
+{{$inline := .Inline}}
 <li
 class="order-entry{{if $track}} order-entry-current{{end}}"
 id="order-{{$o.Id}}"
 hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}{{else}}/order/{{$o.Id}}{{end}}"
-hx-target="{{if $track}}#order-detail-{{$o.Id}}{{else if $isStaff}}#queue-detail{{else}}#orders-detail{{end}}"
+hx-target="{{if or $track $inline}}#order-detail-{{$o.Id}}{{else if $isStaff}}#queue-detail{{else}}#orders-detail{{end}}"
 hx-swap="innerHTML"
 hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail')]"
-{{if not $track}}data-aside-target="{{if $isStaff}}queue-detail{{else}}orders-detail{{end}}" data-id="{{$o.Id}}"{{end}}
+{{if not $track}}{{if not $inline}}data-aside-target="{{if $isStaff}}queue-detail{{else}}orders-detail{{end}}" {{end}}data-id="{{$o.Id}}"{{end}}
 >
   <div class="order-entry-main">
     <div class="order-entry-head">

@@ -46,7 +46,6 @@
     </ul>
     {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
   {{end}}
-</div>
 
 {{end}}
 
@@ -67,4 +66,5 @@
   >Desactivar</button>
   {{end}}
   <span id="msg-staff-{{.Username}}" class="row-msg"></span>
+</div>
 {{end}}
