@@ -6,56 +6,71 @@
   {{$isAdmin := .IsAdmin}}
   {{$isStaff := .IsStaff}}
   {{$topMsg := .Msg}}
-  {{if $isAdmin}}{{template "button-create-item" (dict "Target" "menu-new-item" "HasNext" .HasNext)}}{{end}}
-  {{if and $loggedIn (not $isStaff)}}
-    {{template "current-order" (dict "Order" .CurrentOrder "OOB" false)}}
-  {{end}}
-  {{block "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
-    {{if or .Params.Start .HasNext}}
-      <div class="list-pagination">
-        {{if .Params.Start}}
-          <a
-          class="btn btn-compact pag-prev"
-          href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
-          >« Anterior</a>
-        {{else}}
-          <div class="pag-prev"></div>
-        {{end}}
-        {{if .HasNext}}
-          <a
-          class="btn btn-compact pag-next"
-          href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
-          >Siguiente »</a>
-        {{else}}
-          <div class="pag-next"></div>
-        {{end}}
-      </div>
-    {{end}}
-  {{end}}
-  <div id="menu-item-list">
-    {{$anyVisible := false}}
-    {{with .Data}}
-      {{range .}}
-        {{if or .Available $isAdmin}}
-          {{$anyVisible = true}}
-          {{template "menu-item" (dict
-            "Item" .
-            "LoggedIn" $loggedIn
-            "IsStaff" $isStaff
-            "IsAdmin" $isAdmin
-            "OOB" false
-          )}}
+  {{$customer := and $loggedIn (not $isStaff)}}
+  <div class="menu-layout">
+    <div class="menu-main">
+      {{if $isAdmin}}{{template "button-create-item" (dict "Target" "menu-new-item" "HasNext" .HasNext)}}{{end}}
+      {{block "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
+        {{if or .Params.Start .HasNext}}
+          <div class="list-pagination">
+            {{if .Params.Start}}
+              <a
+              class="btn btn-compact pag-prev"
+              href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+              >« Anterior</a>
+            {{else}}
+              <div class="pag-prev"></div>
+            {{end}}
+            {{if .HasNext}}
+              <a
+              class="btn btn-compact pag-next"
+              href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+              >Siguiente »</a>
+            {{else}}
+              <div class="pag-next"></div>
+            {{end}}
+          </div>
         {{end}}
       {{end}}
-    {{end}}
-    {{if not $anyVisible}}
-      <p id="menu-empty-msg" class="empty-msg">
-      {{if $topMsg}}{{$topMsg}}{{else}}No hay ítemes disponibles{{end}}
-      </p>
+      <div id="menu-item-list">
+        {{$anyVisible := false}}
+        {{with .Data}}
+          {{range .}}
+            {{if or .Available $isAdmin}}
+              {{$anyVisible = true}}
+              {{template "menu-item" (dict
+                "Item" .
+                "LoggedIn" $loggedIn
+                "IsStaff" $isStaff
+                "IsAdmin" $isAdmin
+                "OOB" false
+              )}}
+            {{end}}
+          {{end}}
+        {{end}}
+        {{if not $anyVisible}}
+          <p id="menu-empty-msg" class="empty-msg">
+          {{if $topMsg}}{{$topMsg}}{{else}}No hay ítemes disponibles{{end}}
+          </p>
+        {{end}}
+      </div>
+      {{template "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
+    </div>
+    {{if $customer}}
+      <aside class="menu-aside">
+        {{template "current-order" (dict "Order" .CurrentOrder "OOB" false)}}
+        <div class="menu-cart-summary">
+          <h3 class="panel-title">Tu carrito</h3>
+          <p class="menu-cart-line"><span id="menu-cart-count">0 ítems</span> <span id="menu-cart-total" class="menu-item-price">₡0</span></p>
+          <a class="btn btn-block" href="/cart">Ir a pagar</a>
+        </div>
+      </aside>
+      <div id="menu-cart-bar" class="menu-cart-bar" hidden>
+        <span id="menu-cart-bar-text"></span>
+        <a class="btn" href="/cart">Ver carrito</a>
+      </div>
     {{end}}
   </div>
-  {{template "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
 </article>
 
 {{end}}
-

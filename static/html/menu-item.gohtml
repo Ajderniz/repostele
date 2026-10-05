@@ -4,37 +4,58 @@ id="menu-item-{{.Item.Id}}"
 class="menu-item {{if not .Item.Available}}unavailable{{end}}"
 {{if .OOB}}hx-swap-oob="{{.OOB}}"{{end}}
 >
-  <h3 class="menu-item-name">
-    {{.Item.Name}} {{if not .Item.Available}}(no disponible){{end}}
-  </h3>
-  <div class="menu-item-price"><span>₡{{.Item.Price}}</span></div>
-  {{if .Item.ImgPath}}
-  <img class="menu-item-img" src="{{.Item.ImgPath}}" alt="{{.Item.Name}}">
-  {{end}}
-  <p class="menu-item-desc">{{.Item.Desc}}</p>
-  {{if .LoggedIn}}
-    {{if .IsStaff}}
-      {{if .IsAdmin}}
-        <button
-        class="btn btn-block"
-        hx-get="/dashboard/admin/menu/{{.Item.Id}}/edit"
-        hx-target="#item-edit-{{.Item.Id}}"
-        hx-swap="innerHTML"
-        >Editar</button>
-        <div id="item-edit-{{.Item.Id}}" class="hx-slot"></div>
-      {{end}}
+  <div class="menu-thumb{{if not .Item.ImgPath}} none{{end}}">
+    {{if .Item.ImgPath}}
+      <img class="menu-item-img" src="{{.Item.ImgPath}}" alt="{{.Item.Name}}">
     {{else}}
-      <button
-      class="btn btn-block"
-      type="button"
-      data-cart-add
-      data-item-id="{{.Item.Id}}"
-      data-item-name="{{.Item.Name}}"
-      data-item-price="{{.Item.Price}}"
-      >
-        Agregar a la orden
-      </button>
+      Sin foto
     {{end}}
+  </div>
+  <div class="menu-item-body">
+    <h3 class="menu-item-name">
+      {{.Item.Name}}{{if not .Item.Available}} (no disponible){{end}}
+    </h3>
+    <p class="menu-item-desc">{{.Item.Desc}}</p>
+  </div>
+  <div class="menu-item-side">
+    <div class="menu-item-price"><span>₡{{.Item.Price}}</span></div>
+    {{if .LoggedIn}}
+      {{if .IsStaff}}
+        {{if .IsAdmin}}
+          <button
+          class="btn btn-compact"
+          hx-get="/dashboard/admin/menu/{{.Item.Id}}/edit"
+          hx-target="#item-edit-{{.Item.Id}}"
+          hx-swap="innerHTML"
+          >Editar</button>
+        {{end}}
+      {{else if .Item.Available}}
+        <div class="menu-stepper">
+          <button
+          type="button"
+          class="btn btn-compact"
+          data-menu-step="-1"
+          data-id="{{.Item.Id}}"
+          data-item-name="{{.Item.Name}}"
+          data-item-price="{{.Item.Price}}"
+          aria-label="Quitar uno"
+          >−</button>
+          <span class="menu-stepper-q" data-menu-q="{{.Item.Id}}">0</span>
+          <button
+          type="button"
+          class="btn btn-compact"
+          data-menu-step="1"
+          data-id="{{.Item.Id}}"
+          data-item-name="{{.Item.Name}}"
+          data-item-price="{{.Item.Price}}"
+          aria-label="Agregar uno"
+          >+</button>
+        </div>
+      {{end}}
+    {{end}}
+  </div>
+  {{if and .LoggedIn .IsAdmin}}
+    <div id="item-edit-{{.Item.Id}}" class="hx-slot"></div>
   {{end}}
 </div>
 {{end}}
