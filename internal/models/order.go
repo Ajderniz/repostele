@@ -103,39 +103,9 @@ func CountOrdersByStatus(status OrderStatus) (int, error) {
   return count, nil
 }
 
-func CountOrdersSince(since int64) (int, error) {
-  var count int
-  err := dbGet(&count,
-    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ?",
-    since,
-  )
-  if err != nil { return 0, errors.New("No se pudo contar las órdenes") }
-  return count, nil
-}
-
-func CountOrdersSinceByStatus(since int64, status OrderStatus) (int, error) {
-  var count int
-  err := dbGet(&count,
-    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ? AND "+ORDER_STATUS+" = ?",
-    since, status,
-  )
-  if err != nil { return 0, errors.New("No se pudo contar las órdenes") }
-  return count, nil
-}
-
-func SumOrdersSince(since int64) (float32, error) {
-  var sum float32
-  err := dbGet(&sum,
-    "SELECT COALESCE(SUM("+_ORDER_TOTAL+"), 0) FROM "+_ORDERS+" "+
-    "WHERE "+_ORDER_TIME+" >= ? AND "+ORDER_STATUS+" IN (?, ?)",
-    since, ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED,
-  )
-  if err != nil { return 0, errors.New("No se pudo sumar las ventas") }
-  return sum, nil
-}
-
 type PendingQueueStats struct {
   Count      int   `db:"count"`
+  Unreviewed int   `db:"unreviewed"`
   MaxID      int   `db:"max_id"`
   MaxUpdated int64 `db:"max_updated"`
 }
@@ -143,14 +113,58 @@ type PendingQueueStats struct {
 func GetPendingQueueStats() (PendingQueueStats, error) {
   var stats PendingQueueStats
   err := dbGet(&stats,
-    "SELECT COUNT(*) AS count, COALESCE(MAX("+ORDER_ID+"), 0) AS max_id, "+
+    "SELECT COUNT(*) AS count, COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS unreviewed, "+
+    "COALESCE(MAX("+ORDER_ID+"), 0) AS max_id, "+
     "COALESCE(MAX("+ORDER_UPDATED+"), 0) AS max_updated "+
     "FROM "+_ORDERS+" "+
     "WHERE "+ORDER_STATUS+" IN (?, ?, ?)",
-    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
   )
   if err != nil { return PendingQueueStats{}, errors.New("No se pudo consultar la cola de órdenes") }
   return stats, nil
+}
+
+// QueueCounts feeds the staff queue tiles in one query.
+type QueueCounts struct {
+  Unreviewed     int `db:"unreviewed"`
+  Denied         int `db:"denied"`
+  Accepted       int `db:"accepted"`
+  FulfilledToday int `db:"fulfilled_today"`
+}
+
+func GetQueueCounts(since int64) (QueueCounts, error) {
+  var c QueueCounts
+  err := dbGet(&c,
+    "SELECT COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS unreviewed, "+
+    "COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS denied, "+
+    "COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS accepted, "+
+    "COALESCE(SUM("+ORDER_STATUS+" = ? AND "+_ORDER_TIME+" >= ?), 0) AS fulfilled_today "+
+    "FROM "+_ORDERS+" "+
+    "WHERE "+ORDER_STATUS+" IN (?, ?, ?, ?)",
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+    ORDER_STATUS_FULFILLED, since,
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED,
+  )
+  if err != nil { return QueueCounts{}, errors.New("No se pudo contar las órdenes") }
+  return c, nil
+}
+
+// DayStats: order count and sales since a time (sales = accepted + fulfilled).
+type DayStats struct {
+  Orders int     `db:"orders"`
+  Sales  float32 `db:"sales"`
+}
+
+func GetDayStats(since int64) (DayStats, error) {
+  var d DayStats
+  err := dbGet(&d,
+    "SELECT COUNT(*) AS orders, "+
+    "COALESCE(SUM(CASE WHEN "+ORDER_STATUS+" IN (?, ?) THEN "+_ORDER_TOTAL+" ELSE 0 END), 0) AS sales "+
+    "FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ?",
+    ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED, since,
+  )
+  if err != nil { return DayStats{}, errors.New("No se pudo calcular las estadísticas") }
+  return d, nil
 }
 
 var _OrderSortFields = _SortFields{

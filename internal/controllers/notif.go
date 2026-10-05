@@ -36,8 +36,6 @@ func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
 		prevMaxID, _ = strconv.Atoi(parts[1])
 	}
 
-	pending, err := models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
-	if err != nil { slog.Error(err.Error()) }
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("X-Notif-Token", token)
@@ -50,7 +48,7 @@ func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
 		_Tpl.ExecuteTemplate(w, "toast", msg)
 	}
 	_Tpl.ExecuteTemplate(w, "pending-badge", map[string]any{
-		"Id": "nav-pending-badge", "Count": pending, "OOB": true,
+		"Id": "nav-pending-badge", "Count": stats.Unreviewed, "OOB": true,
 	})
 }
 

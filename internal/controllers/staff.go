@@ -56,36 +56,18 @@ func startOfToday() int64 {
   return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
 }
 
-type _QueueCounts struct {
-  Unreviewed     int
-  Denied         int
-  Accepted       int
-  FulfilledToday int
-}
 
 func GetQueueCounts(w http.ResponseWriter, r *http.Request) {
-  start := startOfToday()
-  var c _QueueCounts
-  var err error
-  c.Unreviewed, err = models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
-  if err != nil { slog.Error(err.Error()) }
-  c.Denied, err = models.CountOrdersByStatus(models.ORDER_STATUS_DENIED)
-  if err != nil { slog.Error(err.Error()) }
-  c.Accepted, err = models.CountOrdersByStatus(models.ORDER_STATUS_ACCEPTED)
-  if err != nil { slog.Error(err.Error()) }
-  c.FulfilledToday, err = models.CountOrdersSinceByStatus(start, models.ORDER_STATUS_FULFILLED)
+  c, err := models.GetQueueCounts(startOfToday())
   if err != nil { slog.Error(err.Error()) }
   serveDataHX(w, r, c, "queue-counts")
 }
 
 func getDashStats() _DashStats {
-  start := startOfToday()
   var stats _DashStats
-  var err error
-  stats.OrdersToday, err = models.CountOrdersSince(start)
+  day, err := models.GetDayStats(startOfToday())
   if err != nil { slog.Error(err.Error()) }
-  stats.SalesToday, err = models.SumOrdersSince(start)
-  if err != nil { slog.Error(err.Error()) }
+  stats.OrdersToday, stats.SalesToday = day.Orders, day.Sales
   queue, err := models.GetPendingQueueStats()
   if err != nil { slog.Error(err.Error()) } else { stats.InQueue = queue.Count }
   stats.ActiveItems, err = models.CountAvailableItems()
