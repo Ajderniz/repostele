@@ -88,6 +88,7 @@ func InitTemplate() {
 		"CallTemplate": callTemplate,
 		"OrderStatusName": orderStatusName,
 		"UnixToTime": unixToTime,
+		"GroupRef": groupRef,
 		"dict": dict,
 		"add": add,
 		"subClamped": subClamped,

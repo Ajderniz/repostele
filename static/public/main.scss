@@ -819,6 +819,7 @@ svg {
   flex-direction: column;
   gap: 0.8rem;
   min-width: 0;
+  order: -1;
 }
 
 #menu-item-list {
@@ -1265,6 +1266,7 @@ body:has(.menu-layout) {
     flex: 0 0 300px;
     position: sticky;
     top: 1rem;
+    order: 0;
   }
 
   .menu-cart-summary {
@@ -1281,4 +1283,85 @@ body:has(.menu-layout) {
     column-gap: 0.9rem;
     row-gap: 0.55rem;
   }
+}
+
+// --- status track, checkout steps ---
+
+.order-track {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 0.35rem 0 0.6rem;
+}
+
+.order-track span {
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+  padding-top: 0.35rem;
+  border-top: 4px solid var(--rule-soft);
+}
+
+.order-track span.done {
+  color: var(--fg);
+  border-color: var(--ok);
+}
+
+.order-track span.on {
+  color: var(--fg);
+  border-color: var(--fill);
+}
+
+.order-track span.denied {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
+.link-btn-danger {
+  font: inherit;
+  color: var(--danger);
+  background: none;
+  border: 0;
+  padding: 0.4rem 0.2rem;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.cart-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.3rem;
+  margin: 0.6rem 0 1rem;
+}
+
+.cart-steps span {
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-align: center;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding-top: 0.35rem;
+  border-top: 4px solid var(--rule-soft);
+}
+
+.cart-steps span.done {
+  color: var(--fg);
+  border-color: var(--ok);
+}
+
+.cart-steps span.on {
+  color: var(--fg);
+  border-color: var(--fill);
+}
+
+.cart-missing {
+  margin: 0.8rem 0 0.4rem;
+  font-size: 0.95rem;
+  color: var(--muted);
 }

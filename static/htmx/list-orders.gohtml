@@ -54,6 +54,16 @@
     >#{{$o.Id}}</button>
     {{template "order-status" (dict "Id" $o.Id "Status" $o.Status "OOB" false)}}
   </div>
+  {{if not $isStaff}}
+    {{$s := $o.Status}}
+    {{if ne $s 2}}
+      <div class="order-track">
+        <span class="done">Recibida</span>
+        <span class="{{if eq $s 0}}on{{else if eq $s 1}}denied{{else}}done{{end}}">Revisión</span>
+        <span class="{{if eq $s 3}}on{{else if eq $s 4}}done{{end}}">Lista</span>
+      </div>
+    {{end}}
+  {{end}}
   <dl class="row-card-fields">
     {{if $isStaff}}
       <div class="row-card-field">
@@ -76,7 +86,7 @@
 {{end}}
 
 {{define "order-ref-num"}}
-<code id="order-ref-{{.Id}}" class="order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{.RefNum}}</code>
+<code id="order-ref-{{.Id}}" class="order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{GroupRef .RefNum}}</code>
 {{end}}
 
 {{define "order-status"}}

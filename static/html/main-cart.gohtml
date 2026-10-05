@@ -2,6 +2,11 @@
 
 <article class="page">
   <h1 class="page-title">Carrito</h1>
+  <div class="cart-steps">
+    <span id="cart-step-1" class="on">1 Carrito</span>
+    <span id="cart-step-2">2 Pago</span>
+    <span id="cart-step-3">3 Enviar</span>
+  </div>
   <div id="cart-list"></div>
   <div class="cart-summary">
     <span class="cart-summary-label">Total</span>
@@ -24,6 +29,7 @@
     >
   </div>
 
+  <p id="cart-missing" class="cart-missing" hidden></p>
   <button id="cart-continue" class="btn btn-block" type="button" disabled>
     Confirmar y enviar orden
   </button>

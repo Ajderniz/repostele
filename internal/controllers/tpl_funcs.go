@@ -3,6 +3,7 @@ package controllers
 import (
 	"bytes"
 	tpl "html/template"
+	"strings"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
@@ -23,6 +24,15 @@ func orderStatusName(s models.OrderStatus) string {
 	case models.ORDER_STATUS_FULFILLED:  return "Cumplida"
 	default: return ""
 	}
+}
+
+func groupRef(ref string) string {
+	var b strings.Builder
+	for i, r := range ref {
+		if i > 0 && i%5 == 0 { b.WriteByte(' ') }
+		b.WriteRune(r)
+	}
+	return b.String()
 }
 
 func unixToTime(unix int64) string {
