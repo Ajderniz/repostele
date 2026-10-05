@@ -7,7 +7,7 @@
     <p class="empty-msg">No hay sesiones activas</p>
   {{else}}
     {{$endpoint := "/dashboard/admin/sessions"}}
-    {{$target := "#db-session-list"}}
+    {{$target := "#dash-panel"}}
     <div class="sort-bar">
       {{template "sort-link" (dict "Field" "user"    "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
       {{template "sort-link" (dict "Field" "role"    "Label" "Rol"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
@@ -49,7 +49,7 @@
     class="btn btn-block btn-danger"
     hx-patch="/dashboard/admin/sessions/close"
     hx-vals='{"users":"true","staff":"true"}'
-    hx-target="#db-session-list"
+    hx-target="#dash-panel"
     hx-swap="innerHTML"
     hx-confirm="¿Cerrar TODAS las sesiones activas?"
     >Cerrar todas las sesiones</button>

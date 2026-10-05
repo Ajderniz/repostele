@@ -14,7 +14,7 @@
     <p class="empty-msg">No hay personal</p>
   {{else}}
     {{$endpoint := "/dashboard/admin/staff"}}
-    {{$target := "#db-staff-list"}}
+    {{$target := "#dash-panel"}}
     <div class="sort-bar">
       {{template "sort-link" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
       {{template "sort-link" (dict "Field" "full_name"    "Label" "Nombre"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}

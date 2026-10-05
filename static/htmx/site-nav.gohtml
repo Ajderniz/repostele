@@ -4,8 +4,9 @@
   <li><a href="/menu">Menú</a></li>
   {{if and .LoggedIn .IsStaff}}
     <li>
-      <a href="/dashboard">Panel{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>
+      <a href="/queue">Cola{{template "pending-badge" (dict "Id" "nav-pending-badge" "Count" .PendingOrders "OOB" false)}}</a>
     </li>
+    <li><a href="/dashboard">Panel</a></li>
   {{end}}
 </ul>
 <ul id="site-nav-list-right">

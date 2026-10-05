@@ -47,6 +47,13 @@ func InsertItem(item Item) (int, error) {
   return int(id), nil
 }
 
+func CountAvailableItems() (int, error) {
+  var count int
+  err := dbGet(&count, "SELECT COUNT(*) FROM "+_ITEMS+" WHERE available = 1")
+  if err != nil { return 0, errors.New("No se pudo contar los ítems") }
+  return count, nil
+}
+
 func GetItems(params *SelectParams) ([]Item, error) {
   items := []Item{}
   err := dbSelectList(&items, "*", _ITEMS, params, _ItemSortFields)

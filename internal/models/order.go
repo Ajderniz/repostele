@@ -105,6 +105,27 @@ func CountOrdersByStatus(status OrderStatus) (int, error) {
   return count, nil
 }
 
+func CountOrdersSince(since int64) (int, error) {
+  var count int
+  err := dbGet(&count,
+    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ?",
+    since,
+  )
+  if err != nil { return 0, errors.New("No se pudo contar las órdenes") }
+  return count, nil
+}
+
+func SumOrdersSince(since int64) (float32, error) {
+  var sum float32
+  err := dbGet(&sum,
+    "SELECT COALESCE(SUM("+_ORDER_TOTAL+"), 0) FROM "+_ORDERS+" "+
+    "WHERE "+_ORDER_TIME+" >= ? AND "+ORDER_STATUS+" IN (?, ?)",
+    since, ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED,
+  )
+  if err != nil { return 0, errors.New("No se pudo sumar las ventas") }
+  return sum, nil
+}
+
 type PendingQueueStats struct {
   Count      int   `db:"count"`
   MaxID      int   `db:"max_id"`

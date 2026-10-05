@@ -43,8 +43,15 @@ type _MainData struct {
 	IsUserApp     bool
 	Params        models.SelectParams
 	HasNext       bool
-	PendingOrders int
 	CurrentOrder  *models.Order
+	Stats         *_DashStats
+}
+
+type _DashStats struct {
+	OrdersToday int
+	SalesToday  float32
+	InQueue     int
+	ActiveItems int
 }
 
 type _TplData struct {

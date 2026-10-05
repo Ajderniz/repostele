@@ -46,10 +46,25 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDashboard(w http.ResponseWriter, r *http.Request) {
-  count, err := models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
-  if err != nil { slog.Error(err.Error()) }
-  ctx := context.WithValue(r.Context(), _MAIN_DATA, &_MainData{PendingOrders: count})
+  stats := getDashStats()
+  ctx := context.WithValue(r.Context(), _MAIN_DATA, &_MainData{Stats: &stats})
   ServeMainTemplate(w, r.WithContext(ctx))
+}
+
+func getDashStats() _DashStats {
+  now := time.Now()
+  start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
+  var stats _DashStats
+  var err error
+  stats.OrdersToday, err = models.CountOrdersSince(start)
+  if err != nil { slog.Error(err.Error()) }
+  stats.SalesToday, err = models.SumOrdersSince(start)
+  if err != nil { slog.Error(err.Error()) }
+  queue, err := models.GetPendingQueueStats()
+  if err != nil { slog.Error(err.Error()) } else { stats.InQueue = queue.Count }
+  stats.ActiveItems, err = models.CountAvailableItems()
+  if err != nil { slog.Error(err.Error()) }
+  return stats
 }
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {

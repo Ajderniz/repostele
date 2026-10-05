@@ -7,7 +7,7 @@
     <p class="empty-msg">No hay usuarios</p>
   {{else}}
     {{$endpoint := "/dashboard/admin/users"}}
-    {{$target := "#db-user-list"}}
+    {{$target := "#dash-panel"}}
     <div class="sort-bar">
       {{template "sort-link" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
       {{template "sort-link" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}

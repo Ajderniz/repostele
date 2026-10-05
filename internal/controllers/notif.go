@@ -49,11 +49,9 @@ func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
 		w.Header().Set("HX-Trigger", "order-changed")
 		_Tpl.ExecuteTemplate(w, "toast", msg)
 	}
-	for _, id := range []string{"nav-pending-badge", "dash-pending-badge"} {
-		_Tpl.ExecuteTemplate(w, "pending-badge", map[string]any{
-			"Id": id, "Count": pending, "OOB": true,
-		})
-	}
+	_Tpl.ExecuteTemplate(w, "pending-badge", map[string]any{
+		"Id": "nav-pending-badge", "Count": pending, "OOB": true,
+	})
 }
 
 func serveUserNotif(w http.ResponseWriter, username, prev string, silent bool) {

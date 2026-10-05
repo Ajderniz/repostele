@@ -182,7 +182,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
       "Params":   params,
       "HasNext":  len(orders) == params.Limit,
       "Endpoint": "/dashboard/orders",
-      "Target":   "#db-order-list",
+      "Target":   "#queue-list",
     },
     "list-orders",
   )
@@ -206,7 +206,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
       "Params":      params,
       "HasNext":     len(orders) == params.Limit,
       "Endpoint":    "/dashboard/orders/history",
-      "Target":      "#db-order-history",
+      "Target":      "#dash-panel",
     },
     "list-orders",
   )

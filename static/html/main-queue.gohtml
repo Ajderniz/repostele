@@ -1,0 +1,14 @@
+{{define "main-queue"}}
+
+<article class="page">
+  <h1 class="page-title">Cola de órdenes</h1>
+  <div
+  id="queue-list"
+  class="hx-slot"
+  hx-get="/dashboard/orders"
+  hx-trigger="load"
+  hx-swap="innerHTML"
+  ></div>
+</article>
+
+{{end}}

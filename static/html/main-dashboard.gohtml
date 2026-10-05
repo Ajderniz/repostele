@@ -1,69 +1,69 @@
 {{define "main-dashboard"}}
 
 <article class="page">
-  <h1 class="page-title">Panel de operaciones</h1>
+  <h1 class="page-title">Panel</h1>
   {{with .Msg}}
     {{template "div-msg" .}}
   {{else}}
-    <h2 class="section-title">Acciones generales</h2>
-    <ul class="action-list" data-accordion="dashboard">
-      <li class="action-item">
+    <div class="dash-tiles">
+      <div class="dash-tile">
+        <b>{{.Stats.OrdersToday}}</b>
+        <span>Órdenes hoy</span>
+      </div>
+      <div class="dash-tile">
+        <b>₡{{printf "%.0f" .Stats.SalesToday}}</b>
+        <span>Ventas hoy</span>
+      </div>
+      <a class="dash-tile" href="/queue">
+        <b>{{.Stats.InQueue}}</b>
+        <span>En cola</span>
+      </a>
+      <div class="dash-tile">
+        <b>{{.Stats.ActiveItems}}</b>
+        <span>Ítems activos</span>
+      </div>
+    </div>
+
+    <div class="dash-tabs">
+      <button
+      class="dash-tab"
+      hx-get="/dashboard/orders/history"
+      hx-target="#dash-panel"
+      hx-swap="innerHTML"
+      hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
+      >Historial</button>
+      {{if .IsAdmin}}
         <button
-        class="btn btn-block"
-        hx-get="/dashboard/orders"
-        hx-target="#db-order-list"
-        hx-swap="innerHTML">
-        Lista de ordenes
-        {{template "pending-badge" (dict "Id" "dash-pending-badge" "Count" .PendingOrders "OOB" false)}}
-        </button>
-        <div id="db-order-list" class="hx-slot"></div>
-      </li>
-      <li class="action-item">
+        class="dash-tab"
+        hx-get="htmx/form-create-item?hasNext=false"
+        hx-target="#dash-panel"
+        hx-swap="innerHTML"
+        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
+        >Crear ítem</button>
         <button
-        class="btn btn-block"
-        hx-get="/dashboard/orders/history"
-        hx-target="#db-order-history"
-        hx-swap="innerHTML">
-        Historial de órdenes
-        </button>
-        <div id="db-order-history" class="hx-slot"></div>
-      </li>
-    </ul>
-    {{if .IsAdmin}}
-    <h2 class="section-title">Acciones de administrador</h2>
-    <ul class="action-list" data-accordion="dashboard">
-      <li class="action-item">
-      {{template "button-create-item" (dict "Target" "db-new-item" "HasNext" false)}}
-      </li>
-      <li class="action-item">
-        <button
-        class="btn btn-block"
+        class="dash-tab"
         hx-get="/dashboard/admin/staff"
-        hx-target="#db-staff-list"
+        hx-target="#dash-panel"
         hx-swap="innerHTML"
+        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Personal</button>
-        <div id="db-staff-list" class="hx-slot"></div>
-      </li>
-      <li class="action-item">
         <button
-        class="btn btn-block"
+        class="dash-tab"
         hx-get="/dashboard/admin/users"
-        hx-target="#db-user-list"
+        hx-target="#dash-panel"
         hx-swap="innerHTML"
+        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Usuarios</button>
-        <div id="db-user-list" class="hx-slot"></div>
-      </li>
-      <li class="action-item">
         <button
-        class="btn btn-block"
+        class="dash-tab"
         hx-get="/dashboard/admin/sessions"
-        hx-target="#db-session-list"
+        hx-target="#dash-panel"
         hx-swap="innerHTML"
+        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Sesiones</button>
-        <div id="db-session-list" class="hx-slot"></div>
-      </li>
-    </ul>
-    {{end}}
+      {{end}}
+    </div>
+    <div id="dash-panel" class="hx-slot"></div>
   {{end}}
 </article>
 
