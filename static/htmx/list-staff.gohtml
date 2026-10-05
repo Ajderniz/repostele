@@ -1,8 +1,5 @@
 {{define "list-staff"}}
 
-<div class="hx-container">
-  {{template "button-clear"}}
-  <h3 class="panel-title">Personal</h3>
   <button
   class="btn btn-block"
   hx-get="htmx/form-register-staff-admin"
@@ -70,5 +67,4 @@
   >Desactivar</button>
   {{end}}
   <span id="msg-staff-{{.Username}}" class="row-msg"></span>
-</div>
 {{end}}

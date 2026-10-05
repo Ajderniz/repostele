@@ -1440,6 +1440,14 @@ svg {
 
 #dash-panel {
   margin-top: 0.8rem;
+  padding: 0 1rem 1rem;
+  background: var(--bg);
+  border-radius: $radius-md;
+  @include card-shadow;
+}
+
+#dash-panel:empty {
+  display: none;
 }
 
 @media (max-width: 600px) {

@@ -1,8 +1,5 @@
 {{define "list-users"}}
 
-<div class="hx-container">
-  {{template "button-clear"}}
-  <h3 class="panel-title">Usuarios</h3>
   {{if not .Users}}
     <p class="empty-msg">No hay usuarios</p>
   {{else}}
@@ -53,5 +50,4 @@
   >Desactivar</button>
   {{end}}
   <span id="msg-user-{{.Username}}" class="row-msg"></span>
-</div>
 {{end}}

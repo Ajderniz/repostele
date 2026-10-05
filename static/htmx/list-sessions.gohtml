@@ -1,8 +1,5 @@
 {{define "list-sessions"}}
 
-<div class="hx-container">
-  {{template "button-clear"}}
-  <h3 class="panel-title">Sesiones activas</h3>
   {{if not .Sessions}}
     <p class="empty-msg">No hay sesiones activas</p>
   {{else}}
@@ -54,6 +51,5 @@
     hx-confirm="¿Cerrar TODAS las sesiones activas?"
     >Cerrar todas las sesiones</button>
   {{end}}
-</div>
 
 {{end}}

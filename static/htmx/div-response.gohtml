@@ -8,8 +8,8 @@
       class="btn next-action"
       type="button"
       hx-get="{{.URL}}"
-      hx-target="closest .hx-container"
-      hx-swap="outerHTML"
+      hx-target="closest .hx-slot"
+      hx-swap="innerHTML"
       >{{.Name}}</button>
     {{else}}
       <a href="{{.URL}}" class="btn next-action">{{.Name}}</a>
