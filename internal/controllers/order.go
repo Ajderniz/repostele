@@ -200,6 +200,10 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
   orders, err := models.GetOrderHistory(&params)
   if err != nil { serveInternalErr(w, r); return }
 
+  // A full-panel swap (tab, sort, paging) gets the list plus its aside; an
+  // order-changed reload targets #dash-list and gets the list alone.
+  tpl := "history-layout"
+  if r.Header.Get("HX-Target") == "dash-list" { tpl = "list-orders" }
   serveDataHX(
     w,
     r,
@@ -212,7 +216,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
       "Endpoint":    "/dashboard/orders/history",
       "Target":      "#dash-panel",
     },
-    "list-orders",
+    tpl,
   )
 }
 

@@ -1,0 +1,10 @@
+{{define "history-layout"}}
+<div class="split-layout">
+  <div id="dash-list" class="split-main">
+    {{template "list-orders" .}}
+  </div>
+  <aside id="dash-detail" class="split-aside hx-slot">
+    <p class="split-empty">Seleccione una orden para ver su detalle.</p>
+  </aside>
+</div>
+{{end}}
