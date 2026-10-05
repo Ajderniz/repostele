@@ -55,7 +55,7 @@
     </tr>
     <tr class="order-row-ref">
       <th>Referencia</th>
-      <td>{{.RefNum}}</td>
+      <td><span class="order-ref">{{.RefNum}}</span></td>
     </tr>
     {{if $isStaff}}
       <tr class="order-row-actions">
@@ -66,17 +66,6 @@
         </td>
       </tr>
     {{end}}
-    <tr class="order-row-close">
-      <td colspan="2">
-        <button
-        type="button"
-        class="btn btn-compact"
-        hx-get="htmx/blank"
-        hx-target="closest .hx-slot"
-        hx-swap="innerHTML"
-        >Cerrar detalle</button>
-      </td>
-    </tr>
   </table>
 {{end}}
 
