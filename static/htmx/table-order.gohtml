@@ -57,13 +57,22 @@
       <th>Referencia</th>
       <td>{{.RefNum}}</td>
     </tr>
+    {{if $isStaff}}
+      <tr class="order-row-actions">
+        <td colspan="2">
+          <div class="order-detail-actions">
+            {{template "buttons-order-actions" (dict "Id" .Id "Status" .Status "IsStaff" true)}}
+          </div>
+        </td>
+      </tr>
+    {{end}}
     <tr class="order-row-close">
       <td colspan="2">
         <button
         type="button"
         class="btn btn-compact"
         hx-get="htmx/blank"
-        hx-target="#order-detail-{{.Id}}"
+        hx-target="closest .hx-slot"
         hx-swap="innerHTML"
         >Cerrar detalle</button>
       </td>

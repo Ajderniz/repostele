@@ -115,6 +115,16 @@ func CountOrdersSince(since int64) (int, error) {
   return count, nil
 }
 
+func CountOrdersSinceByStatus(since int64, status OrderStatus) (int, error) {
+  var count int
+  err := dbGet(&count,
+    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ? AND "+ORDER_STATUS+" = ?",
+    since, status,
+  )
+  if err != nil { return 0, errors.New("No se pudo contar las órdenes") }
+  return count, nil
+}
+
 func SumOrdersSince(since int64) (float32, error) {
   var sum float32
   err := dbGet(&sum,

@@ -51,8 +51,9 @@
       type="button"
       class="link-btn row-card-id"
       hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}{{else}}/order/{{$o.Id}}{{end}}"
-      hx-target="#order-detail-{{$o.Id}}"
+      hx-target="{{if $isStaff}}#queue-detail{{else}}#order-detail-{{$o.Id}}{{end}}"
       hx-swap="innerHTML"
+      {{if $isStaff}}data-queue-detail data-id="{{$o.Id}}"{{end}}
       >#{{$o.Id}}</button>
       {{if $isStaff}}<span class="order-entry-user">{{$o.User}}</span>{{end}}
       {{template "order-status" (dict "Id" $o.Id "Status" $o.Status "OOB" false)}}
@@ -84,13 +85,20 @@
 {{end}}
 
 {{define "order-actions"}}
-<div id="order-actions-{{.Id}}" class="order-entry-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div id="order-actions-{{.Id}}" class="order-entry-actions{{if .IsStaff}} queue-entry-actions{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
   {{template "buttons-order-actions" (dict
     "IsStaff" .IsStaff
     "Status"  .Status
     "Id"      .Id
   )}}
 </div>
+{{end}}
+
+{{define "queue-counts"}}
+<div class="queue-tile"><b class="warn">{{.Unreviewed}}</b><span>Sin revisar</span></div>
+<div class="queue-tile"><b class="ok">{{.Accepted}}</b><span>Aceptadas</span></div>
+<div class="queue-tile"><b>{{.Denied}}</b><span>Denegadas</span></div>
+<div class="queue-tile"><b>{{.FulfilledToday}}</b><span>Cumplidas hoy</span></div>
 {{end}}
 
 {{define "order-ref-slot"}}

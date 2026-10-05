@@ -13,6 +13,7 @@ document.addEventListener('htmx:afterRequest',function(e){
   if(cfg.verb&&cfg.verb!=='get'&&e.detail.successful){
     const poll=document.getElementById('notif-poll');
     if(poll){poll.dataset.silent='1';htmx.trigger(poll,'notif-sync')}
+    htmx.trigger(document.body,'counts-changed');
   }
   const tgt=e.detail.target;
   if(tgt&&_ORDER_LISTS.includes(tgt.id)){
@@ -27,4 +28,11 @@ document.addEventListener('order-changed',function(){
       htmx.ajax('GET',el.dataset.orderSrc,{target:el,swap:'innerHTML'});
     }
   });
+});
+document.addEventListener('htmx:beforeSwap',function(e){
+  const el=e.detail.requestConfig&&e.detail.requestConfig.elt;
+  if(el&&el.dataset.queueDetail!==undefined&&window.matchMedia('(max-width: 859px)').matches){
+    e.detail.target=document.getElementById('order-detail-'+el.dataset.id);
+    e.detail.shouldSwap=true;
+  }
 });

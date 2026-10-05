@@ -3,12 +3,26 @@
 <article class="page">
   <h1 class="page-title">Cola de órdenes</h1>
   <div
-  id="queue-list"
-  class="hx-slot"
-  hx-get="/dashboard/orders"
-  hx-trigger="load"
+  id="queue-counts"
+  class="queue-counts"
+  hx-get="/dashboard/orders/counts"
+  hx-trigger="load, order-changed from:body, counts-changed from:body"
   hx-swap="innerHTML"
   ></div>
+  <div class="queue-layout">
+    <div class="queue-main">
+      <div
+      id="queue-list"
+      class="hx-slot"
+      hx-get="/dashboard/orders"
+      hx-trigger="load"
+      hx-swap="innerHTML"
+      ></div>
+    </div>
+    <aside id="queue-detail" class="queue-detail hx-slot">
+      <p class="queue-detail-empty">Seleccione una orden para ver su detalle.</p>
+    </aside>
+  </div>
 </article>
 
 {{end}}

@@ -1673,3 +1673,107 @@ body:has(.menu-layout) {
   gap: 0.8rem;
 }
 
+
+
+// --- staff queue ---
+
+.queue-counts {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0.4rem 0 1rem;
+}
+
+.queue-tile {
+  min-width: 0;
+  padding: 0.7rem 0.8rem;
+  background: var(--bg);
+  border-radius: $radius-md;
+  @include card-shadow;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.queue-tile b {
+  font-family: $font-heading;
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.queue-tile b.warn {
+  color: var(--warn);
+}
+
+.queue-tile b.ok {
+  color: var(--ok);
+}
+
+.queue-tile span {
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--muted);
+}
+
+.queue-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.queue-main {
+  min-width: 0;
+}
+
+.queue-detail {
+  display: none;
+}
+
+.queue-detail-empty {
+  color: var(--muted);
+  padding: 1rem 0;
+}
+
+.order-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 0.4rem;
+}
+
+@media (max-width: 859px) {
+  .queue-counts {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 860px) {
+  .queue-layout {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .queue-main {
+    flex: 1 1 0;
+  }
+
+  .queue-detail {
+    display: block;
+    flex: 0 0 380px;
+    position: sticky;
+    top: 1rem;
+    padding: 0.9rem 1rem;
+    background: var(--bg);
+    border-radius: $radius-md;
+    @include card-shadow;
+  }
+
+  .queue-entry-actions {
+    display: none;
+  }
+}
