@@ -67,7 +67,7 @@
     {{end}}
     <div class="order-entry-meta">
       <span class="order-entry-total">₡{{$o.Total}}</span>
-      {{template "order-ref-num" (dict "Id" $o.Id "RefNum" $o.RefNum "OOB" false)}}
+      {{template "order-ref-slot" (dict "Id" $o.Id "RefNum" $o.RefNum)}}
     </div>
   </div>
   {{template "order-actions" (dict "Id" $o.Id "Status" $o.Status "IsStaff" $isStaff "OOB" false)}}
@@ -90,5 +90,39 @@
     "Status"  .Status
     "Id"      .Id
   )}}
+</div>
+{{end}}
+
+{{define "order-ref-slot"}}
+<div id="order-ref-slot-{{.Id}}" class="order-ref-slot">
+  {{template "order-ref-num" (dict "Id" .Id "RefNum" .RefNum "OOB" false)}}
+</div>
+{{end}}
+
+{{define "order-ref-edit"}}
+<div id="order-ref-slot-{{.Id}}" class="order-ref-slot order-ref-editing">
+  <form class="order-ref-form" hx-patch="/order/update" hx-target="#order-ref-slot-{{.Id}}" hx-swap="outerHTML">
+    <input
+    class="field order-ref-input"
+    type="text"
+    name="ref_num"
+    inputmode="numeric"
+    pattern="[0-9]{25}"
+    maxlength="25"
+    value="{{.RefNum}}"
+    aria-label="Número de referencia"
+    required
+    >
+    <div class="order-ref-actions">
+      <button class="btn btn-compact btn-primary" type="submit">Guardar</button>
+      <button
+      class="link-btn"
+      type="button"
+      hx-get="/order/ref-view"
+      hx-target="#order-ref-slot-{{.Id}}"
+      hx-swap="outerHTML"
+      >Cancelar</button>
+    </div>
+  </form>
 </div>
 {{end}}

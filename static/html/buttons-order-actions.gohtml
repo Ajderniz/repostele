@@ -30,8 +30,8 @@
     <button
     class="btn btn-compact"
     hx-get="/order/edit-form"
-    hx-target="#order-edit-{{.Id}}"
-    hx-swap="innerHTML"
+    hx-target="#order-ref-slot-{{.Id}}"
+    hx-swap="outerHTML"
     >Editar núm. referencia</button>
     <button
     class="link-btn-danger"
@@ -40,7 +40,6 @@
     hx-swap="innerHTML"
     hx-confirm="¿Cancelar esta orden?"
     >Cancelar</button>
-    <div id="order-edit-{{.Id}}" class="hx-slot"></div>
   {{end}}
 {{end}}
 <span id="msg-{{.Id}}" class="row-msg"></span>

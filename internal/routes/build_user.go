@@ -68,6 +68,7 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Post( "/",          controllers.PostOrder)
     r.Get(  "/",          controllers.GetUserOrderList)
     r.Get(  "/edit-form", controllers.GetOrderRefNumEditForm)
+    r.Get(  "/ref-view",  controllers.GetOrderRefView)
     r.Get(  "/{id}",      controllers.CheckUserOrderFromID)
     r.Patch("/update",    controllers.UpdateUserOrderRefNum)
     r.Patch("/cancel",    controllers.CancelUserOrder)

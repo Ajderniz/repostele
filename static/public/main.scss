@@ -1621,7 +1621,7 @@ body:has(.menu-layout) {
   justify-content: flex-start;
 }
 
-.order-entry-current .order-entry-meta .order-ref-num {
+.order-entry-current .order-entry-meta .order-ref-slot {
   flex: 1 1 100%;
   width: 100%;
 }
@@ -1645,5 +1645,31 @@ body:has(.menu-layout) {
   .order-entry-actions {
     justify-content: flex-start;
   }
+}
+
+.order-ref-slot {
+  min-width: 0;
+}
+
+.order-entry:has(.order-ref-editing) > .order-entry-actions {
+  display: none;
+}
+
+.order-ref-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.order-ref-input {
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
+.order-ref-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
 }
 

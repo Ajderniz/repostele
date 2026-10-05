@@ -303,7 +303,18 @@ func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
     return
   }
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  if err := _Tpl.ExecuteTemplate(w, "form-edit-order-ref", latestOrder); err != nil {
+  if err := _Tpl.ExecuteTemplate(w, "order-ref-edit", latestOrder); err != nil {
+    slog.Error(err.Error())
+    serveInternalErrHX(w)
+  }
+}
+
+func GetOrderRefView(w http.ResponseWriter, r *http.Request) {
+  username := r.Context().Value(models.USER_USERNAME).(string)
+  latestOrder, err := models.GetLatestOrderFromUsername(username)
+  if err != nil { serveOrderInternalErr(w, r); return }
+  w.Header().Set("Content-Type", "text/html; charset=utf-8")
+  if err := _Tpl.ExecuteTemplate(w, "order-ref-slot", latestOrder); err != nil {
     slog.Error(err.Error())
     serveInternalErrHX(w)
   }
@@ -329,11 +340,10 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
 
   if r.Header.Get("HX-Request") == "true" {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
-    _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó la orden"})
-    _Tpl.ExecuteTemplate(w, "toast", "Se actualizó la orden")
-    _Tpl.ExecuteTemplate(w, "order-ref-num", map[string]any{
-      "Id": latestOrder.Id, "RefNum": refNum, "OOB": true,
+    _Tpl.ExecuteTemplate(w, "order-ref-slot", map[string]any{
+      "Id": latestOrder.Id, "RefNum": refNum,
     })
+    _Tpl.ExecuteTemplate(w, "toast", "Se actualizó la orden")
     _Tpl.ExecuteTemplate(w, "order-status", map[string]any{
       "Id": latestOrder.Id, "Status": models.ORDER_STATUS_UNREVIEWED, "OOB": true,
     })
