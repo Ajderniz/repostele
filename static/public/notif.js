@@ -3,7 +3,18 @@
 
 function notifParams() {
   const poll = document.getElementById('notif-poll');
+  if (!poll) return { token: '', silent: '' };
   return { token: poll.dataset.token || '', silent: poll.dataset.silent || '' };
+}
+
+// Call after any write. Silent poll sync (no toast for own action) plus counts refresh.
+function notifyWrite() {
+  const poll = document.getElementById('notif-poll');
+  if (poll) {
+    poll.dataset.silent = '1';
+    htmx.trigger(poll, 'notif-sync');
+  }
+  htmx.trigger(document.body, 'counts-changed');
 }
 
 document.addEventListener('htmx:afterRequest', function (e) {
@@ -16,12 +27,5 @@ document.addEventListener('htmx:afterRequest', function (e) {
   }
 
   const verb = (e.detail.requestConfig || {}).verb;
-  if (verb && verb !== 'get' && e.detail.successful) {
-    const poll = document.getElementById('notif-poll');
-    if (poll) {
-      poll.dataset.silent = '1';
-      htmx.trigger(poll, 'notif-sync');
-    }
-    htmx.trigger(document.body, 'counts-changed');
-  }
+  if (verb && verb !== 'get' && e.detail.successful) notifyWrite();
 });

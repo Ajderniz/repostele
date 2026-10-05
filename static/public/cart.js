@@ -55,23 +55,23 @@ function addToCart(id, name, price) {
 }
 
 function refreshCart() {
-  updateNavBadge();
-  syncMenu();
-  renderCart();
+  const cart = readCart();
+  updateNavBadge(cart);
+  syncMenu(cart);
+  renderCart(cart);
 }
 
 // --- views ---
 
-function updateNavBadge() {
+function updateNavBadge(cart) {
   const badge = document.getElementById('cart-count');
   if (!badge) return;
-  const n = cartCount(readCart());
+  const n = cartCount(cart);
   badge.textContent = n > 0 ? n : '';
   badge.hidden = n === 0;
 }
 
-function syncMenu() {
-  const cart = readCart();
+function syncMenu(cart) {
   const n = cartCount(cart);
   const total = cartTotal(cart);
 
@@ -94,10 +94,9 @@ function syncMenu() {
   }
 }
 
-function renderCart() {
+function renderCart(cart) {
   const list = document.getElementById('cart-list');
   if (!list) return;
-  const cart = readCart();
   const ids = Object.keys(cart);
 
   list.replaceChildren();
@@ -107,7 +106,7 @@ function renderCart() {
     ids.forEach(id => list.append(cartRow(id, cart[id])));
   }
   setText('cart-total', '₡' + cartTotal(cart));
-  updateContinueState();
+  updateContinueState(cart);
 }
 
 function cartRow(id, it) {
@@ -148,10 +147,10 @@ function refNumValid() {
   return !!input && /^[0-9]{25}$/.test(input.value);
 }
 
-function updateContinueState() {
+function updateContinueState(cart = readCart()) {
   const btn = document.getElementById('cart-continue');
   if (!btn) return;
-  const n = cartCount(readCart());
+  const n = cartCount(cart);
   const ok = refNumValid();
 
   btn.disabled = n === 0 || !ok;
@@ -188,7 +187,10 @@ function loadTesseract() {
       const script = document.createElement('script');
       script.src = '/tesseract.min.js';
       script.onload = resolve;
-      script.onerror = reject;
+      script.onerror = () => {
+        tesseractLoading = null; // allow a retry on the next pick
+        reject(new Error('tesseract load failed'));
+      };
       document.head.append(script);
     });
   }
@@ -259,6 +261,7 @@ async function submitOrder() {
     if (res.ok) {
       localStorage.removeItem(CART_KEY);
       refreshCart();
+      notifyWrite(); // raw fetch skips htmx:afterRequest, so sync notifs here
     } else {
       updateContinueState();
     }
