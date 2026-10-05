@@ -30,7 +30,6 @@
       hx-get="/dashboard/orders/history"
       hx-target="#dash-panel"
       hx-swap="innerHTML"
-      hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
       >Historial</button>
       {{if .IsAdmin}}
         <button
@@ -38,28 +37,24 @@
         hx-get="htmx/form-create-item?hasNext=false"
         hx-target="#dash-panel"
         hx-swap="innerHTML"
-        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Crear ítem</button>
         <button
         class="dash-tab"
         hx-get="/dashboard/admin/staff"
         hx-target="#dash-panel"
         hx-swap="innerHTML"
-        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Personal</button>
         <button
         class="dash-tab"
         hx-get="/dashboard/admin/users"
         hx-target="#dash-panel"
         hx-swap="innerHTML"
-        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Usuarios</button>
         <button
         class="dash-tab"
         hx-get="/dashboard/admin/sessions"
         hx-target="#dash-panel"
         hx-swap="innerHTML"
-        hx-on:click="this.parentNode.querySelectorAll('.dash-tab').forEach(t => t.classList.toggle('on', t === this))"
         >Sesiones</button>
       {{end}}
     </div>
