@@ -70,7 +70,6 @@ $radius-sm: 4px;
 
 :root {
   --muted: color-mix(in srgb, var(--fg) 75%, var(--paper));
-  --rule: var(--fg);
   --rule-soft: color-mix(in srgb, var(--fg) 22%, var(--paper));
   --on-fill: var(--paper);
 }
@@ -231,7 +230,6 @@ svg {
   letter-spacing: 0.03em;
 }
 .panel-title { font-size: 0.95rem; }
-.menu-item-name { font-size: 0.9rem; }
 
 .page > * + * {
   margin-top: 1rem;
@@ -317,7 +315,6 @@ svg {
 .button-clear {
   font: inherit;
   color: inherit;
-  border-radius: 0;
 }
 
 .field,
@@ -498,21 +495,6 @@ svg {
 }
 
 // --- dashboard / account ---
-
-.action-list {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
-  width: 100%;
-}
-
-.action-item {
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  width: 100%;
-}
 
 .hx-slot:empty {
   display: none;
@@ -781,10 +763,6 @@ svg {
 }
 
 // --- order detail ---
-
-.order-detail-row > td {
-  padding-block: 0.5rem;
-}
 
 .table-order {
   display: block;

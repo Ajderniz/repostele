@@ -8,7 +8,6 @@
   --paper: #f2e6cd;
   --fg: #3a2a1c;
   --fill: #8a3d1e;
-  --on-fill: #f2e6cd;
   --mark-filter: none;
   --floor: #e2d3ac;
   --floor-dot: #c7b384;
@@ -22,9 +21,5 @@
 }
 
 :root {
-  @include tokens;
-}
-
-[data-theme="light"] {
   @include tokens;
 }
