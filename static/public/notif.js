@@ -1,10 +1,12 @@
 // Polling for #notif-poll. Keeps the server token so unchanged polls return 204.
 // After own writes, a silent sync refreshes the notif state without a toast.
 
+// widget=1 only where the page has the #current-order slot to swap into.
 function notifParams() {
   const poll = document.getElementById('notif-poll');
-  if (!poll) return { token: '', silent: '' };
-  return { token: poll.dataset.token || '', silent: poll.dataset.silent || '' };
+  const widget = document.getElementById('current-order') ? '1' : '';
+  if (!poll) return { token: '', silent: '', widget };
+  return { token: poll.dataset.token || '', silent: poll.dataset.silent || '', widget };
 }
 
 // Call after any write. Silent poll sync (no toast for own action), then the same

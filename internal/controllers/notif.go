@@ -22,7 +22,7 @@ func ServeNotif(w http.ResponseWriter, r *http.Request) {
 		serveStaffNotif(w, prev, silent)
 		return
 	}
-	serveUserNotif(w, username, prev, silent)
+	serveUserNotif(w, username, prev, silent, r.URL.Query().Get("widget") == "1")
 }
 
 func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
@@ -52,7 +52,8 @@ func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
 	})
 }
 
-func serveUserNotif(w http.ResponseWriter, username, prev string, silent bool) {
+// hasSlot: the page has #current-order, so send its OOB update.
+func serveUserNotif(w http.ResponseWriter, username, prev string, silent, hasSlot bool) {
 	order, err := models.GetLatestOrderFromUsername(username)
 	token := ""
 	active := err == nil && order.Pending()
@@ -71,9 +72,11 @@ func serveUserNotif(w http.ResponseWriter, username, prev string, silent bool) {
 		w.Header().Set("HX-Trigger", "order-changed")
 		_Tpl.ExecuteTemplate(w, "toast", msg)
 	}
-	_Tpl.ExecuteTemplate(w, "current-order", map[string]any{
-		"Order": widget, "OOB": true,
-	})
+	if hasSlot {
+		_Tpl.ExecuteTemplate(w, "current-order", map[string]any{
+			"Order": widget, "OOB": true,
+		})
+	}
 }
 
 func noNotif(w http.ResponseWriter, token string) {
