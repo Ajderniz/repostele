@@ -172,15 +172,12 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   orders, err := models.GetPendingOrders(&params)
   if err != nil { serveInternalErr(w, r); return }
 
-  _, role, _ := checkSessionUser(r)
-  isStaff := role == models.SESSION_ROLE_STAFF
-
   serveDataHX(
     w,
     r,
     map[string]any{
       "Orders":   orders,
-      "IsStaff":  isStaff,
+      "IsStaff":  true,
       "Params":   params,
       "HasNext":  len(orders) == params.Limit,
       "Endpoint": "/dashboard/orders",
