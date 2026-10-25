@@ -137,28 +137,18 @@ func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
   serveResponseHX(w, "Se cerraron todas las sesiones deseadas", OK, nil)
 }
 
-func Login(w http.ResponseWriter, r *http.Request, isStaff bool) {
+// Login checks credentials against this build's account table and opens a
+// session with this build's role.
+func Login(w http.ResponseWriter, r *http.Request) {
   fp, err := checkLoginAttempts(w, r)
   if err != nil { serveErr(w, r, Forbidden, err); return }
 
   username, password, err := getCredsFromForm(r)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  var acc any
-  if isStaff { acc, err = models.GetStaffFromUsername(username)
-  } else     { acc, err = models.GetUserFromUsername(username) }
+  passHash, err := accountPassHash(username)
   if err != nil { serveInternalErr(w, r); return }
-
-  passHash := ""
-  if isStaff {
-    staff := acc.(models.Staff)
-    if staff.Username == "" { serveMsg(w,r,_MsgAccNotFound); return }
-    passHash = staff.PassHash
-  } else {
-    user := acc.(models.User)
-    if user.Username == "" { serveMsg(w,r,_MsgAccNotFound); return }
-    passHash = user.PassHash
-  }
+  if passHash == "" { serveMsg(w, r, _MsgAccNotFound); return }
 
   err = pass.CheckPasswordHash(password, passHash)
   if err != nil { failLogin(w, r, fp); return }
@@ -167,11 +157,7 @@ func Login(w http.ResponseWriter, r *http.Request, isStaff bool) {
   sessionID := ""
   if sessionIDCookie != nil { sessionID = sessionIDCookie.Value }
 
-  var role models.SessionRole
-  if isStaff { role = models.SESSION_ROLE_STAFF
-  } else     { role = models.SESSION_ROLE_USER }
-
-  err = openSession(w, username, role, sessionID, fp.Id)
+  err = openSession(w, username, models.APP_ROLE, sessionID, fp.Id)
   if err != nil { serveInternalErr(w, r); return }
 
   serveMsg(w, r, _MsgLoggedIn)

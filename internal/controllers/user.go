@@ -1,32 +1,11 @@
 package controllers
 
 import (
-	"errors"
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
 	"github.com/ajderniz/repostele/pkg/bind"
-	"github.com/ajderniz/repostele/pkg/pass"
 )
-
-func updateUserPassword(username, oldPassword, newPassword string) (int, error){
-  if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
-
-  user, err := models.GetUserFromUsername(username)
-  if err != nil { return InternalServerError, err }
-  if user.Username == "" { return NotFound, errors.New(_MsgAccNotFound) }
-
-  err = pass.CheckPasswordHash(oldPassword, user.PassHash)
-  if err != nil { return Unauthorized, err }
-
-  newHash, err := pass.HashPassword(newPassword)
-  if err != nil { return InternalServerError, err }
-
-  err = models.UpdateUserField(username, models.USER_PASS_HASH, newHash)
-  if err != nil { return InternalServerError, err }
-
-  return OK, nil
-}
 
 func deactivateUserAccount(
   w http.ResponseWriter,
@@ -35,15 +14,8 @@ func deactivateUserAccount(
   self bool,
 ) (int, error) {
 
-  if self {
-    sid, err := r.Cookie(SESSION_ID)
-    if err != nil { return BadRequest, err }
-    err = closeSession(w, sid.Value)
-    if err != nil { return InternalServerError, err }
-  } else {
-    if err := models.CloseSessionForUsername(username, models.SESSION_ROLE_USER); err != nil {
-      return InternalServerError, err
-    }
+  if status, err := closeAccountSessions(w, r, username, models.SESSION_ROLE_USER, self); err != nil {
+    return status, err
   }
 
   err := models.UpdateUserField(username, models.USER_ACTIVE, false)

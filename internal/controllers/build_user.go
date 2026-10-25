@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
-	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 )
 
@@ -70,49 +69,19 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   serveResponse(w, r, &_MainData{Msg: _MsgAccCreated}, Created, nil)
 }
 
-func UserLogin(w http.ResponseWriter, r *http.Request) {
-  Login(w, r, false)
-}
-
-func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
-  username := ctxUsername(r)
-  oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { serveBadRequestHX(w, err.Error()); return }
-
-  status, err := updateUserPassword(username, oldPassword, newPassword)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
-
-  serveResponseHX(w, _MsgPasswordChanged, OK, nil)
-}
-
-func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
-  username := ctxUsername(r)
-  password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { serveInternalErrHX(w); return }
-
+func accountPassHash(username string) (string, error) {
   user, err := models.GetUserFromUsername(username)
-  if err != nil || user.Username == "" { serveInternalErrHX(w); return }
+  return user.PassHash, err
+}
 
-  err = pass.CheckPasswordHash(password, user.PassHash)
-  if err != nil {
-    serveResponseHX(w, _ErrBadCreds.Error(), Unauthorized, nil)
-    return
-  }
+func setAccountPassHash(username, hash string) error {
+  return models.UpdateUserField(username, models.USER_PASS_HASH, hash)
+}
 
+// Customers can't leave with an order still open.
+func selfDeactivate(w http.ResponseWriter, r *http.Request, username string) (int, error) {
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrHX(w); return }
-  if latestOrder.Pending() {
-    serveResponseHX(w, "Hay una orden pendiente", Conflict, nil)
-    return
-  }
-
-  status, err := deactivateUserAccount(w, r, user.Username, true)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
-
-  if isHX(r) {
-    w.Header().Set("HX-Redirect", "/login")
-    w.WriteHeader(OK)
-    return
-  }
-  serveMsg(w, r, _MsgAccDeactivated)
+  if err != nil { return InternalServerError, _ErrInternal }
+  if latestOrder.Pending() { return Conflict, errors.New("Hay una orden pendiente") }
+  return deactivateUserAccount(w, r, username, true)
 }

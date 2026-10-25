@@ -143,10 +143,6 @@ func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   })
 }
 
-func StaffLogin(w http.ResponseWriter, r *http.Request) {
-  Login(w, r, true)
-}
-
 func deactivateStaffAccount(
   w http.ResponseWriter,
   r *http.Request,
@@ -167,15 +163,8 @@ func deactivateStaffAccount(
     }
   }
 
-  if self {
-    sid, err := r.Cookie(SESSION_ID)
-    if err != nil { return BadRequest, err }
-    err = closeSession(w, sid.Value)
-    if err != nil { return InternalServerError, err }
-  } else {
-    if err := models.CloseSessionForUsername(username, models.SESSION_ROLE_STAFF); err != nil {
-      return InternalServerError, err
-    }
+  if status, err := closeAccountSessions(w, r, username, models.SESSION_ROLE_STAFF, self); err != nil {
+    return status, err
   }
 
   err = models.UpdateStaffField(username, models.STAFF_ACTIVE, false)
@@ -196,61 +185,6 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
     frag("staff-active-cell", cell), frag("staff-actions-cell", cell))
 }
 
-func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
-  username := ctxUsername(r)
-  password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { serveInternalErrHX(w); return }
-
-  staff, err := models.GetStaffFromUsername(username)
-  if err != nil || staff.Username == "" { serveInternalErrHX(w); return }
-
-  err = pass.CheckPasswordHash(password, staff.PassHash)
-  if err != nil {
-    serveResponseHX(w, _ErrBadCreds.Error(), Unauthorized, nil)
-    return
-  }
-
-  status, err := deactivateStaffAccount(w, r, username, true)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
-
-  if isHX(r) {
-    w.Header().Set("HX-Redirect", "/login")
-    w.WriteHeader(OK)
-    return
-  }
-  serveMsg(w, r, _MsgAccDeactivated)
-}
-
-func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
-  if oldPassword == newPassword {return BadRequest, _ErrSamePassword}
-
-  staff, err := models.GetStaffFromUsername(username)
-  if err != nil { return InternalServerError, err }
-  if staff.Username == "" { return NotFound, errors.New(_MsgAccNotFound) }
-
-  err = pass.CheckPasswordHash(oldPassword, staff.PassHash)
-  if err != nil { return Unauthorized, err }
-
-  newHash, err := pass.HashPassword(newPassword)
-  if err != nil { return InternalServerError, err }
-
-  err = models.UpdateStaffField(username, models.STAFF_PASS_HASH, newHash)
-  if err != nil { return InternalServerError, err }
-
-  return OK, nil
-}
-
-func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
-  username := ctxUsername(r)
-  oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { serveBadRequestHX(w, err.Error()); return }
-
-  status, err := updateStaffPasssword(username, oldPassword, newPassword)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
-
-  serveResponseHX(w, _MsgPasswordChanged, OK, nil)
-}
-
 func GetStaffList(w http.ResponseWriter, r *http.Request) {
   params := models.SelectParams{}
   err := bind.Form(r, &params)
@@ -264,4 +198,17 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
     "Params":  params,
     "HasNext": len(staff) == params.Limit,
   }, "list-staff")
+}
+
+func accountPassHash(username string) (string, error) {
+  staff, err := models.GetStaffFromUsername(username)
+  return staff.PassHash, err
+}
+
+func setAccountPassHash(username, hash string) error {
+  return models.UpdateStaffField(username, models.STAFF_PASS_HASH, hash)
+}
+
+func selfDeactivate(w http.ResponseWriter, r *http.Request, username string) (int, error) {
+  return deactivateStaffAccount(w, r, username, true)
 }
