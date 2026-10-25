@@ -50,6 +50,12 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
     return models.Session{}, http.StatusUnauthorized, _ErrExpired
   }
 
+  // Both apps share the DB and cookies are not port-scoped, so a session
+  // from the other app must not pass here.
+  if session.Role != _APP_ROLE {
+    return models.Session{}, http.StatusUnauthorized, _ErrAuth
+  }
+
   return session, http.StatusOK, nil
 }
 

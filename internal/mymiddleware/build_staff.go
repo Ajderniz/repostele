@@ -8,6 +8,9 @@ import (
 	"github.com/ajderniz/repostele/internal/models"
 )
 
+// Only staff sessions are valid on this app.
+const _APP_ROLE = models.SESSION_ROLE_STAFF
+
 // Called AFTER staff authentication for the '/staff' path
 func RequireAdminAuth() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
