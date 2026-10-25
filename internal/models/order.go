@@ -91,18 +91,6 @@ func InsertOrder(order Order) error {
   return nil
 }
 
-func CountOrdersByStatus(status OrderStatus) (int, error) {
-  var count int
-  err := dbGet(&count,
-    "SELECT COUNT(*) FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" = ?",
-    status,
-  )
-  if err != nil {
-    return 0, errors.New("No se pudo contar las órdenes")
-  }
-  return count, nil
-}
-
 type PendingQueueStats struct {
   Count      int   `db:"count"`
   Unreviewed int   `db:"unreviewed"`

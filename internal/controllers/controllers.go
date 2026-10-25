@@ -118,8 +118,8 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 		} else if staff.Username != "" {
 			isStaff = true
 			isAdmin = staff.Admin
-			count, err := models.CountOrdersByStatus(models.ORDER_STATUS_UNREVIEWED)
-			if err != nil { slog.Error(err.Error()) } else { pendingOrders = count }
+			stats, err := models.GetPendingQueueStats()
+			if err != nil { slog.Error(err.Error()) } else { pendingOrders = stats.Unreviewed }
 		}
 	}
 
