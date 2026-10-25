@@ -142,6 +142,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
       "HasNext":  len(orders) == params.Limit,
       "Endpoint": "/dashboard/orders",
       "Target":   "#queue-list",
+      "Aside":    "queue-detail",
     },
     "list-orders",
   )
@@ -165,11 +166,12 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
     map[string]any{
       "Orders":      orders,
       "IsStaff":     true,
-      "ShowHistory": true,
+      "Export":      true,
       "Params":      params,
       "HasNext":     len(orders) == params.Limit,
       "Endpoint":    "/dashboard/orders/history",
       "Target":      "#dash-panel",
+      "Aside":       "dash-detail",
     },
     tpl,
   )
@@ -231,7 +233,9 @@ func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   orders, err := models.GetAllOrdersFromUsername(username)
   if err != nil { serveInternalErrAuto(w, r); return }
-  serveDataHX(w, r, map[string]any{"Orders": orders, "IsStaff": false, "ShowHistory": true}, "list-orders")
+  serveDataHX(w, r, map[string]any{
+    "Orders": orders, "IsStaff": false, "Aside": "orders-detail",
+  }, "list-orders")
 }
 
 func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {

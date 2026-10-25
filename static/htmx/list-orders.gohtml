@@ -1,11 +1,11 @@
 {{define "list-orders"}}
 
 {{$isStaff := .IsStaff}}
-{{$showHistory := .ShowHistory}}
 {{$endpoint := .Endpoint}}
 {{$target := .Target}}
-{{$aside := "orders-detail"}}{{if $isStaff}}{{$aside = "queue-detail"}}{{if $showHistory}}{{$aside = "dash-detail"}}{{end}}{{end}}
-{{if and $isStaff $showHistory}}
+{{/* Aside: id of the side panel that shows a picked order's detail. */}}
+{{$aside := .Aside}}
+{{if .Export}}
   <div class="order-list-tools">
     <a class="btn btn-compact" href="/dashboard/orders/history/export?sort={{.Params.Sort}}&dir={{.Params.Dir}}" download>Exportar CSV</a>
   </div>
