@@ -76,7 +76,6 @@ $radius-sm: 4px;
 
 html {
   background-color: var(--floor);
-  /*background-image: repeating-linear-gradient(45deg, var(--floor-dot) 0, var(--floor-dot) 1.5px, transparent 1.5px, transparent 13px);*/
   background-image: url("/paper.png");
   color: var(--fg);
   font-size: 100%;
@@ -893,6 +892,7 @@ svg {
 
 .menu-main {
   min-width: 0;
+  container-type: inline-size;
 }
 
 .menu-aside {
@@ -1343,10 +1343,6 @@ svg {
   }
 }
 
-.menu-main {
-  container-type: inline-size;
-}
-
 @container (min-width: 760px) {
   .menu-layout {
     flex-direction: row;
@@ -1660,9 +1656,6 @@ svg {
   background: var(--bg);
   border-radius: $radius-md;
   @include card-shadow;
-}
-
-.order-entry {
   cursor: pointer;
   transition: box-shadow 0.15s ease;
 }
