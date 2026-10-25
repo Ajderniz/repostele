@@ -80,23 +80,14 @@ func getDashStats() _DashStats {
 }
 
 func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, password, err := getRegisterCredsFromForm(r)
   if err != nil { return models.Staff{}, BadRequest, err }
-  password1, err := bind.FormValue(r, _CREDS_PASSWORD+"-1", _CREDS_VALIDATE)
-  if err != nil { return models.Staff{}, BadRequest, err }
-  password2, err := bind.FormValue(r, _CREDS_PASSWORD+"-2", _CREDS_VALIDATE)
-  if err != nil {
-    return models.Staff{}, BadRequest, err
-  }
-  if password1 != password2 {
-    return models.Staff{}, BadRequest, errors.New("Password missmatch")
-  }
   fullName, err := bind.FormValue(r, "full-name", "required,alphanumspace")
   if err != nil { return models.Staff{}, BadRequest, err }
 
   staff := models.Staff{}
   staff.Username = username
-  staff.PassHash, err = pass.HashPassword(password1)
+  staff.PassHash, err = pass.HashPassword(password)
   if err != nil { return models.Staff{}, InternalServerError, err }
   staff.FullName = fullName
   staff.TimeCreated = time.Now().Unix()
