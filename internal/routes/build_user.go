@@ -16,61 +16,32 @@ func RegisterRoutes(r *chi.Mux) error {
 
   r.Get("/", controllers.HandleRoot)
 
-  r.Route("/menu", func(r chi.Router) {
+  r.Group(func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.OptUsername())
-    r.Get("/",          controllers.GetItems)
-  })
+    registerShared(r)
 
-  r.Route("/register", func(r chi.Router){
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.GetFingerprint())
-    r.Use(mymiddleware.OptUsername())
-    r.Post("/", controllers.SelfRegisterAccount)
-  })
-  r.Route("/login", func(r chi.Router){
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.GetFingerprint())
-    r.Use(mymiddleware.OptUsername())
-    r.Get( "/",    controllers.ServeMainTemplate)
-    r.Post("/",    controllers.Login)
-  })
-  r.Route("/logout", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Patch("/", controllers.Logout)
-  })
+    r.Route("/register", func(r chi.Router){
+      r.Use(mymiddleware.GetFingerprint())
+      r.Use(mymiddleware.OptUsername())
+      r.Post("/", controllers.SelfRegisterAccount)
+    })
 
-  r.Route("/account", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Get(  "/",           controllers.ServeMainTemplate)
-    r.Patch("/deactivate", controllers.SelfDeactivateAccount)
-    r.Patch("/password",   controllers.SelfUpdatePassword)
-  })
+    r.Group(func(r chi.Router) {
+      r.Use(mymiddleware.RequireAuth())
 
-  r.Route("/cart", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Get("/", controllers.ServeMainTemplate)
-  })
+      r.Route("/cart",   servePage)
+      r.Route("/orders", servePage)
 
-  r.Route("/orders", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Get("/", controllers.ServeMainTemplate)
-  })
-
-  r.Route("/order", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Post( "/",          controllers.PostOrder)
-    r.Get(  "/",          controllers.GetUserOrderList)
-    r.Get(  "/edit-form", controllers.GetOrderRefNumEditForm)
-    r.Get(  "/ref-view",  controllers.GetOrderRefView)
-    r.Get(  "/{id}",      controllers.CheckUserOrderFromID)
-    r.Patch("/update",    controllers.UpdateUserOrderRefNum)
-    r.Patch("/cancel",    controllers.CancelUserOrder)
+      r.Route("/order", func(r chi.Router) {
+        r.Post( "/",          controllers.PostOrder)
+        r.Get(  "/",          controllers.GetUserOrderList)
+        r.Get(  "/edit-form", controllers.GetOrderRefNumEditForm)
+        r.Get(  "/ref-view",  controllers.GetOrderRefView)
+        r.Get(  "/{id}",      controllers.CheckUserOrderFromID)
+        r.Patch("/update",    controllers.UpdateUserOrderRefNum)
+        r.Patch("/cancel",    controllers.CancelUserOrder)
+      })
+    })
   })
 
   return nil

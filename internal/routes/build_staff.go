@@ -22,79 +22,54 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Post("/",     controllers.InitMainStaffAccount)
   })
 
-  r.Route("/menu", func(r chi.Router) {
+  r.Group(func(r chi.Router) {
     r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.OptUsername())
-    r.Get("/",          controllers.GetItems)
-  })
+    registerShared(r)
 
-  r.Route("/login", func(r chi.Router){
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.GetFingerprint())
-    r.Use(mymiddleware.OptUsername())
-    r.Get( "/", controllers.ServeMainTemplate)
-    r.Post("/", controllers.Login)
-  })
-  r.Route("/logout", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Patch("/", controllers.Logout)
-  })
+    r.Group(func(r chi.Router) {
+      r.Use(mymiddleware.RequireAuth())
 
-  r.Route("/account", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Get(  "/",           controllers.ServeMainTemplate)
-    r.Patch("/deactivate", controllers.SelfDeactivateAccount)
-    r.Patch("/password",   controllers.SelfUpdatePassword)
-  })
+      r.Route("/queue", servePage)
 
-  r.Route("/queue", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
-    r.Get("/", controllers.ServeMainTemplate)
-  })
+      r.Route("/dashboard", func(r chi.Router) {
+        r.Get("/", controllers.GetDashboard)
+        r.Get("/stats", controllers.GetDashTiles)
 
-  r.Route("/dashboard", func(r chi.Router) {
-    r.Use(mymiddleware.CheckInit())
-    r.Use(mymiddleware.RequireAuth())
+        r.Route("/orders", func(r chi.Router) {
+          r.Get(  "/",                controllers.GetAllOrders)
+          r.Get(  "/counts",          controllers.GetQueueCounts)
+          r.Get(  "/history",         controllers.GetOrderHistory)
+          r.Get(  "/history/export",  controllers.ExportOrderHistory)
+          r.Get(  "/{id}",            controllers.GetOrderFromID)
+          r.Patch("/{id}/status",     controllers.UpdateOrderStatus)
+        })
 
-    r.Get("/", controllers.GetDashboard)
-    r.Get("/stats", controllers.GetDashTiles)
+        r.Route("/admin", func(r chi.Router) {
+          r.Use(mymiddleware.RequireAdminAuth())
 
-    r.Route("/orders", func(r chi.Router) {
-      r.Get(  "/",                controllers.GetAllOrders)
-      r.Get(  "/counts",          controllers.GetQueueCounts)
-      r.Get(  "/history",         controllers.GetOrderHistory)
-      r.Get(  "/history/export",  controllers.ExportOrderHistory)
-      r.Get(  "/{id}",            controllers.GetOrderFromID)
-      r.Patch("/{id}/status",     controllers.UpdateOrderStatus)
-    })
+          r.Route("/staff", func(r chi.Router) {
+            r.Get(  "/",                      controllers.GetStaffList)
+            r.Post( "/",                      controllers.RegisterStaffAccount)
+            r.Patch("/deactivate/{username}", controllers.DeactivateStaffAccount)
+          })
 
-    r.Route("/admin", func(r chi.Router) {
-      r.Use(mymiddleware.RequireAdminAuth())
+          r.Route("/users", func(r chi.Router) {
+            r.Get(  "/",                      controllers.GetUserList)
+            r.Patch("/deactivate/{username}", controllers.DeactivateUserAccount)
+          })
 
-      r.Route("/staff", func(r chi.Router) {
-        r.Get(  "/",                      controllers.GetStaffList)
-        r.Post( "/",                      controllers.RegisterStaffAccount)
-        r.Patch("/deactivate/{username}", controllers.DeactivateStaffAccount)
-      })
+          r.Route("/sessions", func(r chi.Router) {
+            r.Get(  "/",                        controllers.GetActiveSessions)
+            r.Patch("/close",                   controllers.CloseAllSessions)
+            r.Patch("/close/{role}/{username}", controllers.CloseSessionForUsername)
+          })
 
-      r.Route("/users", func(r chi.Router) {
-        r.Get(  "/",                      controllers.GetUserList)
-        r.Patch("/deactivate/{username}", controllers.DeactivateUserAccount)
-      })
-
-      r.Route("/sessions", func(r chi.Router) {
-        r.Get(  "/",                 controllers.GetActiveSessions)
-        r.Patch("/close",            controllers.CloseAllSessions)
-        r.Patch("/close/{role}/{username}", controllers.CloseSessionForUsername)
-      })
-
-      r.Route("/menu", func(r chi.Router) {
-        r.Post( "/",          controllers.PostItem)
-        r.Get(  "/{id}/edit", controllers.GetItemEditForm)
-        r.Patch("/{id}",      controllers.UpdateItem)
+          r.Route("/menu", func(r chi.Router) {
+            r.Post( "/",          controllers.PostItem)
+            r.Get(  "/{id}/edit", controllers.GetItemEditForm)
+            r.Patch("/{id}",      controllers.UpdateItem)
+          })
+        })
       })
     })
   })
