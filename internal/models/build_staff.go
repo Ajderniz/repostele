@@ -11,6 +11,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Only staff sessions are valid on this app.
+const APP_ROLE = SESSION_ROLE_STAFF
+
 func OpenDB() error {
   db, err := sqlx.Open("sqlite3", _DB_FILEPATH)
   if err != nil { return err }

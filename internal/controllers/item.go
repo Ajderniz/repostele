@@ -98,9 +98,8 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   data.HasNext = len(items) == params.Limit
   if len(items) <= 0 { data.Msg = _MsgEmpty }
 
-  username, role, loggedIn := checkSessionUser(r)
-  if loggedIn && role != models.SESSION_ROLE_STAFF {
-    order, err := models.GetLatestOrderFromUsername(username)
+  if session, ok := models.SessionFromContext(r.Context()); ok && session.Role == models.SESSION_ROLE_USER {
+    order, err := models.GetLatestOrderFromUsername(session.User)
     if err != nil {
       slog.Error(err.Error())
     } else if order.RefNum != "" &&

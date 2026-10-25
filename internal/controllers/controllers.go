@@ -7,7 +7,6 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
-	"slices"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -160,24 +159,20 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-var _SectionsCheckSession = []string{ "init", "menu", "login" }
-
 func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	section := strings.Split(r.URL.Path, "/")[1]
 
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }
 
-	loggedIn := true
-	if slices.Contains(_SectionsCheckSession, section) {
-		loggedIn = checkSession(r)
-	}
+	// Set by the auth middleware; routes without it (e.g. /init) count as logged out.
+	session, hasSession := models.SessionFromContext(r.Context())
+	loggedIn := hasSession
 
 	isStaff := false
 	isAdmin := false
 
-	session, hasSession := models.SessionFromContext(r.Context())
-	if hasSession {
+	if hasSession && session.Role == models.SESSION_ROLE_STAFF {
 		isStaff = false
 		staff, err := models.GetStaffFromUsername(session.User)
 		if err != nil { w.WriteHeader(InternalServerError); return }

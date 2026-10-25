@@ -8,6 +8,9 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// Only customer sessions are valid on this app.
+const APP_ROLE = SESSION_ROLE_USER
+
 func OpenDB() error {
   db, err := sqlx.Open("sqlite3", _DB_FILEPATH)
   if err != nil { return err }

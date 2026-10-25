@@ -17,6 +17,8 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
+// checkSessionUser is for routes without auth middleware (/htmx/nav, /htmx/notif);
+// elsewhere the middleware already put the session in the request context.
 func checkSessionUser(
   r *http.Request,
 ) (username string, role models.SessionRole, ok bool) {
@@ -28,13 +30,9 @@ func checkSessionUser(
   if err != nil || session.SessionToken == "" { return "", 0, false }
 
   if session.Expires <= time.Now().Unix() { return "", 0, false }
+  if session.Role != models.APP_ROLE { return "", 0, false }
 
   return session.User, session.Role, true
-}
-
-func checkSession(r *http.Request) bool {
-  _, _, ok := checkSessionUser(r)
-  return ok
 }
 
 func openSession(

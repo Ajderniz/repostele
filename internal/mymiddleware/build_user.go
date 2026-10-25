@@ -9,9 +9,6 @@ import (
 	"github.com/ajderniz/repostele/internal/models"
 )
 
-// Only customer sessions are valid on this app.
-const _APP_ROLE = models.SESSION_ROLE_USER
-
 func CheckInit() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
