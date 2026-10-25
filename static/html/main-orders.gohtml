@@ -2,20 +2,7 @@
 
 <article class="page">
   <h1 class="page-title">Mis órdenes</h1>
-  <div class="split-layout">
-    <div class="split-main">
-      <div
-      id="orders-list"
-      class="hx-slot"
-      hx-get="/order"
-      hx-trigger="load"
-      hx-swap="innerHTML"
-      ></div>
-    </div>
-    <aside id="orders-detail" class="split-aside hx-slot">
-      <p class="split-empty">Seleccione una orden para ver su detalle.</p>
-    </aside>
-  </div>
+  {{template "split-list" (dict "List" "orders-list" "Get" "/order" "Aside" "orders-detail")}}
 </article>
 
 {{end}}

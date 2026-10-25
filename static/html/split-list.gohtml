@@ -1,0 +1,17 @@
+{{define "split-list"}}
+{{/*
+  Order list beside its detail aside. List: list element id. Aside: aside id.
+  Get: URL the list loads itself from (it is then an hx-slot); or Content: rows rendered in place.
+*/}}
+<div class="split-layout">
+  <div class="split-main">
+    <div
+    id="{{.List}}"
+    {{with .Get}}class="hx-slot" hx-get="{{.}}" hx-trigger="load" hx-swap="innerHTML"{{end}}
+    >{{.Content}}</div>
+  </div>
+  <aside id="{{.Aside}}" class="split-aside hx-slot">
+    <p class="split-empty">Seleccione una orden para ver su detalle.</p>
+  </aside>
+</div>
+{{end}}
