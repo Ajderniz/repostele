@@ -1,0 +1,63 @@
+@use "vars" as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+// authored `display` rules on the same element (.nav-badge, #ref-confirm,
+// etc.) tie or beat [hidden]'s specificity, which silently defeats it —
+// force it to always win.
+[hidden] {
+  display: none !important;
+}
+
+:root {
+  --muted: color-mix(in srgb, var(--fg) 75%, var(--paper));
+  --rule-soft: color-mix(in srgb, var(--fg) 22%, var(--paper));
+  --on-fill: var(--paper);
+}
+
+html {
+  background-color: var(--floor);
+  background-image: url("/paper.png");
+  color: var(--fg);
+  font-size: 100%;
+  line-height: 1.5;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  width: 100%;
+  max-width: $max-main;
+  min-height: 100dvh;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: $font-body;
+  border-radius: $radius-lg;
+  @include shell-shadow;
+}
+
+img,
+svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+:focus-visible {
+  outline: $border solid var(--fg);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: var(--fill);
+  color: var(--on-fill);
+}

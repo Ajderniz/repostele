@@ -1,0 +1,128 @@
+@use "vars" as *;
+
+// --- chrome ---
+
+#site-header {
+  display: flex;
+  align-items: center;
+  gap: 0.55em;
+  padding: 0.55rem $pad;
+  font-family: $font-heading;
+  font-size: clamp(1.6rem, 6vw, 4.5rem);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  @include groove-bottom;
+}
+
+#site-header::before {
+  content: "";
+  flex: 0 0 auto;
+  width: 0.9em;
+  height: 0.9em;
+  background: url("/repostele.png") 50% 50% / 150% no-repeat;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  filter: var(--mark-filter);
+}
+
+#site-nav {
+  display: flex;
+  justify-content: space-between;
+  @include groove-bottom;
+}
+
+#site-nav-list-left,
+#site-nav-list-right {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+}
+
+#site-nav-list-left a,
+#site-nav-list-right a,
+.site-nav-btn {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0.7rem 1.15rem;
+  font-family: $font-body;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: $radius-sm;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+@media (hover: hover) {
+  #site-nav-list-left a:hover,
+  #site-nav-list-right a:hover,
+  .site-nav-btn:hover {
+    background: var(--btn-bg);
+    color: var(--fg);
+    @include pressed-shadow;
+  }
+}
+
+#site-nav a[aria-current="page"] {
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+#site-footer {
+  margin-top: auto;
+  padding: 0.7rem $pad;
+  font-size: 0.85rem;
+  color: var(--muted);
+  @include groove-top;
+}
+
+// --- page ---
+
+.site-main {
+  container-type: inline-size;
+  width: 100%;
+  flex: 1 0 auto;
+  padding: clamp(1.25rem, 3vw, 2rem) $pad 3rem;
+}
+
+.site-main > * + * {
+  margin-top: 1.75rem;
+}
+
+.page-title,
+.section-title,
+.panel-title,
+.menu-item-name,
+.init-title {
+  font-family: $font-heading;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  text-wrap: balance;
+}
+
+.page-title { font-size: 1.7rem; }
+.section-title {
+  font-size: 1.05rem;
+  letter-spacing: 0.03em;
+}
+.panel-title { font-size: 0.95rem; }
+
+.page > * + * {
+  margin-top: 1rem;
+}
+
+.page > * + .section-title {
+  margin-top: 1.75rem;
+}
+
+.page > .page-title + .section-title {
+  margin-top: 1rem;
+}

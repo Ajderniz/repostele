@@ -1,0 +1,110 @@
+@use "vars" as *;
+
+// --- dashboard / account ---
+
+.hx-slot:empty {
+  display: none;
+}
+
+.hx-slot:not(:empty) {
+  width: 100%;
+  margin-top: 0.75rem;
+}
+
+.hx-container {
+  position: relative;
+  width: 100%;
+  padding: 0 1rem 1rem;
+  background: var(--bg);
+  border-radius: $radius-md;
+  overflow-x: auto;
+  @include card-shadow;
+}
+
+.hx-container > * + * {
+  margin-top: 0.65rem;
+}
+
+.hx-container > .button-clear + * {
+  margin-top: 0;
+}
+
+.hx-container > .button-clear + .panel-title {
+  min-height: 2.1rem;
+  padding-right: 2.3rem;
+  display: flex;
+  align-items: center;
+}
+
+.hx-container > .button-clear + .page-form {
+  padding-top: 0.55rem;
+}
+
+.hx-container > .button-clear + .page-form .form-table tr:first-child th,
+.hx-container > .button-clear + .page-form .form-table tr:first-child td {
+  padding-right: 1.35rem;
+}
+
+.button-clear {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+  width: 2.1rem;
+  height: 2.1rem;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: 0;
+  color: var(--fg);
+  background: var(--btn-bg);
+  border-radius: $radius-sm;
+  cursor: pointer;
+  @include pressed-shadow;
+}
+
+@media (hover: hover) {
+  .button-clear:hover {
+    background: var(--dip);
+  }
+}
+
+.hx-flash {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.65rem;
+}
+
+.hx-slot > .hx-flash {
+  padding: 1rem;
+  background: var(--bg);
+  border-radius: $radius-md;
+  @include card-shadow;
+}
+
+.hx-msg {
+  font-size: 1rem;
+}
+
+.row-msg:empty {
+  display: none;
+}
+
+.row-msg .hx-flash {
+  margin-top: 0.25rem;
+}
+
+.row-msg .hx-msg {
+  font-size: 0.85rem;
+}
+
+.row-msg .next-action {
+  padding: 0.35rem 0.55rem;
+  font-size: 0.85rem;
+}

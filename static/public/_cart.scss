@@ -1,0 +1,111 @@
+@use "vars" as *;
+
+// --- cart ---
+
+.nav-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  min-width: 1.3rem;
+  margin-left: 0.4rem;
+  padding: 0 0.35rem;
+  font-family: $font-heading;
+  font-size: 0.8rem;
+  font-weight: 800;
+  line-height: 1.3rem;
+  text-align: center;
+  color: var(--on-fill);
+  background: var(--fill);
+  border-radius: 999px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.28),
+    inset 0 -2px 2px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+#cart-list {
+  display: flex;
+  flex-direction: column;
+}
+
+#cart-list > .empty-msg {
+  padding-block: 0.5rem;
+}
+
+.cart-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 0.75rem;
+  padding-block: 0.65rem;
+  border-bottom: 1px solid var(--rule-soft);
+}
+
+.cart-row-name {
+  flex: 1 1 40%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.cart-row-price,
+.cart-row-subtotal {
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.cart-row-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cart-row-qty .btn-compact {
+  margin: 0;
+  padding: 0.3rem 0.6rem;
+}
+
+.cart-row-qty-num {
+  min-width: 1.5rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.cart-summary {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding-block: 0.65rem;
+  border-top: 1px solid var(--rule-soft);
+}
+
+.cart-summary-label {
+  font-family: $font-heading;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.cart-summary-total {
+  font-family: $font-heading;
+  font-size: 1.25rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+#ref-confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+#ref-confirm label {
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+#ref-num-input {
+  font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  letter-spacing: 0.06em;
+}
