@@ -88,6 +88,9 @@ var (
 	titleCaser = cases.Title(language.Spanish)
 )
 
+// ServerName is the build's app name ("User" or "Staff").
+func ServerName() string { return _SERVER_NAME }
+
 func InitTemplate() {
 	_Tpl = tpl.New("base")
 	_Tpl.Funcs(tpl.FuncMap{
