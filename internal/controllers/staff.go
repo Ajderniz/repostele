@@ -251,18 +251,6 @@ func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
   return OK, nil
 }
 
-func UpdateStaffPassword(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveBadRequest(w, r, err); return }
-  oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
-
-  status, err := updateStaffPasssword(username, oldPassword, newPassword)
-  if err != nil { serveErr(w, r, status, err); return }
-
-  serveMsg(w, r, _MsgPasswordChanged)
-}
-
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(_CREDS_USERNAME).(string)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
@@ -287,16 +275,4 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
     "Params":  params,
     "HasNext": len(staff) == params.Limit,
   }, "list-staff")
-}
-
-func GetStaffFromUsername(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveBadRequest(w, r, err); return }
-
-  staff, err := models.GetStaffFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-
-  if staff.Username == "" { serveNoResults(w, r); return }
-  staff.PassHash = ""
-  serveData(w, r, staff)
 }

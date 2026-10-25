@@ -20,7 +20,6 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.OptUsername())
     r.Get("/",          controllers.GetItems)
-    r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
   r.Route("/register", func(r chi.Router){

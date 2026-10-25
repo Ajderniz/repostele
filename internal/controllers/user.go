@@ -28,18 +28,6 @@ func updateUserPassword(username, oldPassword, newPassword string) (int, error){
   return OK, nil
 }
 
-func UpdateUserPassword(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveBadRequest(w, r, err); return }
-  oldPassword, newPassword, err := getNewPasswordFromForm(r)
-  if err != nil { serveBadRequest(w, r, err); return }
-
-  status, err := updateUserPassword(username, oldPassword, newPassword)
-  if err != nil { serveErr(w, r, status, err); return }
-
-  serveMsg(w, r, _MsgPasswordChanged)
-}
-
 func deactivateUserAccount(
   w http.ResponseWriter,
   r *http.Request,
@@ -100,16 +88,4 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
     "Params":  params,
     "HasNext": len(users) == params.Limit,
   }, "list-users")
-}
-
-func GetUserFromUsername(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveInternalErr(w, r); return }
-
-  user, err := models.GetUserFromUsername(username)
-  if err != nil { serveInternalErr(w, r); return }
-
-  if user.Username == "" { serveNoResults(w, r); return }
-  user.PassHash = ""
-  serveData(w, r, user)
 }

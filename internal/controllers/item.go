@@ -113,19 +113,6 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   serveResponse(w, r, &data, OK, nil)
 }
 
-func GetItemFromID(w http.ResponseWriter, r *http.Request) {
-  idStr := chi.URLParam(r, models.ITEM_ID)
-  id, err := strconv.Atoi(idStr)
-  if err != nil { serveNoResults(w, r); return }
-
-  item, err := models.GetItemFromID(id)
-  if err != nil { serveInternalErr(w, r); return }
-
-  if item.Name == "" { serveNoResults(w, r); return }
-
-  serveData(w, r, item)
-}
-
 func GetItemEditForm(w http.ResponseWriter, r *http.Request) {
   idStr := chi.URLParam(r, models.ITEM_ID)
   id, err := strconv.Atoi(idStr)

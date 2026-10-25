@@ -26,7 +26,6 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Use(mymiddleware.CheckInit())
     r.Use(mymiddleware.OptUsername())
     r.Get("/",          controllers.GetItems)
-    r.Get("/item/{id}", controllers.GetItemFromID)
   })
 
   r.Route("/login", func(r chi.Router){
@@ -78,15 +77,11 @@ func RegisterRoutes(r *chi.Mux) error {
       r.Route("/staff", func(r chi.Router) {
         r.Get(  "/",                      controllers.GetStaffList)
         r.Post( "/",                      controllers.RegisterStaffAccount)
-        r.Get(  "/{username}",            controllers.GetStaffFromUsername)
-        r.Patch("/{username}/password",   controllers.UpdateStaffPassword)
         r.Patch("/deactivate/{username}", controllers.DeactivateStaffAccount)
       })
 
       r.Route("/users", func(r chi.Router) {
         r.Get(  "/",                      controllers.GetUserList)
-        r.Get(  "/{username}",            controllers.GetUserFromUsername)
-        r.Patch("/{username}/password",   controllers.UpdateUserPassword)
         r.Patch("/deactivate/{username}", controllers.DeactivateUserAccount)
       })
 
