@@ -42,7 +42,7 @@ func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err err
 }
 
 func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
-  fp := r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
+  fp := models.FingerprintFromContext(r.Context())
   if _MAX_REG_ACCS <= fp.AccsCreated {
     registerFormErr(w, r, Forbidden, errors.New("Se alcanzó el límite de creación de cuentas"))
     return
@@ -75,7 +75,7 @@ func UserLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
+  username := ctxUsername(r)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
@@ -86,7 +86,7 @@ func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
 }
 
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
+  username := ctxUsername(r)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil { serveInternalErrHX(w); return }
 

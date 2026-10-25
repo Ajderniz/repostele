@@ -12,8 +12,8 @@ import (
 func RequireAdminAuth() func(next http.Handler) http.Handler {
   return func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-      username := r.Context().Value(models.STAFF_USERNAME).(string)
-      staff, err := models.GetStaffFromUsername(username)
+      session, _ := models.SessionFromContext(r.Context())
+      staff, err := models.GetStaffFromUsername(session.User)
       if err != nil { w.WriteHeader(http.StatusInternalServerError); return }
       if staff.Username == "" { w.WriteHeader(http.StatusBadRequest); return }
       if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }

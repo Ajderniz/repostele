@@ -14,7 +14,6 @@ type Fingerprint struct {
 }
 
 const (
-	FINGERPRINT = "fingerprint"
 	_FINGERPRINTS = "fingerprints"
 	FINGERPRINT_ID = "id"
 	_FINGERPRINT_USER = "user"

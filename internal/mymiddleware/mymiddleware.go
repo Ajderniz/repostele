@@ -1,7 +1,6 @@
 package mymiddleware
 
 import (
-	"context"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -12,9 +11,6 @@ import (
 	"github.com/anhnmt/go-fingerprint"
 )
 
-const (
-  _CREDS_USERNAME = "username"
-)
 
 var (
   _ErrAuth = errors.New("Sin autorización")
@@ -66,8 +62,7 @@ func OptUsername() func(next http.Handler) http.Handler {
         return
       }
       if session.User != "" {
-        ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)
-        next.ServeHTTP(w, r.WithContext(ctx))
+        next.ServeHTTP(w, r.WithContext(models.WithSession(r.Context(), session)))
         return
       }
       next.ServeHTTP(w, r)
@@ -85,8 +80,7 @@ func RequireAuth() func(next http.Handler) http.Handler {
         w.WriteHeader(http.StatusUnauthorized)
         return
       }
-      ctx := context.WithValue(r.Context(), _CREDS_USERNAME, session.User)
-      next.ServeHTTP(w, r.WithContext(ctx))
+      next.ServeHTTP(w, r.WithContext(models.WithSession(r.Context(), session)))
     })
   }
 }
@@ -117,8 +111,7 @@ func GetFingerprint() func(next http.Handler) http.Handler {
         }
       }
 
-      ctx := context.WithValue(r.Context(), models.FINGERPRINT, fp)
-      next.ServeHTTP(w, r.WithContext(ctx))
+      next.ServeHTTP(w, r.WithContext(models.WithFingerprint(r.Context(), fp)))
     })
   }
 }

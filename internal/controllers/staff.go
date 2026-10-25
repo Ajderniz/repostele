@@ -199,7 +199,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
 }
 
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
+  username := ctxUsername(r)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
   if err != nil { serveInternalErrHX(w); return }
 
@@ -243,7 +243,7 @@ func updateStaffPasssword(username, oldPassword, newPassword string)(int,error){
 }
 
 func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(_CREDS_USERNAME).(string)
+  username := ctxUsername(r)
   oldPassword, newPassword, err := getNewPasswordFromForm(r)
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 

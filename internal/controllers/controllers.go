@@ -18,11 +18,15 @@ import (
 	"github.com/ajderniz/repostele/static"
 )
 
+// Context keys for handing a response to ServeMainTemplate.
+type _CtxKey int
 const (
-	_STATUS    = "ctx_status"
-	_ERR       = "ctx_err"
-	_MAIN_DATA = "main_data"
+	_STATUS _CtxKey = iota
+	_ERR
+	_MAIN_DATA
+)
 
+const (
 	OK = http.StatusOK
 	Created = http.StatusCreated
 	MovedPermanently = http.StatusMovedPermanently
@@ -172,12 +176,10 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	isStaff := false
 	isAdmin := false
 
-	usernameAny := r.Context().Value(_CREDS_USERNAME)
-	if usernameAny != nil {
-		username := usernameAny.(string)
-
+	session, hasSession := models.SessionFromContext(r.Context())
+	if hasSession {
 		isStaff = false
-		staff, err := models.GetStaffFromUsername(username)
+		staff, err := models.GetStaffFromUsername(session.User)
 		if err != nil { w.WriteHeader(InternalServerError); return }
 		if staff.Username != "" { isStaff = true }
 
@@ -194,7 +196,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		data = &_MainData{}
 	}
 	data.IsStaff = isStaff
-	if usernameAny != nil { data.Username = usernameAny.(string) }
+	if hasSession { data.Username = session.User }
 	data.IsAdmin = isAdmin
 	data.LoggedIn = loggedIn
 	data.IsUserApp = _SERVER_NAME == "User"
@@ -219,6 +221,12 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), InternalServerError)
 		return
 	}
+}
+
+// ctxUsername is the logged-in username set by the auth middleware ("" if none).
+func ctxUsername(r *http.Request) string {
+	s, _ := models.SessionFromContext(r.Context())
+	return s.User
 }
 
 func serveResponse(

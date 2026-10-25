@@ -1,6 +1,7 @@
 package models
 
 import (
+	"context"
 	"errors"
 	"log/slog"
 	"strconv"
@@ -35,6 +36,32 @@ const (
   _SESSION_FIELDS    = SESSION_TOKEN+","+SESSION_CSRF_TOKEN+","+ _SESSION_USER+
                       ","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES
 )
+
+// Request context keys. A private type keeps them from colliding with other packages.
+type _CtxKey int
+const (
+  _CTX_SESSION _CtxKey = iota
+  _CTX_FINGERPRINT
+)
+
+func WithSession(ctx context.Context, s Session) context.Context {
+  return context.WithValue(ctx, _CTX_SESSION, s)
+}
+
+// SessionFromContext returns the session set by the auth middleware, if any.
+func SessionFromContext(ctx context.Context) (Session, bool) {
+  s, ok := ctx.Value(_CTX_SESSION).(Session)
+  return s, ok
+}
+
+func WithFingerprint(ctx context.Context, fp Fingerprint) context.Context {
+  return context.WithValue(ctx, _CTX_FINGERPRINT, fp)
+}
+
+func FingerprintFromContext(ctx context.Context) Fingerprint {
+  fp, _ := ctx.Value(_CTX_FINGERPRINT).(Fingerprint)
+  return fp
+}
 
 var _ErrOpenSession = errors.New("No se pudo abrir una nueva sesión")
 

@@ -24,7 +24,7 @@ var (
 )
 
 func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Fingerprint, err error) {
-  fp = r.Context().Value(models.FINGERPRINT).(models.Fingerprint)
+  fp = models.FingerprintFromContext(r.Context())
   if _MAX_FAILED_LOGINS <= fp.FailedLogins {
     err = errors.New("Se alcanzó el límite de intentos de inicio de sesión")
   }

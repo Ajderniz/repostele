@@ -80,7 +80,7 @@ func serveOrderInternalErr(w http.ResponseWriter, r *http.Request) {
 // htmx), which sets HX-Request itself to get the small div-response
 // fragment back instead of a full-page render.
 func PostOrder(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   if latestOrder.RefNum != "" &&
@@ -246,7 +246,7 @@ func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   orders, err := models.GetAllOrdersFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   serveDataHX(w, r, map[string]any{"Orders": orders, "IsStaff": false, "ShowHistory": true}, "list-orders")
@@ -265,7 +265,7 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveOrderInternalErr(w, r); return }
   if order.User == "" { serveNoResults(w, r); return }
 
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   if username != order.User { serveNoResults(w, r); return }
 
   serveOrderDetail(w, r, order, false)
@@ -274,7 +274,7 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
 var _ErrCantModOrder = errors.New("No se puede modificar esta orden")
 
 func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   if latestOrder.RefNum == "" ||
@@ -291,7 +291,7 @@ func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetOrderRefView(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -302,7 +302,7 @@ func GetOrderRefView(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   if latestOrder.RefNum == "" ||
@@ -332,7 +332,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
 }
 
 func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
-  username := r.Context().Value(models.USER_USERNAME).(string)
+  username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveOrderInternalErr(w, r); return }
   if latestOrder.RefNum == "" ||
