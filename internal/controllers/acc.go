@@ -14,7 +14,6 @@ const (
 
 var (
 	_ErrBadCreds = errors.New("Credenciales inválidos")
-	_ErrAlreadyInit  = errors.New("El sistema ya está configurado")
 	_ErrSamePassword = errors.New("La contraseña es idéntica a la anterior")
 
 	_MsgAccNotFound = "Cuenta no encontrada"

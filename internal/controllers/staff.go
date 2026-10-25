@@ -20,6 +20,8 @@ const (
   _TEST_KEY = "1111111111111111"
 )
 
+var _ErrAlreadyInit = errors.New("El sistema ya está configurado")
+
 func checkInit(
   w http.ResponseWriter,
   r *http.Request,
