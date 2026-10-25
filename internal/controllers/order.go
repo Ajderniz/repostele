@@ -4,9 +4,9 @@ import (
 	"encoding/csv"
 	"errors"
 	"log/slog"
-	"math"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -20,48 +20,36 @@ const (
   _ORDER_COUNTER_MAX = 1000
 )
 
+// Order IDs are YYMMDD*1000 + a daily counter. _OrderDate/_OrderCounter hold
+// the last ID handed out; the zero date means "not loaded from the DB yet".
 var (
+  _OrderIDMu    sync.Mutex
   _OrderDate    = 0
   _OrderCounter = 0
 )
-
-func orderId2DateAndCounter(orderId int) (date, counter int) {
-  div     := float64(orderId) / _ORDER_COUNTER_MAX
-  date    = int(div)
-  counter = int(math.Round((div - float64(date)) * _ORDER_COUNTER_MAX))
-  return
-}
-
-func orderDateAndCounter2ID(date, counter int) int {
-  return (date * _ORDER_COUNTER_MAX) + counter
-}
 
 func getOrderDateInt() (date int) {
   date, _ = strconv.Atoi(time.Now().Format(_ORDER_DATE_FORMAT))
   return
 }
 
-func initOrderId() error {
-  orderId, err := models.GetLatestOrderID()
-  if err != nil { return err }
-  if orderId == 0 {
-    _OrderDate    = getOrderDateInt()
-    _OrderCounter = 1
-  } else {
-    _OrderDate, _OrderCounter = orderId2DateAndCounter(orderId)
-    updateOrderID()
-  }
-  return nil
-}
+// nextOrderID reserves the next ID. A failed insert leaves a gap, never a reuse.
+func nextOrderID() (int, error) {
+  _OrderIDMu.Lock()
+  defer _OrderIDMu.Unlock()
 
-func updateOrderID() {
-  now := getOrderDateInt()
-  if _OrderDate < now {
-    _OrderDate    = now
-    _OrderCounter = 1
-  } else {
-    _OrderCounter++
+  if _OrderDate == 0 {
+    latest, err := models.GetLatestOrderID()
+    if err != nil { return 0, err }
+    _OrderDate, _OrderCounter = latest/_ORDER_COUNTER_MAX, latest%_ORDER_COUNTER_MAX
   }
+  if today := getOrderDateInt(); _OrderDate < today {
+    _OrderDate, _OrderCounter = today, 0
+  }
+  if _ORDER_COUNTER_MAX-1 <= _OrderCounter { return 0, _ErrOrderIDMax }
+
+  _OrderCounter++
+  return _OrderDate*_ORDER_COUNTER_MAX + _OrderCounter, nil
 }
 
 type _OrderRequest struct {
@@ -129,17 +117,9 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     return
   }
 
-  if _OrderDate == 0 || _OrderCounter == 0 {
-    if err := initOrderId(); err != nil { serveOrderInternalErr(w, r); return }
-  }
+  orderId, err := nextOrderID()
+  if err != nil { slog.Error(err.Error()); serveOrderInternalErr(w, r); return }
 
-  if _ORDER_COUNTER_MAX - 1 < _OrderCounter {
-    slog.Error(_ErrOrderIDMax.Error())
-    serveOrderInternalErr(w, r)
-    return
-  }
-
-  orderId := orderDateAndCounter2ID(_OrderDate, _OrderCounter)
   err = models.InsertOrder(models.Order{
     Id:     orderId,
     User:   username,
@@ -150,8 +130,6 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     Items:  items,
   })
   if err != nil { serveOrderInternalErr(w, r); return }
-
-  updateOrderID()
 
   if r.Header.Get("HX-Request") == "true" {
     serveResponseHX(w, "Orden enviada. Esperando aprobación.", Created, nil)
