@@ -110,7 +110,7 @@ func InitTemplate() {
 }
 
 func ServeNav(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+	if !isHX(r) { http.NotFound(w, r); return }
 
 	username, role, loggedIn := checkSessionUser(r)
 
@@ -149,7 +149,7 @@ func ServeNav(w http.ResponseWriter, r *http.Request) {
 
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	path := chi.URLParam(r, "path")
-	if r.Header.Get("HX-Request") != "true" || path == "" {
+	if !isHX(r) || path == "" {
 		http.NotFound(w, r); return
 	}
 	err := _Tpl.ExecuteTemplate(w, path, nil)
@@ -281,11 +281,28 @@ func serveInternalErrHX(w http.ResponseWriter) {
 	serveResponseHX(w, _ErrInternal.Error(), InternalServerError, nil)
 }
 
+// isHX reports whether the request came from htmx (or a fetch that sets the header).
+func isHX(r *http.Request) bool {
+	return r.Header.Get("HX-Request") == "true"
+}
+
+// serveErrAuto answers with the div-response fragment for htmx requests and
+// the full error page otherwise.
+func serveErrAuto(w http.ResponseWriter, r *http.Request, status int, err error) {
+	if isHX(r) { serveResponseHX(w, err.Error(), status, nil); return }
+	serveErr(w, r, status, err)
+}
+
+func serveInternalErrAuto(w http.ResponseWriter, r *http.Request) {
+	if isHX(r) { serveInternalErrHX(w); return }
+	serveInternalErr(w, r)
+}
+
 // serveDataHX renders tplName directly (a bare partial, no page chrome) when
 // the request came from htmx, and falls back to the normal full-page
 // serveData otherwise.
 func serveDataHX(w http.ResponseWriter, r *http.Request, data any, tplName string) {
-	if r.Header.Get("HX-Request") == "true" {
+	if isHX(r) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := _Tpl.ExecuteTemplate(w, tplName, data); err != nil {
 			slog.Error(err.Error())

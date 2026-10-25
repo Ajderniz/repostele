@@ -11,7 +11,7 @@ import (
 )
 
 func ServeNotif(w http.ResponseWriter, r *http.Request) {
-	if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+	if !isHX(r) { http.NotFound(w, r); return }
 
 	username, role, loggedIn := checkSessionUser(r)
 	prev := r.URL.Query().Get("token")

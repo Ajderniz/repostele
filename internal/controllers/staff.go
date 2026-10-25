@@ -215,7 +215,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   status, err := deactivateStaffAccount(w, r, username, true)
   if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
-  if r.Header.Get("HX-Request") == "true" {
+  if isHX(r) {
     w.Header().Set("HX-Redirect", "/login")
     w.WriteHeader(OK)
     return

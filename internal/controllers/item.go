@@ -21,7 +21,7 @@ const (
 )
 
 func GetItemCreateForm(w http.ResponseWriter, r *http.Request) {
-  if r.Header.Get("HX-Request") != "true" { http.NotFound(w, r); return }
+  if !isHX(r) { http.NotFound(w, r); return }
   onLastPage := r.URL.Query().Get("hasNext") != "true"
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   _Tpl.ExecuteTemplate(w, "form-create-item", map[string]any{"OnLastPage": onLastPage})

@@ -31,7 +31,7 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 // div-response slot) — losing the fields on error would be a worse UX than
 // the extra render.
 func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err error) {
-  if r.Header.Get("HX-Request") == "true" {
+  if isHX(r) {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     w.WriteHeader(status)
     _Tpl.ExecuteTemplate(w, "div-msg", err.Error())
@@ -60,7 +60,7 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   err = models.InsertUserAccount(user, fp)
   if err != nil { registerFormErr(w, r, InternalServerError, err); return }
 
-  if r.Header.Get("HX-Request") == "true" {
+  if isHX(r) {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     w.WriteHeader(Created)
     _Tpl.ExecuteTemplate(w, "div-msg", _MsgAccCreated)
@@ -111,7 +111,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   status, err := deactivateUserAccount(w, r, user.Username, true)
   if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
-  if r.Header.Get("HX-Request") == "true" {
+  if isHX(r) {
     w.Header().Set("HX-Redirect", "/login")
     w.WriteHeader(OK)
     return
