@@ -16,7 +16,7 @@
       <li class="row-card" id="session-{{.Role}}-{{.User}}">
         <div class="row-card-head">
           <span class="row-card-id">{{.User}}</span>
-          <span class="row-card-status">{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</span>
+          <span class="row-card-status">{{if .Role.IsStaff}}Personal{{else}}Cliente{{end}}</span>
         </div>
         <dl class="row-card-fields">
           <div class="row-card-field">

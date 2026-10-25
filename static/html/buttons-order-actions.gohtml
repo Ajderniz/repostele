@@ -2,7 +2,7 @@
 {{$msg := printf "msg-%v" .Id}}{{if .Card}}{{$msg = printf "card-msg-%v" .Id}}{{end}}
 
 {{if .IsStaff}}
-  {{if or (eq .Status 0) (eq .Status 1)}}
+  {{if .Status.InReview}}
     <button
     class="btn btn-compact btn-primary"
     hx-patch="/dashboard/orders/{{.Id}}/status"
@@ -17,7 +17,7 @@
     hx-target="#{{$msg}}"
     hx-swap="innerHTML"
     >Denegar</button>
-  {{else if eq .Status 3}}
+  {{else if .Status.IsAccepted}}
     <button
     class="btn btn-compact btn-primary"
     hx-patch="/dashboard/orders/{{.Id}}/status"
@@ -27,7 +27,7 @@
     >Marcar cumplida</button>
   {{end}}
 {{else}}
-  {{if or (eq .Status 0) (eq .Status 1)}}
+  {{if .Status.InReview}}
     <button
     class="btn btn-compact"
     hx-get="/order/edit-form"

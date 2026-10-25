@@ -12,9 +12,11 @@ var ErrSessionNotFound = errors.New("La sesión no existe")
 
 type SessionRole int
 const (
-  SESSION_ROLE_USER = iota
+  SESSION_ROLE_USER SessionRole = iota
   SESSION_ROLE_STAFF
 )
+
+func (r SessionRole) IsStaff() bool { return r == SESSION_ROLE_STAFF }
 
 type Session struct {
   SessionToken string      `db:"session_token"`

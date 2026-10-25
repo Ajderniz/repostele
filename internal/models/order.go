@@ -15,6 +15,16 @@ const (
   ORDER_STATUS_FULFILLED
 )
 
+// Status helpers for templates, which can't name the constants.
+func (s OrderStatus) IsUnreviewed() bool { return s == ORDER_STATUS_UNREVIEWED }
+func (s OrderStatus) IsDenied() bool     { return s == ORDER_STATUS_DENIED }
+func (s OrderStatus) IsAccepted() bool   { return s == ORDER_STATUS_ACCEPTED }
+func (s OrderStatus) IsFulfilled() bool  { return s == ORDER_STATUS_FULFILLED }
+
+// InReview: waiting on staff (unreviewed or denied). Staff can accept or deny;
+// the customer can still edit the reference.
+func (s OrderStatus) InReview() bool { return s.IsUnreviewed() || s.IsDenied() }
+
 type ItemIdQuant map[int]int
 
 type Order struct {
@@ -37,8 +47,7 @@ func (o Order) Pending() bool {
 
 // Editable: the customer may still change the reference (unreviewed or denied).
 func (o Order) Editable() bool {
-  return o.RefNum != "" &&
-    (o.Status == ORDER_STATUS_UNREVIEWED || o.Status == ORDER_STATUS_DENIED)
+  return o.RefNum != "" && o.Status.InReview()
 }
 
 const (

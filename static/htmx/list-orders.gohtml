@@ -57,8 +57,8 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
       {{$s := $o.Status}}
       <div class="order-track">
         <span class="done">Recibida</span>
-        <span class="{{if eq $s 0}}on{{else if eq $s 1}}denied{{else}}done{{end}}">Revisión</span>
-        <span class="{{if eq $s 3}}on{{else if eq $s 4}}done{{end}}">Lista</span>
+        <span class="{{if $s.IsUnreviewed}}on{{else if $s.IsDenied}}denied{{else}}done{{end}}">Revisión</span>
+        <span class="{{if $s.IsAccepted}}on{{else if $s.IsFulfilled}}done{{end}}">Lista</span>
       </div>
       <span class="order-ref-label">Referencia SINPE</span>
     {{end}}
@@ -77,7 +77,7 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
 {{end}}
 
 {{define "order-status"}}
-<span id="order-status-{{.Id}}" class="row-card-status{{if eq .Status 0}} status-unreviewed{{else if eq .Status 1}} status-denied{{else if eq .Status 3}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
+<span id="order-status-{{.Id}}" class="row-card-status{{if .Status.IsUnreviewed}} status-unreviewed{{else if .Status.IsDenied}} status-denied{{else if .Status.IsAccepted}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
 {{end}}
 
 {{define "order-actions"}}
