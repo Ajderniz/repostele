@@ -267,10 +267,24 @@ func serveResponseHX(
 	status      int,
 	nextAction 	*_NextAction,
 ) {
-	data := _HXData {Msg: msg, NextAction: nextAction }
+	serveOOB(w, status, _HXData{Msg: msg, NextAction: nextAction})
+}
+
+// _Frag is an extra template rendered after the response, usually an OOB swap.
+type _Frag struct {
+	Name string
+	Data any
+}
+
+func frag(name string, data any) _Frag { return _Frag{name, data} }
+
+// serveOOB writes the div-response message, its toast, then each fragment.
+func serveOOB(w http.ResponseWriter, status int, data _HXData, frags ..._Frag) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
-	_Tpl.ExecuteTemplate(w, "div-response", data)
-	_Tpl.ExecuteTemplate(w, "toast", msg)
+	for _, f := range append([]_Frag{{"div-response", data}, {"toast", data.Msg}}, frags...) {
+		if err := _Tpl.ExecuteTemplate(w, f.Name, f.Data); err != nil { slog.Error(err.Error()) }
+	}
 }
 
 func serveBadRequestHX(w http.ResponseWriter, msg string) {

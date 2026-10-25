@@ -63,15 +63,11 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErrHX(w); return }
   item.Id = id
 
-  msg := "Se creó el item"
-  w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  w.WriteHeader(Created)
-  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg, NextAction: &_NextAction{
+  serveOOB(w, Created, _HXData{Msg: "Se creó el item", NextAction: &_NextAction{
     URL: "htmx/form-create-item",
     Name: "Crear otro",
     HTMX: true,
   }})
-  _Tpl.ExecuteTemplate(w, "toast", msg)
 
   onLastPage := r.FormValue("on_last_page") == "true"
   if onLastPage {
@@ -175,11 +171,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   item, err := models.GetItemFromID(id)
   if err != nil { serveInternalErrHX(w); return }
 
-  w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  w.WriteHeader(OK)
-  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se actualizó el ítem"})
-  _Tpl.ExecuteTemplate(w, "toast", "Se actualizó el ítem")
-  _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
+  serveOOB(w, OK, _HXData{Msg: "Se actualizó el ítem"}, frag("menu-item", map[string]any{
     "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": true,
-  })
+  }))
 }

@@ -321,14 +321,13 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErrAuto(w, r); return }
 
   if isHX(r) {
-    w.Header().Set("Content-Type", "text/html; charset=utf-8")
-    _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: "Se canceló la orden"})
-    _Tpl.ExecuteTemplate(w, "toast", "Se canceló la orden")
     // Row stays (customer list shows history); status and actions update in place.
-    _Tpl.ExecuteTemplate(w, "order-status", map[string]any{"Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "OOB": true})
-    _Tpl.ExecuteTemplate(w, "order-actions", map[string]any{
-      "Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "IsStaff": false, "OOB": true,
-    })
+    serveOOB(w, OK, _HXData{Msg: "Se canceló la orden"},
+      frag("order-status", map[string]any{"Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "OOB": true}),
+      frag("order-actions", map[string]any{
+        "Id": latestOrder.Id, "Status": models.ORDER_STATUS_CANCELLED, "IsStaff": false, "OOB": true,
+      }),
+    )
     return
   }
   serveMsg(w, r, "Se canceló la orden")
@@ -365,13 +364,11 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   err = models.UpdateOrderStatus(order.Id, setStatus)
   if err != nil { serveInternalErrHX(w); return }
 
-  msg := "Se actualizó el estado de la orden"
-  w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg})
-  _Tpl.ExecuteTemplate(w, "toast", msg)
   // Rows update in place; the order lists re-sync from the server on order-changed.
-  _Tpl.ExecuteTemplate(w, "order-status", map[string]any{"Id": order.Id, "Status": setStatus, "OOB": true})
-  _Tpl.ExecuteTemplate(w, "order-actions", map[string]any{
-    "Id": order.Id, "Status": setStatus, "IsStaff": true, "OOB": true,
-  })
+  serveOOB(w, OK, _HXData{Msg: "Se actualizó el estado de la orden"},
+    frag("order-status", map[string]any{"Id": order.Id, "Status": setStatus, "OOB": true}),
+    frag("order-actions", map[string]any{
+      "Id": order.Id, "Status": setStatus, "IsStaff": true, "OOB": true,
+    }),
+  )
 }

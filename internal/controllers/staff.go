@@ -191,11 +191,9 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   status, err := deactivateStaffAccount(w, r, username, false)
   if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
 
-  w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: _MsgAccDeactivated})
-  _Tpl.ExecuteTemplate(w, "toast", _MsgAccDeactivated)
-  _Tpl.ExecuteTemplate(w, "staff-active-cell", map[string]any{"Username": username, "Active": false, "OOB": true})
-  _Tpl.ExecuteTemplate(w, "staff-actions-cell", map[string]any{"Username": username, "Active": false, "OOB": true})
+  cell := map[string]any{"Username": username, "Active": false, "OOB": true}
+  serveOOB(w, OK, _HXData{Msg: _MsgAccDeactivated},
+    frag("staff-active-cell", cell), frag("staff-actions-cell", cell))
 }
 
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
