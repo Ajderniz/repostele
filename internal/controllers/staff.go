@@ -194,7 +194,7 @@ func deactivateStaffAccount(
 }
 
 func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   status, err := deactivateStaffAccount(w, r, username, false)

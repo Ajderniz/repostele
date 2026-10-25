@@ -53,8 +53,8 @@ func deactivateUserAccount(
 }
 
 func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
-  username, err := bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
-  if err != nil { serveBadRequest(w, r, err); return }
+  username, err := bind.URLParam(r, _CREDS_USERNAME, _CREDS_VALIDATE)
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   nextAction := _NextAction{
     URL: "/dashboard/admin/users",

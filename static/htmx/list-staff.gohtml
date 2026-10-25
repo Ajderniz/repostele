@@ -59,7 +59,6 @@
   <button
   class="btn btn-compact btn-danger"
   hx-patch="/dashboard/admin/staff/deactivate/{{.Username}}"
-  hx-vals='{"username":"{{.Username}}"}'
   hx-target="#msg-staff-{{.Username}}"
   hx-swap="innerHTML"
   hx-confirm="¿Desactivar la cuenta de {{.Username}}?"
