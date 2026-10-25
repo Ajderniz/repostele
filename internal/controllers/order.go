@@ -72,11 +72,6 @@ type _OrderRequest struct {
 var _ErrNoItems = errors.New("No se ordenaron suficientes ítemes")
 var _ErrOrderIDMax = errors.New("Se excedió el límite de órdenes diarias")
 
-// PostOrder is reached from the cart page via a plain fetch() call (not
-// htmx), which sets HX-Request itself to get the small div-response
-// fragment back instead of a full-page render — there's no main-order
-// template, so the non-HX path here is (like the rest of /order's
-// full-page GETs) only exercised by direct, non-JS requests.
 func serveOrderErr(w http.ResponseWriter, r *http.Request, status int, err error) {
   if r.Header.Get("HX-Request") == "true" {
     serveResponseHX(w, err.Error(), status, nil)
@@ -93,6 +88,9 @@ func serveOrderInternalErr(w http.ResponseWriter, r *http.Request) {
   serveInternalErr(w, r)
 }
 
+// PostOrder is reached from the cart page via a plain fetch() call (not
+// htmx), which sets HX-Request itself to get the small div-response
+// fragment back instead of a full-page render.
 func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := r.Context().Value(models.USER_USERNAME).(string)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
