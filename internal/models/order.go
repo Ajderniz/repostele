@@ -28,6 +28,19 @@ type Order struct {
   Items  ItemIdQuant                `json:"items"`
 }
 
+// Pending: the order exists and is still open (unreviewed, denied or accepted).
+// Customers may cancel it; only one may be pending per user.
+func (o Order) Pending() bool {
+  return o.RefNum != "" &&
+    o.Status != ORDER_STATUS_CANCELLED && o.Status != ORDER_STATUS_FULFILLED
+}
+
+// Editable: the customer may still change the reference (unreviewed or denied).
+func (o Order) Editable() bool {
+  return o.RefNum != "" &&
+    (o.Status == ORDER_STATUS_UNREVIEWED || o.Status == ORDER_STATUS_DENIED)
+}
+
 const (
   _ORDERS        = "orders"
   ORDER_ID       = "id"

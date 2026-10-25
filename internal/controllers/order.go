@@ -67,9 +67,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErrAuto(w, r); return }
-  if latestOrder.RefNum != "" &&
-     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
-     latestOrder.Status != models.ORDER_STATUS_FULFILLED {
+  if latestOrder.Pending() {
     serveErrAuto(w, r, TooManyRequests, errors.New(
       "Se permite solo una orden pendiente por usuario"),
     )
@@ -261,9 +259,7 @@ func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErrAuto(w, r); return }
-  if latestOrder.RefNum == "" ||
-     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
-      latestOrder.Status != models.ORDER_STATUS_DENIED) {
+  if !latestOrder.Editable() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
   }
@@ -289,9 +285,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErrAuto(w, r); return }
-  if latestOrder.RefNum == "" ||
-     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
-      latestOrder.Status != models.ORDER_STATUS_DENIED) {
+  if !latestOrder.Editable() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
   }
@@ -319,10 +313,7 @@ func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErrAuto(w, r); return }
-  if latestOrder.RefNum == "" ||
-     (latestOrder.Status != models.ORDER_STATUS_UNREVIEWED &&
-      latestOrder.Status != models.ORDER_STATUS_DENIED &&
-      latestOrder.Status != models.ORDER_STATUS_ACCEPTED) {
+  if !latestOrder.Pending() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
   }

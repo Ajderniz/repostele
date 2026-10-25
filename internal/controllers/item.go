@@ -102,9 +102,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
     order, err := models.GetLatestOrderFromUsername(session.User)
     if err != nil {
       slog.Error(err.Error())
-    } else if order.RefNum != "" &&
-       order.Status != models.ORDER_STATUS_CANCELLED &&
-       order.Status != models.ORDER_STATUS_FULFILLED {
+    } else if order.Pending() {
       data.CurrentOrder = &order
     }
   }

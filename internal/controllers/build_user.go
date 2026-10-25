@@ -101,9 +101,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
 
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { serveInternalErrHX(w); return }
-  if latestOrder.RefNum != "" &&
-     latestOrder.Status != models.ORDER_STATUS_CANCELLED &&
-     latestOrder.Status != models.ORDER_STATUS_FULFILLED {
+  if latestOrder.Pending() {
     serveResponseHX(w, "Hay una orden pendiente", Conflict, nil)
     return
   }

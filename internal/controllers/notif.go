@@ -55,9 +55,7 @@ func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
 func serveUserNotif(w http.ResponseWriter, username, prev string, silent bool) {
 	order, err := models.GetLatestOrderFromUsername(username)
 	token := ""
-	active := err == nil && order.RefNum != "" &&
-		order.Status != models.ORDER_STATUS_CANCELLED &&
-		order.Status != models.ORDER_STATUS_FULFILLED
+	active := err == nil && order.Pending()
 	if err == nil && order.RefNum != "" {
 		token = fmt.Sprintf("%d|%d|%s|%d", order.Id, order.Status, order.RefNum, order.Updated)
 	}
