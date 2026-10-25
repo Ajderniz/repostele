@@ -10,11 +10,7 @@
     <a class="btn btn-compact" href="/dashboard/orders/history/export?sort={{.Params.Sort}}&dir={{.Params.Dir}}" download>Exportar CSV</a>
   </div>
 {{end}}
-{{$anyVisible := false}}
-{{range .Orders}}
-  {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}{{$anyVisible = true}}{{end}}
-{{end}}
-{{if not $anyVisible}}
+{{if not .Orders}}
   <p class="empty-msg">No hay órdenes</p>
 {{else}}
   {{if $isStaff}}
@@ -27,9 +23,7 @@
   {{end}}
   <ul class="order-list">
     {{range .Orders}}
-      {{if or $showHistory (not (or (eq .Status 2) (eq .Status 4)))}}
-        {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Aside" $aside)}}
-      {{end}}
+      {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Aside" $aside)}}
     {{end}}
   </ul>
   {{if $isStaff}}
