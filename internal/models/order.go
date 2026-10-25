@@ -174,30 +174,19 @@ func GetPendingOrders(params *SelectParams) ([]Order, error) {
   return orders, nil
 }
 
-func GetOrderHistory(params *SelectParams) ([]Order, error) {
+// GetOrderHistory lists closed orders; paged applies params' start and limit.
+func GetOrderHistory(params *SelectParams, paged bool) ([]Order, error) {
   orders := []Order{}
   params.Fix(_OrderSortFields)
-  err := dbSelect(&orders,
-    "SELECT * FROM "+_ORDERS+" "+
+  query := "SELECT * FROM "+_ORDERS+" "+
     "WHERE "+ORDER_STATUS+" IN (?, ?) "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir)+
-    " LIMIT ?, ?",
-    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
-    params.Start, params.Limit,
-  )
-  if err != nil { return []Order{}, _ErrGetOrders }
-  return orders, nil
-}
-
-func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
-  orders := []Order{}
-  params.Fix(_OrderSortFields)
-  err := dbSelect(&orders,
-    "SELECT * FROM "+_ORDERS+" "+
-    "WHERE "+ORDER_STATUS+" IN (?, ?) "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir),
-    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
-  )
+    "ORDER BY "+params.Sort+" "+string(params.Dir)
+  args := []any{ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED}
+  if paged {
+    query += " LIMIT ?, ?"
+    args = append(args, params.Start, params.Limit)
+  }
+  err := dbSelect(&orders, query, args...)
   if err != nil { return []Order{}, _ErrGetOrders }
   return orders, nil
 }

@@ -192,7 +192,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetOrderHistory(&params)
+  orders, err := models.GetOrderHistory(&params, true)
   if err != nil { serveInternalErr(w, r); return }
 
   // A full-panel swap (tab, sort, paging) gets the list plus its aside; an
@@ -220,7 +220,7 @@ func ExportOrderHistory(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetAllOrderHistory(&params)
+  orders, err := models.GetOrderHistory(&params, false)
   if err != nil { serveInternalErr(w, r); return }
 
   w.Header().Set("Content-Type", "text/csv; charset=utf-8")
