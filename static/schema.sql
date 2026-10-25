@@ -4,8 +4,7 @@ CREATE TABLE IF NOT EXISTS "fingerprints" (
 	"expires"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "expires"),
 	"failed_logins"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "failed_logins"),
 	"accs_created"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "accs_created"),
-	PRIMARY KEY("id"),
-	FOREIGN KEY("user") REFERENCES "sessions"("user")
+	PRIMARY KEY("id")
 );
 CREATE TABLE IF NOT EXISTS "items" (
 	"id"	INTEGER,
@@ -44,12 +43,11 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 	"role"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "role" AND "role" <= 1),
 	"starts"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "starts"),
 	"expires"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "expires"),
-	PRIMARY KEY("session_token"),
-	FOREIGN KEY("user") REFERENCES "users"("username")
+	PRIMARY KEY("session_token")
 );
 CREATE TABLE IF NOT EXISTS "staff" (
 	"username"	TEXT CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
-	"pass_hash"	TEXT NOT NULL UNIQUE,
+	"pass_hash"	TEXT NOT NULL,
 	"full_name"	TEXT NOT NULL,
 	"time_created"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "time_created"),
 	"active"	INTEGER NOT NULL DEFAULT 1 CHECK("active" IN (0, 1)),
@@ -58,7 +56,7 @@ CREATE TABLE IF NOT EXISTS "staff" (
 );
 CREATE TABLE IF NOT EXISTS "users" (
 	"username"	TEXT CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
-	"pass_hash"	TEXT NOT NULL UNIQUE,
+	"pass_hash"	TEXT NOT NULL,
 	"time_created"	INTEGER NOT NULL,
 	"active"	INTEGER NOT NULL DEFAULT 1 CHECK("active" IN (0, 1)),
 	PRIMARY KEY("username")
