@@ -40,5 +40,5 @@ run:
 	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
 
 clean:
-	rm -rf $(BIN_DIR)
-	rm -rf $(STYLE_DST)
+	rm -f $(USER_BIN) $(STAFF_BIN)
+	rm -f $(STYLE_DST)
