@@ -15,7 +15,7 @@ LAST_BUILD=.last_build
 
 PORT=8080
 
-.PHONY: run clean
+.PHONY: all user staff style.css vet run clean
 
 all: style.css user staff
 
@@ -31,6 +31,10 @@ staff:
 
 style.css:
 	sass $(STYLE_SRC) $(STYLE_DST)
+
+vet:
+	go vet -tags=USER ./...
+	go vet -tags=STAFF ./...
 
 run:
 	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
