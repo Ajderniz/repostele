@@ -234,7 +234,7 @@ func GetAllOrdersFromUsername(username string) ([]Order, error) {
   err := dbSelect(&orders,
     "SELECT * "+
     "FROM "+_ORDERS+" "+
-    "WHERE "+_ORDER_USER+" = ?"+
+    "WHERE "+_ORDER_USER+" = ? "+
     "ORDER BY "+_ORDER_TIME+" DESC",
     username,
   )
