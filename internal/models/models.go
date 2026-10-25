@@ -150,9 +150,7 @@ func dbSelectList(
     " LIMIT ?, ?",
     params.Start, params.Limit,
   )
-  if dbSelectErr(err) != nil {
-    slog.Error(err.Error())
-    return errors.New("Error de selección")
-  }
+  // dbSelect already logged it.
+  if err != nil { return errors.New("Error de selección") }
   return nil
 }
