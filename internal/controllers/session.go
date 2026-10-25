@@ -49,7 +49,7 @@ func openSession(
 
   expires := time.Now().Add(24 * time.Hour)
 
-  otherSession, err := models.GetLatestOpenSessionFromUsername(username)
+  otherSession, err := models.GetLatestOpenSessionFromUsername(username, role)
   if err != nil { return err }
 
   if otherSession.SessionToken != "" {
@@ -110,15 +110,18 @@ func closeSession(w http.ResponseWriter, sid string) error {
 func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   username, err := bind.URLParam(r, _CREDS_USERNAME, "required")
   if err != nil { serveBadRequestHX(w, err.Error()); return }
+  roleStr, err := bind.URLParam(r, "role", "required,oneof=0 1")
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
+  role, _ := strconv.Atoi(roleStr)
 
-  err = models.CloseSessionForUsername(username)
+  err = models.CloseSessionForUsername(username, models.SessionRole(role))
   if err != nil { serveInternalErrHX(w); return }
 
   msg := "La sesión fue cerrada"
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   _Tpl.ExecuteTemplate(w, "div-response", _HXData{Msg: msg})
   _Tpl.ExecuteTemplate(w, "toast", msg)
-  _Tpl.ExecuteTemplate(w, "oob-delete", "session-"+username)
+  _Tpl.ExecuteTemplate(w, "oob-delete", "session-"+roleStr+"-"+username)
 }
 
 func CloseAllSessions(w http.ResponseWriter, r *http.Request) {

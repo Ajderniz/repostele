@@ -109,15 +109,17 @@ func GetSessionFromID(sid string) (Session, error) {
   return session, nil
 }
 
-func GetLatestOpenSessionFromUsername(username string) (Session, error) {
+// Usernames are unique per table, not across users and staff, so session
+// lookups by username also filter by role.
+func GetLatestOpenSessionFromUsername(username string, role SessionRole) (Session, error) {
   session := Session{}
   err := dbGet(&session,
     "SELECT * "+
     "FROM "+_SESSIONS+" "+
-    "WHERE "+_SESSION_USER+" = ? AND ? < "+_SESSION_EXPIRES+" "+
+    "WHERE "+_SESSION_USER+" = ? AND "+_SESSION_ROLE+" = ? AND ? < "+_SESSION_EXPIRES+" "+
     "ORDER BY "+_SESSION_EXPIRES+" DESC "+
     "LIMIT 1",
-    username, time.Now().Unix(),
+    username, role, time.Now().Unix(),
   )
   if dbSelectErr(err) != nil { return Session{}, err }
   return session, nil
@@ -131,9 +133,11 @@ func CloseSession(sessionID string) error {
   return nil
 }
 
-func CloseSessionForUsername(username string) error {
-  _, err := dbUpdateTableField(
-    _SESSIONS, _SESSION_EXPIRES, time.Now().Unix(), _SESSION_USER, username,
+func CloseSessionForUsername(username string, role SessionRole) error {
+  _, err := dbBeginExecAndCommit(
+    "UPDATE "+_SESSIONS+" SET "+_SESSION_EXPIRES+" = ? "+
+    "WHERE "+_SESSION_USER+" = ? AND "+_SESSION_ROLE+" = ?",
+    time.Now().Unix(), username, role,
   )
   if err != nil { return _ErrCloseSession }
   return nil

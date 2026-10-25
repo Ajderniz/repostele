@@ -173,7 +173,7 @@ func deactivateStaffAccount(
     err = closeSession(w, sid.Value)
     if err != nil { return InternalServerError, err }
   } else {
-    if err := models.CloseSessionForUsername(username); err != nil {
+    if err := models.CloseSessionForUsername(username, models.SESSION_ROLE_STAFF); err != nil {
       return InternalServerError, err
     }
   }

@@ -13,7 +13,7 @@
     </div>
     <ul class="row-card-list">
       {{range .Sessions}}
-      <li class="row-card" id="session-{{.User}}">
+      <li class="row-card" id="session-{{.Role}}-{{.User}}">
         <div class="row-card-head">
           <span class="row-card-id">{{.User}}</span>
           <span class="row-card-status">{{if eq .Role 1}}Personal{{else}}Cliente{{end}}</span>
@@ -31,12 +31,12 @@
         <div class="row-card-actions">
           <button
           class="btn btn-compact btn-danger"
-          hx-patch="/dashboard/admin/sessions/close/{{.User}}"
-          hx-target="#msg-session-{{.User}}"
+          hx-patch="/dashboard/admin/sessions/close/{{.Role}}/{{.User}}"
+          hx-target="#msg-session-{{.Role}}-{{.User}}"
           hx-swap="innerHTML"
           hx-confirm="¿Cerrar la sesión de {{.User}}?"
           >Cerrar sesión</button>
-          <span id="msg-session-{{.User}}" class="row-msg"></span>
+          <span id="msg-session-{{.Role}}-{{.User}}" class="row-msg"></span>
         </div>
       </li>
       {{end}}
