@@ -22,7 +22,7 @@
     <nav
     id="site-nav"
     hx-get="/htmx/nav"
-    hx-trigger="load, every 30s"
+    hx-trigger="load, every 30s [document.visibilityState=='visible']"
     hx-swap="innerHTML"
     ></nav>
   {{end}}
@@ -40,7 +40,7 @@
   id="notif-poll"
   data-token=""
   hx-get="/htmx/notif"
-  hx-trigger="load, every 10s, notif-sync"
+  hx-trigger="load, every 10s [document.visibilityState=='visible'], notif-sync"
   hx-vals="js:{...notifParams()}"
   hx-swap="none"
   hidden

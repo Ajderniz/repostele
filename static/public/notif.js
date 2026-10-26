@@ -33,3 +33,9 @@ document.addEventListener('htmx:afterRequest', function (e) {
   const verb = (e.detail.requestConfig || {}).verb;
   if (verb && verb !== 'get' && e.detail.successful) notifyWrite();
 });
+
+// Polls pause in background tabs; catch up as soon as the tab is shown again.
+document.addEventListener('visibilitychange', function () {
+  const poll = document.getElementById('notif-poll');
+  if (poll && document.visibilityState === 'visible') htmx.trigger(poll, 'notif-sync');
+});
