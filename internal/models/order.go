@@ -266,23 +266,15 @@ func GetOrderFromID(id int) (Order, error) {
   return order, nil
 }
 
-// GetOrdersFromUsername pages through a customer's orders. hasNext comes
-// from fetching one row past the page.
-func GetOrdersFromUsername(username string, params *SelectParams) (orders []Order, hasNext bool, err error) {
-  orders = []Order{}
-  params.Fix(_OrderSortFields)
-  err = dbSelect(&orders,
-    "SELECT * "+
-    "FROM "+_ORDERS+" "+
-    "WHERE "+_ORDER_USER+" = ? "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir)+
-    " LIMIT ?, ?",
-    username, params.Start, params.Limit+1,
+// GetOrdersFromUsername pages through a customer's orders.
+func GetOrdersFromUsername(username string, params *SelectParams) ([]Order, bool, error) {
+  orders, hasNext, err := selectPage[Order](
+    "SELECT * FROM "+_ORDERS+" WHERE "+_ORDER_USER+" = ?",
+    params, _OrderSortFields, username,
   )
   if err != nil {
     return []Order{}, false, errors.New("No se pudo acceder a la lista de órdenes")
   }
-  if len(orders) > params.Limit { orders, hasNext = orders[:params.Limit], true }
   return orders, hasNext, nil
 }
 

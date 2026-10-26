@@ -167,6 +167,26 @@ func dbUpdateTableField(
   return
 }
 
+// selectPage runs query (a SELECT with no ORDER BY or LIMIT) for the page in
+// params. It fetches one row past the page, so hasNext is exact.
+func selectPage[T any](
+  query string,
+  params *SelectParams,
+  sortFields _SortFields,
+  args ...any,
+) (rows []T, hasNext bool, err error) {
+
+  params.Fix(sortFields)
+  rows = []T{}
+  err = dbSelect(&rows,
+    query+" ORDER BY "+params.Sort+" "+string(params.Dir)+" LIMIT ?, ?",
+    append(args, params.Start, params.Limit+1)...,
+  )
+  if err != nil { return []T{}, false, err }
+  if len(rows) > params.Limit { return rows[:params.Limit], true, nil }
+  return rows, false, nil
+}
+
 func dbSelectList(
   dst any,
   sel, from string,

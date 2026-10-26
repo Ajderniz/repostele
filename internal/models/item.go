@@ -48,20 +48,14 @@ func InsertItem(item Item) (int, error) {
   return int(id), nil
 }
 
-// GetItems pages through the menu; unavailable items are left out unless
-// includeUnavailable. hasNext comes from fetching one row past the page.
-func GetItems(params *SelectParams, includeUnavailable bool) (items []Item, hasNext bool, err error) {
-  items = []Item{}
-  from := _ITEMS
-  if !includeUnavailable { from += " WHERE "+_ITEM_AVAILABLE+" = 1" }
-  params.Fix(_ItemSortFields)
-  params.Limit++
-  err = dbSelectList(&items, "*", from, params, _ItemSortFields)
-  params.Limit--
+// GetItems pages through the menu; unavailable items are left out unless includeUnavailable.
+func GetItems(params *SelectParams, includeUnavailable bool) ([]Item, bool, error) {
+  query := "SELECT * FROM "+_ITEMS
+  if !includeUnavailable { query += " WHERE "+_ITEM_AVAILABLE+" = 1" }
+  items, hasNext, err := selectPage[Item](query, params, _ItemSortFields)
   if err != nil {
     return []Item{}, false, errors.New("No se pudo acceder a la lista de ítemes")
   }
-  if len(items) > params.Limit { items, hasNext = items[:params.Limit], true }
   return items, hasNext, nil
 }
 
