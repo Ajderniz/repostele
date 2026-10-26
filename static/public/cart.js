@@ -61,6 +61,37 @@ function refreshCart() {
   renderCart(cart);
 }
 
+// The cart page carries the current menu; drop items no longer offered and
+// refresh stored names and prices. Runs once per cart page load.
+function reconcileCart() {
+  const list = document.getElementById('cart-list');
+  if (!list || !list.dataset.items) return;
+  let menu;
+  try { menu = JSON.parse(list.dataset.items); } catch (e) { return; }
+  const current = {};
+  menu.forEach(it => { current[it.id] = it; });
+
+  const cart = readCart();
+  let changed = false;
+  Object.keys(cart).forEach(id => {
+    const it = current[id];
+    if (!it) { delete cart[id]; changed = true; return; }
+    if (cart[id].name !== it.name || cart[id].price !== it.price) {
+      cart[id].name = it.name;
+      cart[id].price = it.price;
+      changed = true;
+    }
+  });
+  if (!changed) return;
+  writeCart(cart);
+  refreshCart();
+  const toast = document.getElementById('toast');
+  if (toast && typeof showToast === 'function') {
+    toast.textContent = 'El carrito se actualizó con los precios actuales';
+    showToast();
+  }
+}
+
 // --- views ---
 
 function updateNavBadge(cart) {
@@ -298,3 +329,4 @@ document.body.addEventListener('input', function (e) {
 });
 
 document.body.addEventListener('htmx:load', refreshCart);
+document.addEventListener('DOMContentLoaded', reconcileCart);
