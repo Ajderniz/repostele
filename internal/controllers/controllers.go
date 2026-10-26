@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	tpl "html/template"
@@ -202,11 +203,9 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	var errStr string
 	if errAny != nil { errStr = errAny.(error).Error() }
 
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	statusAny := r.Context().Value(_STATUS)
-	if statusAny != nil { w.WriteHeader(statusAny.(int)) }
-
-	err := _Tpl.Execute(w, _TplData{
+	// Render fully before writing, so a template error gives a clean 500, not half a page.
+	var buf bytes.Buffer
+	err := _Tpl.Execute(&buf, _TplData{
 		Title: titleCaser.String(section),
 		Server: _SERVER_NAME,
 		Init: init, 
@@ -216,9 +215,13 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		slog.Error(err.Error())
-		http.Error(w, err.Error(), InternalServerError)
+		http.Error(w, _ErrInternal.Error(), InternalServerError)
 		return
 	}
+
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	if status, ok := r.Context().Value(_STATUS).(int); ok { w.WriteHeader(status) }
+	buf.WriteTo(w)
 }
 
 // ctxUsername is the logged-in username set by the auth middleware ("" if none).
