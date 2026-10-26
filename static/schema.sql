@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS "order_items" (
 	"item_id"	INTEGER NOT NULL,
 	"quant"	INTEGER NOT NULL DEFAULT 1 CHECK(1 <= "quant" AND "quant" <= 4),
 	"price"	NUMERIC CHECK(0 <= "price"),
+	"name"	TEXT,
 	PRIMARY KEY("id"),
 	FOREIGN KEY("item_id") REFERENCES "items"("id"),
 	FOREIGN KEY("order_id") REFERENCES "orders"("id")

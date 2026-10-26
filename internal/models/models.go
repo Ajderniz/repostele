@@ -34,25 +34,36 @@ func ensureIndexes() error {
   return nil
 }
 
-// ensureColumns adds columns that DBs created before them lack. Rows that
-// predate order_items.price get the item's current price, the best guess left.
-func ensureColumns() error {
-  var n int
-  err := _DB.Get(&n, "SELECT COUNT(*) FROM pragma_table_info('order_items') WHERE name = 'price'")
-  if err != nil || n > 0 { return err }
+// Columns added after the first schema. Each is added, then backfilled, in one
+// transaction on DBs that lack it. Rows that predate the order_items snapshot
+// columns get the item's current values, the best guess left.
+var _ADDED_COLUMNS = []struct{ table, column, def, backfill string }{
+  {"order_items", "price", "NUMERIC CHECK(0 <= price)",
+    "UPDATE order_items SET price = (SELECT price FROM items WHERE items.id = order_items.item_id) WHERE price IS NULL"},
+  {"order_items", "name", "TEXT",
+    "UPDATE order_items SET name = (SELECT name FROM items WHERE items.id = order_items.item_id) WHERE name IS NULL"},
+}
 
-  tx, err := _DB.Beginx()
-  if err != nil { return err }
-  _, err = tx.Exec(`ALTER TABLE order_items ADD COLUMN price NUMERIC CHECK(0 <= price)`)
-  if err != nil {
-    tx.Rollback()
-    // The other app may have migrated between the check and the ALTER.
-    if strings.Contains(err.Error(), "duplicate column") { return nil }
-    return err
+func ensureColumns() error {
+  for _, c := range _ADDED_COLUMNS {
+    var n int
+    err := _DB.Get(&n, "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?", c.table, c.column)
+    if err != nil { return err }
+    if n > 0 { continue }
+
+    tx, err := _DB.Beginx()
+    if err != nil { return err }
+    _, err = tx.Exec("ALTER TABLE "+c.table+" ADD COLUMN "+c.column+" "+c.def)
+    if err != nil {
+      tx.Rollback()
+      // The other app may have migrated between the check and the ALTER.
+      if strings.Contains(err.Error(), "duplicate column") { continue }
+      return err
+    }
+    if _, err = tx.Exec(c.backfill); err != nil { tx.Rollback(); return err }
+    if err = tx.Commit(); err != nil { return err }
   }
-  _, err = tx.Exec(`UPDATE order_items SET price = (SELECT price FROM items WHERE items.id = order_items.item_id) WHERE price IS NULL`)
-  if err != nil { tx.Rollback(); return err }
-  return tx.Commit()
+  return nil
 }
 
 // ensureSchema brings an existing DB up to date; safe to run on every start.
