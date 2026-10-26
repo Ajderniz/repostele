@@ -6,6 +6,7 @@ import (
 	"errors"
 	"log/slog"
 	"slices"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/mattn/go-sqlite3"
@@ -31,6 +32,33 @@ func ensureIndexes() error {
     if _, err := _DB.Exec(q); err != nil { return err }
   }
   return nil
+}
+
+// ensureColumns adds columns that DBs created before them lack. Rows that
+// predate order_items.price get the item's current price, the best guess left.
+func ensureColumns() error {
+  var n int
+  err := _DB.Get(&n, "SELECT COUNT(*) FROM pragma_table_info('order_items') WHERE name = 'price'")
+  if err != nil || n > 0 { return err }
+
+  tx, err := _DB.Beginx()
+  if err != nil { return err }
+  _, err = tx.Exec(`ALTER TABLE order_items ADD COLUMN price NUMERIC CHECK(0 <= price)`)
+  if err != nil {
+    tx.Rollback()
+    // The other app may have migrated between the check and the ALTER.
+    if strings.Contains(err.Error(), "duplicate column") { return nil }
+    return err
+  }
+  _, err = tx.Exec(`UPDATE order_items SET price = (SELECT price FROM items WHERE items.id = order_items.item_id) WHERE price IS NULL`)
+  if err != nil { tx.Rollback(); return err }
+  return tx.Commit()
+}
+
+// ensureSchema brings an existing DB up to date; safe to run on every start.
+func ensureSchema() error {
+  if err := ensureColumns(); err != nil { return err }
+  return ensureIndexes()
 }
 
 // PurgeExpired drops sessions and fingerprints whose expiry has passed.

@@ -43,5 +43,5 @@ func OpenDB() error {
     }
   }
 
-  return ensureIndexes()
+  return ensureSchema()
 }
