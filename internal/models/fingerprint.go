@@ -26,7 +26,7 @@ const (
 )
 
 func InsertFingerprint(fg Fingerprint) (error) {
-	_, err := dbBeginNamedExecAndCommit(
+	_, err := dbNamedExec(
 		"INSERT INTO "+_FINGERPRINTS+" ("+_FINGERPRINT_FIELDS+") "+
 		"VALUES (:"+FINGERPRINT_ID+",:"+_FINGERPRINT_USER+",:"+_FINGERPRINT_EXPIRES+
 			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+") "+

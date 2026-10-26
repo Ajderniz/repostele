@@ -13,6 +13,10 @@ import (
 
 const _DB_FILEPATH = "./data.db"
 
+// WAL lets readers (the polls) run while the other app writes; the busy
+// timeout makes a writer wait for the lock instead of failing.
+const _DB_DSN = _DB_FILEPATH+"?_journal_mode=WAL&_busy_timeout=5000"
+
 // Indexes for the hot lookups (latest order per user, queue by status, order items, user sessions).
 // Idempotent, so it runs on every start and also covers DBs created before they existed.
 var _INDEXES = []string{
@@ -95,29 +99,16 @@ func dbSelect(dst any, query string, args ...any) error {
   return dbSelectErr(err)
 }
 
-func dbBeginExecAndCommit(query string, args ...any) (sql.Result, error) {
-  tx, err := _DB.Beginx()
+// Single statements run in SQLite's implicit transaction.
+func dbExec(query string, args ...any) (sql.Result, error) {
+  result, err := _DB.Exec(query, args...)
   if err != nil { slog.Error(err.Error()); return nil, err }
-
-  result, err := tx.Exec(query, args...)
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
-
-  err = tx.Commit()
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
-
   return result, nil
 }
 
-func dbBeginNamedExecAndCommit(query string, v any) (sql.Result, error) {
-  tx, err := _DB.Beginx()
+func dbNamedExec(query string, v any) (sql.Result, error) {
+  result, err := _DB.NamedExec(query, v)
   if err != nil { slog.Error(err.Error()); return nil, err }
-
-  result, err := tx.NamedExec(query, v)
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
-
-  err = tx.Commit()
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return nil, err }
-
   return result, nil
 }
 
@@ -128,7 +119,7 @@ func dbUpdateTableField(
   eq any,
 ) (result sql.Result, err error) {
 
-  result, err = dbBeginExecAndCommit(
+  result, err = dbExec(
     "UPDATE "+table+" "+
     "SET "+set+" = ? "+
     "WHERE "+where+" = ?",

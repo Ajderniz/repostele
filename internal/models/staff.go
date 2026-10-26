@@ -25,7 +25,7 @@ const (
 )
 
 func InsertStaffAccount(staff Staff) error {
-	_, err := dbBeginNamedExecAndCommit(
+	_, err := dbNamedExec(
 		"INSERT INTO "+_STAFF+" ("+STAFF_USERNAME+","+STAFF_PASS_HASH+","+
 			_STAFF_FULL_NAME+","+STAFF_TIME_CREATED+","+_STAFF_ADMIN+") "+
 		"VALUES (:"+STAFF_USERNAME+",:"+STAFF_PASS_HASH+",:"+_STAFF_FULL_NAME+

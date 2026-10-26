@@ -12,7 +12,7 @@ import (
 const APP_ROLE = SESSION_ROLE_USER
 
 func OpenDB() error {
-  db, err := sqlx.Open("sqlite3", _DB_FILEPATH)
+  db, err := sqlx.Open("sqlite3", _DB_DSN)
   if err != nil { return err }
   _DB = db
 

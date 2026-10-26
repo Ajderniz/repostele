@@ -36,7 +36,7 @@ const (
 var _ItemSortFields = []string { ITEM_ID, _ITEM_NAME, _ITEM_PRICE, _ITEM_TIME_MOD }
 
 func InsertItem(item Item) (int, error) {
-  result, err := dbBeginNamedExecAndCommit(
+  result, err := dbNamedExec(
     "INSERT INTO "+_ITEMS+" ("+_ITEM_FIELDS+") "+
     "VALUES "+"(:"+_ITEM_NAME+",:"+_ITEM_PRICE+",:"+_ITEM_TIME_MOD+",:"+
       _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
@@ -122,7 +122,7 @@ func UpdateItem(id int, update ItemUpdate) error {
   }
   args = append(args, id)
 
-  _, err := dbBeginExecAndCommit(
+  _, err := dbExec(
     "UPDATE "+_ITEMS+" "+
     "SET "+strings.Join(setClauses,",")+" "+
     "WHERE "+ITEM_ID+" = ?",

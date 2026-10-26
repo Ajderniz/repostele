@@ -75,7 +75,7 @@ var (
 )
 
 func updateOrderField(id int, field string, v any) error {
-  _, err := dbBeginExecAndCommit(
+  _, err := dbExec(
     "UPDATE "+_ORDERS+" "+
     "SET "+field+" = ?, "+ORDER_UPDATED+" = ? "+
     "WHERE "+ORDER_ID+" = ?",
@@ -299,7 +299,7 @@ func GetLatestOrderID() (int, error) {
 
 // One UPDATE for a ref edit plus its status change.
 func UpdateOrderRefNumAndStatus(id int, refNum string, status OrderStatus) error {
-  _, err := dbBeginExecAndCommit(
+  _, err := dbExec(
     "UPDATE "+_ORDERS+" "+
     "SET "+ORDER_REF_NUM+" = ?, "+ORDER_STATUS+" = ?, "+ORDER_UPDATED+" = ? "+
     "WHERE "+ORDER_ID+" = ?",

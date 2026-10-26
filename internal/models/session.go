@@ -136,7 +136,7 @@ func CloseSession(sessionID string) error {
 }
 
 func CloseSessionForUsername(username string, role SessionRole) error {
-  _, err := dbBeginExecAndCommit(
+  _, err := dbExec(
     "UPDATE "+_SESSIONS+" SET "+_SESSION_EXPIRES+" = ? "+
     "WHERE "+_SESSION_USER+" = ? AND "+_SESSION_ROLE+" = ?",
     time.Now().Unix(), username, role,
@@ -161,7 +161,7 @@ func CloseAllSessions(users, staff bool) error {
       query += _SessionRoleStaffStr
     }
   }
-  _, err := dbBeginExecAndCommit(query, time.Now().Unix())
+  _, err := dbExec(query, time.Now().Unix())
   if err != nil { return errors.New("No se pudo cerrar todas las sesiones") }
   return nil
 }
