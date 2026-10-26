@@ -210,26 +210,22 @@ function extractRefNum(text) {
 async function scanRefImg(file) {
   showRefPreview(file);
   const statusEl = document.getElementById('ref-status');
-  const confirmBox = document.getElementById('ref-confirm');
   const input = refNumInput();
-  if (!statusEl || !confirmBox || !input) return;
+  if (!statusEl || !input) return;
 
   statusEl.hidden = false;
   statusEl.textContent = 'Escaneando comprobante...';
-  confirmBox.hidden = true;
-  updateContinueState();
 
   try {
     await loadTesseract();
     const { data: { text } } = await Tesseract.recognize(file, 'eng');
     const code = extractRefNum(text);
-    input.value = code;
-    confirmBox.hidden = false;
+    // Keep a hand-typed code when the scan finds nothing.
+    if (code) input.value = code;
     statusEl.textContent = code
       ? 'Código detectado. Verifique antes de enviar.'
       : 'No se detectó código. Ingréselo manualmente.';
   } catch (e) {
-    confirmBox.hidden = false;
     statusEl.textContent = 'No se pudo leer la imagen. Ingrese el código manualmente.';
   }
   updateContinueState();
@@ -260,6 +256,7 @@ async function submitOrder() {
     if (result) result.innerHTML = body;
     if (res.ok) {
       localStorage.removeItem(CART_KEY);
+      refNumInput().value = '';
       refreshCart();
       notifyWrite(); // raw fetch skips htmx:afterRequest, so sync notifs here
     } else {
