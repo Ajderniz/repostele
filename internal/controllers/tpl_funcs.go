@@ -2,12 +2,36 @@ package controllers
 
 import (
 	"bytes"
+	"crypto/sha256"
+	"encoding/hex"
 	tpl "html/template"
+	"io/fs"
 	"strings"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/static"
 )
+
+// _AssetVer maps a public file's URL path to a short hash of its contents.
+var _AssetVer = map[string]string{}
+
+func loadAssetVersions() error {
+	return fs.WalkDir(static.FS, static.PUBLIC, func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() { return err }
+		b, err := static.FS.ReadFile(p)
+		if err != nil { return err }
+		sum := sha256.Sum256(b)
+		_AssetVer[strings.TrimPrefix(p, static.PUBLIC)] = hex.EncodeToString(sum[:4])
+		return nil
+	})
+}
+
+// asset adds a content version to a public file URL so it can be cached for good.
+func asset(path string) string {
+	if v, ok := _AssetVer[path]; ok { return path + "?v=" + v }
+	return path
+}
 
 func callTemplate(name string, data any) (tpl.HTML, error) {
 	buf := bytes.NewBuffer([]byte{})

@@ -16,18 +16,42 @@ const _DYNDIR = static.DYNDIR
 func setupFileServer(r *chi.Mux) error {
   sub, err := fs.Sub(static.FS, static.PUBLIC)
   if err != nil { return err }
-  r.Handle("/*", http.FileServerFS(sub))
+  r.Handle("/*", cacheStatic(http.FileServerFS(sub)))
   r.Handle(
     "/"+_DYNDIR+"/*",
-    http.StripPrefix(
+    cacheFor(_CACHE_LONG, http.StripPrefix(
       "/"+_DYNDIR,
       http.FileServer(http.Dir(_DYNDIR)),
-    ),
+    )),
   )
   r.Get("/htmx/nav", controllers.ServeNav)
   r.Get("/htmx/notif", controllers.ServeNotif)
   r.Get("/"+static.HXDIR+"/{path}", controllers.ServeHTMX)
   return nil
+}
+
+const (
+  _CACHE_LONG  = "public, max-age=31536000, immutable"
+  // Embedded files have no modtime to revalidate against; unversioned ones
+  // (CSS background images) get a short lifetime instead.
+  _CACHE_SHORT = "public, max-age=3600"
+)
+
+func cacheFor(policy string, h http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    w.Header().Set("Cache-Control", policy)
+    h.ServeHTTP(w, r)
+  })
+}
+
+// cacheStatic: URLs from the asset template func carry ?v=<hash> and never change.
+func cacheStatic(h http.Handler) http.Handler {
+  return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+    policy := _CACHE_SHORT
+    if r.URL.Query().Has("v") { policy = _CACHE_LONG }
+    w.Header().Set("Cache-Control", policy)
+    h.ServeHTTP(w, r)
+  })
 }
 
 // servePage mounts a section whose GET just renders its main template.

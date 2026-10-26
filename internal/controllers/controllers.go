@@ -95,9 +95,11 @@ var (
 func ServerName() string { return _SERVER_NAME }
 
 func InitTemplate() {
+	if err := loadAssetVersions(); err != nil { panic(err) }
 	_Tpl = tpl.New("base")
 	_Tpl.Funcs(tpl.FuncMap{
 		"CallTemplate": callTemplate,
+		"asset": asset,
 		"OrderStatusName": orderStatusName,
 		"UnixToTime": unixToTime,
 		"GroupRef": groupRef,
