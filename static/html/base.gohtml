@@ -10,7 +10,7 @@
   <link rel="icon" type="image/x-icon" href="{{asset "/favicon.ico"}}">
   <script src="{{asset "/htmx.min.js"}}"></script>
   <script src="{{asset "/htmx-config.js"}}" defer></script>
-  <script src="{{asset "/cart.js"}}" defer></script>
+  {{if eq .Server "User"}}<script src="{{asset "/cart.js"}}" defer></script>{{end}}
   <script src="{{asset "/toast.js"}}" defer></script>
   <script src="{{asset "/notif.js"}}" defer></script>
   <script src="{{asset "/orders.js"}}" defer></script>
