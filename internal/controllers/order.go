@@ -95,7 +95,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
       return
     }
     total += item.Price * float32(quant)
-    lines = append(lines, models.OrderLine{ItemID: item.Id, Quant: quant, Price: item.Price})
+    lines = append(lines, models.OrderLine{ItemID: item.Id, Name: item.Name, Quant: quant, Price: item.Price})
   }
   if len(lines) == 0 {
     slog.Error(_ErrNoItems.Error())

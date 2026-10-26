@@ -38,9 +38,10 @@ type Order struct {
   Lines   []OrderLine               `json:"lines"`
 }
 
-// OrderLine is one item of a new order, priced when the order is placed.
+// OrderLine is one item of a new order, named and priced when the order is placed.
 type OrderLine struct {
   ItemID int     `json:"item_id"`
+  Name   string  `json:"name"`
   Quant  int     `json:"quant"`
   Price  float32 `json:"price"`
 }
@@ -72,8 +73,9 @@ const (
   _ORDER_ITEM_ITEM_ID  = "item_id"
   _ORDER_ITEM_QUANT    = "quant"
   _ORDER_ITEM_PRICE    = "price"
+  _ORDER_ITEM_NAME     = "name"
   _ORDER_ITEM_FIELDS   = _ORDER_ITEM_ORDER_ID+","+_ORDER_ITEM_ITEM_ID+","+
-                         _ORDER_ITEM_QUANT+","+_ORDER_ITEM_PRICE
+                         _ORDER_ITEM_QUANT+","+_ORDER_ITEM_PRICE+","+_ORDER_ITEM_NAME
 )
 
 var (
@@ -109,8 +111,8 @@ func InsertOrder(order Order) error {
   for _, line := range order.Lines {
     _, err := tx.Exec(
       "INSERT INTO "+_ORDER_ITEMS+" ("+ _ORDER_ITEM_FIELDS+") "+
-      "VALUES (?, ?, ?, ?)",
-      order.Id, line.ItemID, line.Quant, line.Price,
+      "VALUES (?, ?, ?, ?, ?)",
+      order.Id, line.ItemID, line.Quant, line.Price, line.Name,
     )
     if err != nil {tx.Rollback(); slog.Error(err.Error());return _ErrInsertOrder}
   }
@@ -221,8 +223,8 @@ func GetOrderHistory(params *SelectParams, paged bool) ([]Order, error) {
   return orders, nil
 }
 
-// OrderItemDetail is one line of an order's breakdown. Price is the unit price
-// stored with the order (the item's current price for rows that predate it).
+// OrderItemDetail is one line of an order's breakdown. Name and Price (unit)
+// are stored with the order; rows that predate them fall back to the item.
 type OrderItemDetail struct {
   Name     string  `db:"name"`
   Price    float32 `db:"price"`
@@ -233,7 +235,7 @@ type OrderItemDetail struct {
 func GetOrderItemDetails(orderId int) ([]OrderItemDetail, error) {
   details := []OrderItemDetail{}
   err := _DB.Select(&details,
-    "SELECT i."+_ITEM_NAME+" AS name, "+
+    "SELECT COALESCE(oi."+_ORDER_ITEM_NAME+", i."+_ITEM_NAME+") AS name, "+
       "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") AS price, "+
       "oi."+_ORDER_ITEM_QUANT+" AS quant, "+
       "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") * oi."+_ORDER_ITEM_QUANT+" AS subtotal "+
