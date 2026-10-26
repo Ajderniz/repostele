@@ -133,7 +133,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetPendingOrders(&params)
+  orders, hasNext, err := models.GetPendingOrders(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   serveDataHX(
@@ -143,7 +143,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
       "Orders":   orders,
       "IsStaff":  true,
       "Params":   params,
-      "HasNext":  len(orders) == params.Limit,
+      "HasNext":  hasNext,
       "Endpoint": "/dashboard/orders",
       "Target":   "#queue-list",
       "Aside":    "queue-detail",
@@ -157,7 +157,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetOrderHistory(&params, true)
+  orders, hasNext, err := models.GetOrderHistory(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   // A full-panel swap (tab, sort, paging) gets the list plus its aside; an
@@ -172,7 +172,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
       "IsStaff":     true,
       "Export":      true,
       "Params":      params,
-      "HasNext":     len(orders) == params.Limit,
+      "HasNext":     hasNext,
       "Endpoint":    "/dashboard/orders/history",
       "Target":      "#dash-panel",
       "Aside":       "dash-detail",
@@ -186,7 +186,7 @@ func ExportOrderHistory(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  orders, err := models.GetOrderHistory(&params, false)
+  orders, err := models.GetAllOrderHistory(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   w.Header().Set("Content-Type", "text/csv; charset=utf-8")

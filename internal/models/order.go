@@ -191,34 +191,35 @@ var _OrderSortFields = _SortFields{
   ORDER_ID, _ORDER_USER, _ORDER_TOTAL, _ORDER_TIME, ORDER_STATUS, ORDER_UPDATED,
 }
 
-func GetPendingOrders(params *SelectParams) ([]Order, error) {
+func GetPendingOrders(params *SelectParams) ([]Order, bool, error) {
+  orders, hasNext, err := selectPage[Order](
+    "SELECT * FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" IN (?, ?, ?)",
+    params, _OrderSortFields,
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+  )
+  if err != nil { return []Order{}, false, _ErrGetOrders }
+  return orders, hasNext, nil
+}
+
+const _ORDER_HISTORY_QUERY = "SELECT * FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" IN (?, ?)"
+
+// GetOrderHistory pages through closed orders.
+func GetOrderHistory(params *SelectParams) ([]Order, bool, error) {
+  orders, hasNext, err := selectPage[Order](_ORDER_HISTORY_QUERY, params, _OrderSortFields,
+    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
+  )
+  if err != nil { return []Order{}, false, _ErrGetOrders }
+  return orders, hasNext, nil
+}
+
+// GetAllOrderHistory lists every closed order in params' sort order (CSV export).
+func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
   orders := []Order{}
   params.Fix(_OrderSortFields)
   err := dbSelect(&orders,
-    "SELECT * FROM "+_ORDERS+" "+
-    "WHERE "+ORDER_STATUS+" IN (?, ?, ?) "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir)+
-    " LIMIT ?, ?",
-    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
-    params.Start, params.Limit,
+    _ORDER_HISTORY_QUERY+" ORDER BY "+params.Sort+" "+string(params.Dir),
+    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
   )
-  if err != nil { return []Order{}, _ErrGetOrders }
-  return orders, nil
-}
-
-// GetOrderHistory lists closed orders; paged applies params' start and limit.
-func GetOrderHistory(params *SelectParams, paged bool) ([]Order, error) {
-  orders := []Order{}
-  params.Fix(_OrderSortFields)
-  query := "SELECT * FROM "+_ORDERS+" "+
-    "WHERE "+ORDER_STATUS+" IN (?, ?) "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir)
-  args := []any{ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED}
-  if paged {
-    query += " LIMIT ?, ?"
-    args = append(args, params.Start, params.Limit)
-  }
-  err := dbSelect(&orders, query, args...)
   if err != nil { return []Order{}, _ErrGetOrders }
   return orders, nil
 }
