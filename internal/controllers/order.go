@@ -90,6 +90,10 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   for itemId, quant := range request.Items {
     item, ok := found[itemId]
     if !ok || item.Name == "" { slog.Error("Ítem inválido"); continue }
+    if !item.Available {
+      serveErrAuto(w, r, BadRequest, errors.New(item.Name+" ya no está disponible"))
+      return
+    }
     total += item.Price * float32(quant)
     items[item.Id] = quant
   }
