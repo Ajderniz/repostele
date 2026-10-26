@@ -35,7 +35,14 @@ type Order struct {
   Time    int64       `db:"time"     json:"time"`
   Status  OrderStatus `db:"status"   json:"status"`
   Updated int64       `db:"updated"  json:"updated"`
-  Items  ItemIdQuant                `json:"items"`
+  Lines   []OrderLine               `json:"lines"`
+}
+
+// OrderLine is one item of a new order, priced when the order is placed.
+type OrderLine struct {
+  ItemID int     `json:"item_id"`
+  Quant  int     `json:"quant"`
+  Price  float32 `json:"price"`
 }
 
 // Pending: the order exists and is still open (unreviewed, denied or accepted).
@@ -64,8 +71,9 @@ const (
   _ORDER_ITEM_ORDER_ID = "order_id"
   _ORDER_ITEM_ITEM_ID  = "item_id"
   _ORDER_ITEM_QUANT    = "quant"
+  _ORDER_ITEM_PRICE    = "price"
   _ORDER_ITEM_FIELDS   = _ORDER_ITEM_ORDER_ID+","+_ORDER_ITEM_ITEM_ID+","+
-                         _ORDER_ITEM_QUANT
+                         _ORDER_ITEM_QUANT+","+_ORDER_ITEM_PRICE
 )
 
 var (
@@ -98,11 +106,11 @@ func InsertOrder(order Order) error {
   )
   if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertOrder}
 
-  for itemId, quant := range order.Items {
+  for _, line := range order.Lines {
     _, err := tx.Exec(
       "INSERT INTO "+_ORDER_ITEMS+" ("+ _ORDER_ITEM_FIELDS+") "+
-      "VALUES (?, ?, ?)",
-      order.Id, itemId, quant,
+      "VALUES (?, ?, ?, ?)",
+      order.Id, line.ItemID, line.Quant, line.Price,
     )
     if err != nil {tx.Rollback(); slog.Error(err.Error());return _ErrInsertOrder}
   }

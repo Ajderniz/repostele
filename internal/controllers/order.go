@@ -86,7 +86,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErrAuto(w, r); return }
 
   var total float32
-  items := models.ItemIdQuant{}
+  lines := make([]models.OrderLine, 0, len(request.Items))
   for itemId, quant := range request.Items {
     item, ok := found[itemId]
     if !ok || item.Name == "" { slog.Error("Ítem inválido"); continue }
@@ -95,9 +95,9 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
       return
     }
     total += item.Price * float32(quant)
-    items[item.Id] = quant
+    lines = append(lines, models.OrderLine{ItemID: item.Id, Quant: quant, Price: item.Price})
   }
-  if len(items) == 0 {
+  if len(lines) == 0 {
     slog.Error(_ErrNoItems.Error())
     serveErrAuto(w, r, BadRequest, _ErrNoItems)
     return
@@ -113,7 +113,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     RefNum: request.RefNum,
     Time:   time.Now().Unix(),
     Status: models.ORDER_STATUS_UNREVIEWED,
-    Items:  items,
+    Lines:  lines,
   })
   if err != nil { serveInternalErrAuto(w, r); return }
 
