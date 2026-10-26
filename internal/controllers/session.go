@@ -17,7 +17,7 @@ const (
   _CSRF_TOKEN   = "csrf-token"
 )
 
-// checkSessionUser is for routes without auth middleware (/htmx/nav, /htmx/notif);
+// checkSessionUser is for routes without auth middleware (/htmx/notif);
 // elsewhere the middleware already put the session in the request context.
 func checkSessionUser(
   r *http.Request,
@@ -40,25 +40,25 @@ func openSession(
   username string,
   role models.SessionRole,
   sessionID, fingerprintID string,
-) error {
+) (models.Session, error) {
 
   sessionToken, err := pass.GenerateToken(_TOKEN_LENGTH)
-  if err != nil { return err }
+  if err != nil { return models.Session{}, err }
   csrfToken, err := pass.GenerateToken(_TOKEN_LENGTH)
-  if err != nil { return err }
+  if err != nil { return models.Session{}, err }
 
   expires := time.Now().Add(24 * time.Hour)
 
   otherSession, err := models.GetLatestOpenSessionFromUsername(username, role)
-  if err != nil { return err }
+  if err != nil { return models.Session{}, err }
 
   if otherSession.SessionToken != "" {
     err = closeSession(w, otherSession.SessionToken)
-    if err != nil { return err }
+    if err != nil { return models.Session{}, err }
   }
   if sessionID != "" {
     err = closeSession(w, sessionID)
-    if err != nil { return err }
+    if err != nil { return models.Session{}, err }
   }
 
   http.SetCookie(w, &http.Cookie{
@@ -74,17 +74,15 @@ func openSession(
     HttpOnly: false,
   })
 
-  return models.InsertSession(
-    models.Session{
-      SessionToken: sessionToken,
-      CSRFToken:    csrfToken,
-      User:         username,
-      Role:         role,
-      Starts:       time.Now().Unix(),
-      Expires:      expires.Unix(),
-    },
-    fingerprintID,
-  )
+  session := models.Session{
+    SessionToken: sessionToken,
+    CSRFToken:    csrfToken,
+    User:         username,
+    Role:         role,
+    Starts:       time.Now().Unix(),
+    Expires:      expires.Unix(),
+  }
+  return session, models.InsertSession(session, fingerprintID)
 }
 
 func closeSession(w http.ResponseWriter, sid string) error {
@@ -157,10 +155,11 @@ func Login(w http.ResponseWriter, r *http.Request) {
   sessionID := ""
   if sessionIDCookie != nil { sessionID = sessionIDCookie.Value }
 
-  err = openSession(w, username, models.APP_ROLE, sessionID, fp.Id)
+  session, err := openSession(w, username, models.APP_ROLE, sessionID, fp.Id)
   if err != nil { serveInternalErr(w, r); return }
 
-  serveMsg(w, r, _MsgLoggedIn)
+  // The page is rendered in this request, so its nav must see the new session.
+  serveMsg(w, r.WithContext(models.WithSession(r.Context(), session)), _MsgLoggedIn)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {

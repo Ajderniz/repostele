@@ -19,12 +19,7 @@
 <body>
   <header id="site-header">Repostele</header>
   {{if .Init}}
-    <nav
-    id="site-nav"
-    hx-get="/htmx/nav"
-    hx-trigger="load, every 30s [document.visibilityState=='visible']"
-    hx-swap="innerHTML"
-    ></nav>
+    <nav id="site-nav">{{template "site-nav" .Nav}}</nav>
   {{end}}
   <main class="site-main">
     {{with .Err}}

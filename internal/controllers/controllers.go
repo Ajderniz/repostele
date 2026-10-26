@@ -7,7 +7,6 @@ import (
 	tpl "html/template"
 	"log/slog"
 	"net/http"
-	"net/url"
 	"strings"
 
 	"github.com/go-chi/chi/v5"
@@ -67,6 +66,7 @@ type _TplData struct {
 	MainName string
 	MainData *_MainData
 	Err      string
+	Nav      map[string]any
 }
 
 type _NextAction struct {
@@ -112,47 +112,9 @@ func InitTemplate() {
 	tpl.Must(_Tpl.ParseFS(static.FS, static.HXDIR+"/*"))
 }
 
-func ServeNav(w http.ResponseWriter, r *http.Request) {
-	if !isHX(r) { http.NotFound(w, r); return }
-
-	username, role, loggedIn := checkSessionUser(r)
-
-	isStaff := false
-	isAdmin := false
-	pendingOrders := 0
-	if loggedIn && role == models.SESSION_ROLE_STAFF {
-		staff, err := models.GetStaffFromUsername(username)
-		if err != nil {
-			slog.Error(err.Error())
-		} else if staff.Username != "" {
-			isStaff = true
-			isAdmin = staff.Admin
-			stats, err := models.GetPendingQueueStats()
-			if err != nil { slog.Error(err.Error()) } else { pendingOrders = stats.Unreviewed }
-		}
-	}
-
-	// htmx sends the page URL the nav was loaded on; its first segment marks the active link.
-	section := ""
-	if cur, err := url.Parse(r.Header.Get("HX-Current-URL")); err == nil {
-		section, _, _ = strings.Cut(strings.TrimPrefix(cur.Path, "/"), "/")
-	}
-
-	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	err := _Tpl.ExecuteTemplate(w, "site-nav", map[string]any{
-		"Init":          models.CheckInit(),
-		"LoggedIn":      loggedIn,
-		"IsStaff":       isStaff,
-		"IsAdmin":       isAdmin,
-		"PendingOrders": pendingOrders,
-		"Section":       section,
-	})
-	if err != nil { slog.Error(err.Error()); w.WriteHeader(InternalServerError) }
-}
-
 func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	path := chi.URLParam(r, "path")
-	if !isHX(r) || path == "" {
+	if !isHX(r) || path == "" || _Tpl.Lookup(path) == nil {
 		http.NotFound(w, r); return
 	}
 	err := _Tpl.ExecuteTemplate(w, path, nil)
@@ -175,14 +137,17 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	isStaff := false
 	isAdmin := false
 
+	pendingOrders := 0
+
 	if hasSession && session.Role == models.SESSION_ROLE_STAFF {
-		isStaff = false
 		staff, err := models.GetStaffFromUsername(session.User)
 		if err != nil { w.WriteHeader(InternalServerError); return }
-		if staff.Username != "" { isStaff = true }
-
-		isAdmin = false
-		if staff.Admin { isAdmin = true }
+		isStaff = staff.Username != ""
+		isAdmin = staff.Admin
+		if isStaff {
+			stats, err := models.GetPendingQueueStats()
+			if err != nil { slog.Error(err.Error()) } else { pendingOrders = stats.Unreviewed }
+		}
 	}
 
 	dataAny := r.Context().Value(_MAIN_DATA)
@@ -212,6 +177,13 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		MainName: "main-"+section,
 		MainData: data,
 		Err: errStr,
+		Nav: map[string]any{
+			"LoggedIn":      loggedIn,
+			"IsStaff":       isStaff,
+			"IsAdmin":       isAdmin,
+			"PendingOrders": pendingOrders,
+			"Section":       section,
+		},
 	})
 	if err != nil {
 		slog.Error(err.Error())
