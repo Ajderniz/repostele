@@ -234,11 +234,21 @@ func GetOrderFromID(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
-  username := ctxUsername(r)
-  orders, err := models.GetAllOrdersFromUsername(username)
+  params := models.SelectParams{}
+  if err := bind.Form(r, &params); err != nil { serveErrAuto(w, r, BadRequest, _ErrBadSearch); return }
+  // Newest first unless the request says otherwise (IDs grow with time).
+  if params.Dir == "" { params.Dir = models.SORT_DIR_DESC }
+
+  orders, hasNext, err := models.GetOrdersFromUsername(ctxUsername(r), &params)
   if err != nil { serveInternalErrAuto(w, r); return }
   serveDataHX(w, r, map[string]any{
-    "Orders": orders, "IsStaff": false, "Aside": "orders-detail",
+    "Orders":   orders,
+    "IsStaff":  false,
+    "Params":   params,
+    "HasNext":  hasNext,
+    "Endpoint": "/order",
+    "Target":   "#orders-list",
+    "Aside":    "orders-detail",
   }, "list-orders")
 }
 

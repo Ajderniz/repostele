@@ -26,9 +26,7 @@
       {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Aside" $aside)}}
     {{end}}
   </ul>
-  {{if $isStaff}}
-    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
-  {{end}}
+  {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
 {{end}}
 
 {{end}}

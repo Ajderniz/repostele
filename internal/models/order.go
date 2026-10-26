@@ -251,19 +251,24 @@ func GetOrderFromID(id int) (Order, error) {
   return order, nil
 }
 
-func GetAllOrdersFromUsername(username string) ([]Order, error) {
-  orders := []Order{}
-  err := dbSelect(&orders,
+// GetOrdersFromUsername pages through a customer's orders. hasNext comes
+// from fetching one row past the page.
+func GetOrdersFromUsername(username string, params *SelectParams) (orders []Order, hasNext bool, err error) {
+  orders = []Order{}
+  params.Fix(_OrderSortFields)
+  err = dbSelect(&orders,
     "SELECT * "+
     "FROM "+_ORDERS+" "+
     "WHERE "+_ORDER_USER+" = ? "+
-    "ORDER BY "+_ORDER_TIME+" DESC",
-    username,
+    "ORDER BY "+params.Sort+" "+string(params.Dir)+
+    " LIMIT ?, ?",
+    username, params.Start, params.Limit+1,
   )
   if err != nil {
-    return []Order{},errors.New("No se pudo acceder a la lista de órdenes")
+    return []Order{}, false, errors.New("No se pudo acceder a la lista de órdenes")
   }
-  return orders, nil
+  if len(orders) > params.Limit { orders, hasNext = orders[:params.Limit], true }
+  return orders, hasNext, nil
 }
 
 func GetLatestOrderFromUsername(username string) (Order, error) {
