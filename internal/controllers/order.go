@@ -54,7 +54,7 @@ func nextOrderID() (int, error) {
 
 type _OrderRequest struct {
   RefNum string             `db:"ref_num" json:"ref_num" validate:"required,len=25,numeric"`
-  Items  models.ItemIdQuant              `json:"items"   validate:"min=1,max=16,dive,gte=0,lte=4"`
+  Items  models.ItemIdQuant              `json:"items"   validate:"min=1,max=16,dive,gte=1,lte=4"`
 }
 
 var _ErrNoItems = errors.New("No se ordenaron suficientes ítemes")
