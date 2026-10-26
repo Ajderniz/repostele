@@ -47,11 +47,10 @@ func InsertUserAccount(user User, fp Fingerprint) error {
 
 var _UserSortFields = []string{ USER_USERNAME, USER_TIME_CREATED, USER_ACTIVE }
 
-func GetUsers(params *SelectParams) ([]User, error) {
-  users := []User{}
-  err := dbSelectList(&users, _USER_FIELDS, _USERS, params, _UserSortFields)
-  if err != nil { return []User{}, _ErrGetAcc }
-  return users, nil
+func GetUsers(params *SelectParams) ([]User, bool, error) {
+  users, hasNext, err := selectPage[User]("SELECT "+_USER_FIELDS+" FROM "+_USERS, params, _UserSortFields)
+  if err != nil { return []User{}, false, _ErrGetAcc }
+  return users, hasNext, nil
 }
 
 func GetUserFromUsername(username string) (User, error) {

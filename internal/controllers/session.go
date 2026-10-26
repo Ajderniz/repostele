@@ -180,12 +180,12 @@ func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  sessions, err := models.GetActiveSessions(&params)
+  sessions, hasNext, err := models.GetActiveSessions(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   serveDataHX(w, r, map[string]any{
     "Sessions": sessions,
     "Params":   params,
-    "HasNext":  len(sessions) == params.Limit,
+    "HasNext":  hasNext,
   }, "list-sessions")
 }

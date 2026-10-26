@@ -186,21 +186,3 @@ func selectPage[T any](
   if len(rows) > params.Limit { return rows[:params.Limit], true, nil }
   return rows, false, nil
 }
-
-func dbSelectList(
-  dst any,
-  sel, from string,
-  params *SelectParams,
-  sortFields _SortFields,
-) error {
-
-  params.Fix(sortFields)
-  err := dbSelect(dst,
-    "SELECT "+sel+" FROM "+from+" ORDER BY "+params.Sort+" "+string(params.Dir)+
-    " LIMIT ?, ?",
-    params.Start, params.Limit,
-  )
-  // dbSelect already logged it.
-  if err != nil { return errors.New("Error de selección") }
-  return nil
-}

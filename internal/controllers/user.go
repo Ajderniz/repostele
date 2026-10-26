@@ -50,12 +50,12 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  users, err := models.GetUsers(&params)
+  users, hasNext, err := models.GetUsers(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   serveDataHX(w, r, map[string]any{
     "Users":   users,
     "Params":  params,
-    "HasNext": len(users) == params.Limit,
+    "HasNext": hasNext,
   }, "list-users")
 }

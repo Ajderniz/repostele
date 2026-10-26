@@ -170,21 +170,14 @@ var _SessionSortFields = []string{
   _SESSION_USER, _SESSION_ROLE, _SESSION_STARTS, _SESSION_EXPIRES,
 }
 
-func GetActiveSessions(params *SelectParams) ([]Session, error) {
-  params.Fix(_SessionSortFields)
-  sessions := []Session{}
-  err := dbSelect(&sessions,
-    "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+_SESSION_STARTS+","+
-              _SESSION_EXPIRES+" "+
-    "FROM "+_SESSIONS+" "+
-    "WHERE ? < "+_SESSION_EXPIRES+" "+
-    "ORDER BY "+params.Sort+" "+string(params.Dir)+" "+
-    "LIMIT ?, ?",
-    time.Now().Unix(), params.Start, params.Limit,
+func GetActiveSessions(params *SelectParams) ([]Session, bool, error) {
+  sessions, hasNext, err := selectPage[Session](
+    "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES+" "+
+    "FROM "+_SESSIONS+" WHERE ? < "+_SESSION_EXPIRES,
+    params, _SessionSortFields, time.Now().Unix(),
   )
-  if dbSelectErr(err) != nil {
-    slog.Error(err.Error())
-    return []Session{}, errors.New("No se pudo acceder a la lista de sesiones")
+  if err != nil {
+    return []Session{}, false, errors.New("No se pudo acceder a la lista de sesiones")
   }
-  return sessions, nil
+  return sessions, hasNext, nil
 }

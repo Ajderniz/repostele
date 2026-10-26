@@ -40,11 +40,10 @@ var _StaffSortFields = _SortFields{
 	STAFF_USERNAME,_STAFF_FULL_NAME,STAFF_TIME_CREATED,STAFF_ACTIVE,_STAFF_ADMIN,
 }
 
-func GetStaff(params *SelectParams) ([]Staff, error) {
-	staff := []Staff{}
-	err := dbSelectList(&staff, _STAFF_FIELDS, _STAFF, params, _StaffSortFields)
-	if err != nil { return []Staff{}, _ErrGetAcc }
-	return staff, nil
+func GetStaff(params *SelectParams) ([]Staff, bool, error) {
+	staff, hasNext, err := selectPage[Staff]("SELECT "+_STAFF_FIELDS+" FROM "+_STAFF, params, _StaffSortFields)
+	if err != nil { return []Staff{}, false, _ErrGetAcc }
+	return staff, hasNext, nil
 }
 
 func GetStaffAdmins() ([]Staff, error) {

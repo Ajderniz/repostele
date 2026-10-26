@@ -97,7 +97,7 @@ func makeNewStaffFromForm(r *http.Request) (models.Staff, int, error) {
 }
 
 func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
-  list, err := models.GetStaff(&models.SelectParams{
+  list, _, err := models.GetStaff(&models.SelectParams{
     Start: 0, Limit: 1, Sort: models.USER_USERNAME, Dir: models.SORT_DIR_ASC,
   })
   if err != nil { serveInternalErr(w, r); return }
@@ -190,13 +190,13 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
   err := bind.Form(r, &params)
   if err != nil { serveBadRequest(w, r, err); return }
 
-  staff, err := models.GetStaff(&params)
+  staff, hasNext, err := models.GetStaff(&params)
   if err != nil { serveInternalErr(w, r); return }
 
   serveDataHX(w, r, map[string]any{
     "Staff":   staff,
     "Params":  params,
-    "HasNext": len(staff) == params.Limit,
+    "HasNext": hasNext,
   }, "list-staff")
 }
 
