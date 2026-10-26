@@ -68,7 +68,7 @@ func main() {
 			},
 		),
 		middleware.CleanPath,
-		middleware.AllowContentEncoding("application/json"),
+		middleware.Compress(5),
 		middleware.Throttle(20),
 	)
 

@@ -200,6 +200,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	var errStr string
 	if errAny != nil { errStr = errAny.(error).Error() }
 
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	statusAny := r.Context().Value(_STATUS)
 	if statusAny != nil { w.WriteHeader(statusAny.(int)) }
 
