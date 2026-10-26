@@ -221,17 +221,22 @@ func GetOrderHistory(params *SelectParams, paged bool) ([]Order, error) {
   return orders, nil
 }
 
+// OrderItemDetail is one line of an order's breakdown. Price is the unit price
+// stored with the order (the item's current price for rows that predate it).
 type OrderItemDetail struct {
-  Name  string  `db:"name"`
-  Price float32 `db:"price"`
-  Quant int     `db:"quant"`
+  Name     string  `db:"name"`
+  Price    float32 `db:"price"`
+  Quant    int     `db:"quant"`
+  Subtotal float32 `db:"subtotal"`
 }
 
 func GetOrderItemDetails(orderId int) ([]OrderItemDetail, error) {
   details := []OrderItemDetail{}
   err := _DB.Select(&details,
-    "SELECT i."+_ITEM_NAME+" AS name, i."+_ITEM_PRICE+" AS price, "+
-      "oi."+_ORDER_ITEM_QUANT+" AS quant "+
+    "SELECT i."+_ITEM_NAME+" AS name, "+
+      "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") AS price, "+
+      "oi."+_ORDER_ITEM_QUANT+" AS quant, "+
+      "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") * oi."+_ORDER_ITEM_QUANT+" AS subtotal "+
     "FROM "+_ORDER_ITEMS+" oi "+
     "JOIN "+_ITEMS+" i ON i."+ITEM_ID+" = oi."+_ORDER_ITEM_ITEM_ID+" "+
     "WHERE oi."+_ORDER_ITEM_ORDER_ID+" = ?",

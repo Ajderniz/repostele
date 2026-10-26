@@ -37,7 +37,7 @@
             {{range $items}}
               <tr>
                 <td class="order-items-col-name">{{.Name}}{{if gt .Quant 1}} ×{{.Quant}}{{end}}</td>
-                <td class="order-items-col-price">₡{{.Price}}</td>
+                <td class="order-items-col-price">₡{{.Subtotal}}</td>
               </tr>
             {{end}}
           </tbody>
