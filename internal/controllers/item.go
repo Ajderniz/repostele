@@ -87,14 +87,23 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
 
   var data _MainData
 
-  items, err := models.GetItems(&params)
+  // Only admins see (and can re-enable) unavailable items.
+  isAdmin := false
+  session, hasSession := models.SessionFromContext(r.Context())
+  if hasSession && session.Role.IsStaff() {
+    staff, err := models.GetStaffFromUsername(session.User)
+    if err != nil { serveInternalErr(w, r); return }
+    isAdmin = staff.Admin
+  }
+
+  items, hasNext, err := models.GetItems(&params, isAdmin)
   if err != nil{ serveInternalErr(w, r); return }
   data.Data = items
   data.Params = params
-  data.HasNext = len(items) == params.Limit
+  data.HasNext = hasNext
   if len(items) <= 0 { data.Msg = _MsgEmpty }
 
-  if session, ok := models.SessionFromContext(r.Context()); ok && session.Role == models.SESSION_ROLE_USER {
+  if hasSession && session.Role == models.SESSION_ROLE_USER {
     order, err := models.GetLatestOrderFromUsername(session.User)
     if err != nil {
       slog.Error(err.Error())
