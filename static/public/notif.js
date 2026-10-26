@@ -10,7 +10,7 @@ function notifParams() {
 }
 
 // Call after any write. Silent poll sync (no toast for own action), then the same
-// order-changed / counts-changed events a poll change would fire.
+// order-changed event a poll change would fire.
 function notifyWrite() {
   const poll = document.getElementById('notif-poll');
   if (poll) {
@@ -18,7 +18,6 @@ function notifyWrite() {
     htmx.trigger(poll, 'notif-sync');
   }
   htmx.trigger(document.body, 'order-changed');
-  htmx.trigger(document.body, 'counts-changed');
 }
 
 document.addEventListener('htmx:afterRequest', function (e) {

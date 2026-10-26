@@ -6,7 +6,7 @@
   id="queue-counts"
   class="queue-counts"
   hx-get="/dashboard/orders/counts"
-  hx-trigger="load, order-changed from:body, counts-changed from:body"
+  hx-trigger="load, order-changed from:body"
   hx-swap="innerHTML"
   ></div>
   {{template "split-list" (dict "List" "queue-list" "Get" "/dashboard/orders" "Aside" "queue-detail")}}
