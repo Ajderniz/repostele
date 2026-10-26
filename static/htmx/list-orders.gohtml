@@ -76,8 +76,9 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
 <code id="order-ref-{{.Id}}" class="order-ref order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{GroupRef .RefNum}}</code>
 {{end}}
 
+{{/* Without Id (the detail table) the badge has no id, so OOB swaps hit only the row. */}}
 {{define "order-status"}}
-<span id="order-status-{{.Id}}" class="row-card-status{{if .Status.IsUnreviewed}} status-unreviewed{{else if .Status.IsDenied}} status-denied{{else if .Status.IsAccepted}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
+<span {{with .Id}}id="order-status-{{.}}" {{end}}class="row-card-status{{if .Status.IsUnreviewed}} status-unreviewed{{else if .Status.IsDenied}} status-denied{{else if .Status.IsAccepted}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
 {{end}}
 
 {{define "order-actions"}}
