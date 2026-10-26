@@ -3,6 +3,7 @@
 package controllers
 
 import (
+	"encoding/json"
 	"errors"
 	"net/http"
 	"time"
@@ -23,6 +24,16 @@ func checkInit(
 
 func HandleRoot(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/menu", PermanentRedirect)
+}
+
+// GetCartPage renders the cart with the current menu (available items only),
+// so cart.js can refresh names and prices kept in localStorage.
+func GetCartPage(w http.ResponseWriter, r *http.Request) {
+	items, err := models.GetAvailableCartItems()
+	if err != nil { serveInternalErr(w, r); return }
+	b, err := json.Marshal(items)
+	if err != nil { serveInternalErr(w, r); return }
+	serveData(w, r, string(b))
 }
 
 // registerFormErr re-renders the register form with the error above it,

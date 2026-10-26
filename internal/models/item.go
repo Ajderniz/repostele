@@ -65,6 +65,23 @@ func GetItems(params *SelectParams, includeUnavailable bool) (items []Item, hasN
   return items, hasNext, nil
 }
 
+// CartItem is what the cart page needs to refresh a stored cart.
+type CartItem struct {
+  Id    int     `db:"id"    json:"id"`
+  Name  string  `db:"name"  json:"name"`
+  Price float32 `db:"price" json:"price"`
+}
+
+func GetAvailableCartItems() ([]CartItem, error) {
+  items := []CartItem{}
+  err := dbSelect(&items,
+    "SELECT "+ITEM_ID+","+_ITEM_NAME+","+_ITEM_PRICE+" FROM "+_ITEMS+" "+
+    "WHERE "+_ITEM_AVAILABLE+" = 1",
+  )
+  if err != nil { return []CartItem{}, errors.New("No se pudo acceder a la lista de ítemes") }
+  return items, nil
+}
+
 func GetItemFromID(id int) (Item, error) {
   item := Item{}
   err := dbGet(&item,
