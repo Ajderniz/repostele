@@ -71,6 +71,8 @@ func TestFlows(t *testing.T) {
     res := cust.expect(t, 200, cust.get("/menu", false))
     res.contains(t, "Pan dulce")
     res.lacks(t, "Torta de chocolate")
+    // toast.js reads ?msg=; binding must not reject it.
+    cust.expect(t, 200, cust.get("/menu?msg=hola", false))
   })
 
   step(t, "register", func(t *testing.T) {

@@ -14,6 +14,9 @@ import (
 var _Validate = validator.New(validator.WithRequiredStructEnabled())
 var _Decoder  = schema.NewDecoder()
 
+// Pages can carry params of their own, like ?msg= for toast.js.
+func init() { _Decoder.IgnoreUnknownKeys(true) }
+
 var _DecodingErr = errors.New("Error de decodificación")
 var _ValidationErr = errors.New("Error de validación")
 
