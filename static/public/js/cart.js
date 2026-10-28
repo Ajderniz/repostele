@@ -209,14 +209,22 @@ function showRefPreview(file) {
   img.hidden = false;
 }
 
-// OCR is ~60 KB, so it loads only when a receipt is picked.
+// OCR (tesseract.js 6.0.1, core 6.0.0, eng 4.0.0_best_int) is served from
+// /vendor/tesseract/ so it works on a network without internet. It's ~7 MB,
+// so it loads only when a receipt is picked.
+const TESSERACT_DIR = '/vendor/tesseract/';
+const TESSERACT_OPTS = {
+  workerPath: new URL(TESSERACT_DIR + 'worker.min.js', location.href).href,
+  corePath:   new URL(TESSERACT_DIR + 'tesseract-core-simd-lstm.wasm.js', location.href).href,
+  langPath:   new URL(TESSERACT_DIR, location.href).href,
+};
 let tesseractLoading = null;
 function loadTesseract() {
   if (window.Tesseract) return Promise.resolve();
   if (!tesseractLoading) {
     tesseractLoading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = '/vendor/tesseract.min.js';
+      script.src = TESSERACT_DIR + 'tesseract.min.js';
       script.onload = resolve;
       script.onerror = () => {
         tesseractLoading = null; // allow a retry on the next pick
@@ -249,7 +257,7 @@ async function scanRefImg(file) {
 
   try {
     await loadTesseract();
-    const { data: { text } } = await Tesseract.recognize(file, 'eng');
+    const { data: { text } } = await Tesseract.recognize(file, 'eng', TESSERACT_OPTS);
     const code = extractRefNum(text);
     // Keep a hand-typed code when the scan finds nothing.
     if (code) input.value = code;
@@ -257,6 +265,7 @@ async function scanRefImg(file) {
       ? 'Código detectado. Verifique antes de enviar.'
       : 'No se detectó código. Ingréselo manualmente.';
   } catch (e) {
+    console.error('OCR failed:', e);
     statusEl.textContent = 'No se pudo leer la imagen. Ingrese el código manualmente.';
   }
   updateContinueState();
