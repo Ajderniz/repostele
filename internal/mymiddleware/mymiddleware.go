@@ -45,8 +45,8 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
     }
   }
 
+  // Routine (logout and session closes expire sessions), so not logged.
   if session.Expires <= time.Now().Unix() {
-    reqlog.Error(r, _ErrExpired)
     return models.Session{}, http.StatusUnauthorized, _ErrExpired
   }
 
