@@ -216,7 +216,7 @@ function loadTesseract() {
   if (!tesseractLoading) {
     tesseractLoading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = '/tesseract.min.js';
+      script.src = '/vendor/tesseract.min.js';
       script.onload = resolve;
       script.onerror = () => {
         tesseractLoading = null; // allow a retry on the next pick

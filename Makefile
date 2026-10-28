@@ -6,8 +6,8 @@ MAIN_SRC=cmd/main.go
 USER_BIN=$(BIN_DIR)/user
 STAFF_BIN=$(BIN_DIR)/staff
 
-STYLE_SRC=$(PUB_DIR)/style.scss
-STYLE_DST=$(PUB_DIR)/style.css
+STYLE_SRC=scss/style.scss
+STYLE_DST=$(PUB_DIR)/css/style.css
 
 DATA_DB=$(BIN_DIR)/data.db
 
@@ -30,7 +30,7 @@ staff:
 	echo $(STAFF_BIN) > $(LAST_BUILD)
 
 style.css:
-	sass $(STYLE_SRC) $(STYLE_DST)
+	sass --embed-sources $(STYLE_SRC) $(STYLE_DST)
 
 vet:
 	go vet -tags=USER ./...
