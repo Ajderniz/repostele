@@ -2,6 +2,7 @@
 
 <article class="page">
   <h1 class="page-title">Mis órdenes</h1>
+  {{with .Msg}}{{template "div-msg" .}}{{end}}
   {{template "split-list" (dict "List" "orders-list" "Get" "/order" "Aside" "orders-detail")}}
 </article>
 

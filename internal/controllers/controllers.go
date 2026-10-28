@@ -126,8 +126,16 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// _PageFor maps sections with no page of their own to the page that holds
+// their UI, for requests made without htmx.
+var _PageFor = map[string]string{
+	"register": "login",
+	"order":    "orders",
+}
+
 func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	section := strings.Split(r.URL.Path, "/")[1]
+	if page, ok := _PageFor[section]; ok { section = page }
 
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }

@@ -51,15 +51,7 @@ func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err err
     _Tpl.ExecuteTemplate(w, "form-register-user", nil)
     return
   }
-  serveErr(w, asLoginPage(r), status, err)
-}
-
-// asLoginPage renders a /register response as the login page, which holds
-// the register form; there is no main-register template.
-func asLoginPage(r *http.Request) *http.Request {
-  r2 := r.Clone(r.Context())
-  r2.URL.Path = "/login"
-  return r2
+  serveErr(w, r, status, err)
 }
 
 func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
@@ -88,7 +80,7 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
     _Tpl.ExecuteTemplate(w, "form-login", nil)
     return
   }
-  serveResponse(w, asLoginPage(r), &_MainData{Msg: _MsgAccCreated}, Created, nil)
+  serveResponse(w, r, &_MainData{Msg: _MsgAccCreated}, Created, nil)
 }
 
 func accountPassHash(username string) (string, error) {
