@@ -65,6 +65,10 @@ func main() {
 				Level: slog.LevelInfo,
 				Schema: chiLogFormat,
 				RecoverPanics: true,
+				// Notification polls with no news are most of the traffic.
+				Skip: func(r *http.Request, status int) bool {
+					return status == http.StatusNoContent && r.URL.Path == "/htmx/notif"
+				},
 			},
 		),
 		middleware.CleanPath,
