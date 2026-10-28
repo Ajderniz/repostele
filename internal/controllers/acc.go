@@ -25,7 +25,10 @@ var (
 	_MsgPasswordChanged = "Se cambió la contraseña"
 )
 
-func checkLoginAttempts(w http.ResponseWriter, r *http.Request) (fp models.Fingerprint, err error) {
+func checkLoginAttempts(
+  w http.ResponseWriter,
+  r *http.Request,
+) (fp models.Fingerprint, err error) {
   fp = models.FingerprintFromContext(r.Context())
   if _MAX_FAILED_LOGINS <= fp.FailedLogins {
     err = errors.New("Se alcanzó el límite de intentos de inicio de sesión")
@@ -81,7 +84,10 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
 
   passHash, err := accountPassHash(username)
   if err != nil { serveInternalErrHX(w, r, err); return }
-  if passHash == "" { serveResponseHX(w, _MsgAccNotFound, NotFound, nil); return }
+  if passHash == "" {
+    serveResponseHX(w, _MsgAccNotFound, NotFound, nil)
+    return
+  }
 
   err = pass.CheckPasswordHash(password, passHash)
   if err != nil {
@@ -112,7 +118,9 @@ func closeAccountSessions(
   if self {
     sid, err := r.Cookie(SESSION_ID)
     if err != nil { return BadRequest, err }
-    if err := closeSession(w, sid.Value); err != nil { return InternalServerError, err }
+    if err := closeSession(w, sid.Value); err != nil {
+      return InternalServerError, err
+    }
     return OK, nil
   }
   if err := models.CloseSessionForUsername(username, role); err != nil {

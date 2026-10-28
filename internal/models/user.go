@@ -13,8 +13,7 @@ const (
   USER_PASS_HASH    = "pass_hash"
   USER_TIME_CREATED = "time_created"
   USER_ACTIVE       = "active"
-  _USER_FIELDS       = USER_USERNAME+","+/*_USER_PASS_HASH+","+*/USER_TIME_CREATED+
-                       ","+USER_ACTIVE
+  _USER_FIELDS       = USER_USERNAME+","+USER_TIME_CREATED+","+USER_ACTIVE
 )
 
 func InsertUserAccount(user User, fp Fingerprint) error {
@@ -46,7 +45,9 @@ func InsertUserAccount(user User, fp Fingerprint) error {
 var _UserSortFields = []string{ USER_USERNAME, USER_TIME_CREATED, USER_ACTIVE }
 
 func GetUsers(params *SelectParams) ([]User, bool, error) {
-  users, hasNext, err := selectPage[User]("SELECT "+_USER_FIELDS+" FROM "+_USERS, params, _UserSortFields)
+  users, hasNext, err := selectPage[User](
+    "SELECT "+_USER_FIELDS+" FROM "+_USERS, params, _UserSortFields,
+  )
   if err != nil { return []User{}, false, dbErr(_ErrGetAcc, err) }
   return users, hasNext, nil
 }

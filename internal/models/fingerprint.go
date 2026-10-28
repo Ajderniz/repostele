@@ -21,24 +21,28 @@ const (
 	FINGERPRINT_FAILED_LOGINS = "failed_logins"
 	FINGERPRINT_ACCS_CREATED = "accs_created"
 	_FINGERPRINT_FIELDS = FINGERPRINT_ID+","+_FINGERPRINT_USER+","+
-												_FINGERPRINT_EXPIRES+","+FINGERPRINT_FAILED_LOGINS+","+
-												FINGERPRINT_ACCS_CREATED
+		_FINGERPRINT_EXPIRES+","+FINGERPRINT_FAILED_LOGINS+","+
+		FINGERPRINT_ACCS_CREATED
 )
 
 func InsertFingerprint(fg Fingerprint) (error) {
 	_, err := dbNamedExec(
 		"INSERT INTO "+_FINGERPRINTS+" ("+_FINGERPRINT_FIELDS+") "+
-		"VALUES (:"+FINGERPRINT_ID+",:"+_FINGERPRINT_USER+",:"+_FINGERPRINT_EXPIRES+
+		"VALUES (:"+FINGERPRINT_ID+",:"+_FINGERPRINT_USER+
+			",:"+_FINGERPRINT_EXPIRES+
 			",:"+FINGERPRINT_FAILED_LOGINS+",:"+FINGERPRINT_ACCS_CREATED+") "+
 		"ON CONFLICT("+FINGERPRINT_ID+") DO UPDATE SET "+
 			_FINGERPRINT_USER+"=excluded."+_FINGERPRINT_USER+","+
 			_FINGERPRINT_EXPIRES+"=excluded."+_FINGERPRINT_EXPIRES+","+
 			FINGERPRINT_FAILED_LOGINS+"=0,"+
 			FINGERPRINT_ACCS_CREATED+"=0 "+
-		"WHERE excluded."+_FINGERPRINT_USER+"!="+_FINGERPRINTS+"."+_FINGERPRINT_USER,
+		"WHERE excluded."+_FINGERPRINT_USER+"!="+
+			_FINGERPRINTS+"."+_FINGERPRINT_USER,
 		&fg,
 	)
-	if err != nil { return dbErr(errors.New("No se pudo guardar la huella"), err) }
+	if err != nil {
+		return dbErr(errors.New("No se pudo guardar la huella"), err)
+	}
 	return nil
 }
 
@@ -53,13 +57,17 @@ func GetFingerPrintFromID(id string) (Fingerprint, error) {
 		id, time.Now().Unix(),
 	)
 	if err != nil {
-		return Fingerprint{}, dbErr(errors.New("No se pudo acceder a la huella"), err)
+		return Fingerprint{}, dbErr(
+			errors.New("No se pudo acceder a la huella"), err,
+		)
 	}
 	return fg, nil
 }
 
 func UpdateFingerprintField(id, field string, v any) error {
 	_, err := dbUpdateTableField(_FINGERPRINTS, field, v, FINGERPRINT_ID, id)
-	if err != nil { return dbErr(errors.New("No se pudo actualizar la huella"), err) }
+	if err != nil {
+		return dbErr(errors.New("No se pudo actualizar la huella"), err)
+	}
 	return nil
 }

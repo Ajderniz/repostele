@@ -56,7 +56,8 @@ func GetDashboard(w http.ResponseWriter, r *http.Request) {
 
 func startOfToday() int64 {
   now := time.Now()
-  return time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location()).Unix()
+  y, m, d := now.Date()
+  return time.Date(y, m, d, 0, 0, 0, 0, now.Location()).Unix()
 }
 
 
@@ -164,7 +165,9 @@ func deactivateStaffAccount(
     }
   }
 
-  if status, err := closeAccountSessions(w, r, username, models.SESSION_ROLE_STAFF, self); err != nil {
+  if status, err := closeAccountSessions(
+    w, r, username, models.SESSION_ROLE_STAFF, self,
+  ); err != nil {
     return status, err
   }
 
@@ -210,6 +213,10 @@ func setAccountPassHash(username, hash string) error {
   return models.UpdateStaffField(username, models.STAFF_PASS_HASH, hash)
 }
 
-func selfDeactivate(w http.ResponseWriter, r *http.Request, username string) (int, error) {
+func selfDeactivate(
+  w http.ResponseWriter,
+  r *http.Request,
+  username string,
+) (int, error) {
   return deactivateStaffAccount(w, r, username, true)
 }

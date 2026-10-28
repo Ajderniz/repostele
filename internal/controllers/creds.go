@@ -23,7 +23,9 @@ func getCredsFromForm(r *http.Request) (username, password string, err error) {
   return
 }
 
-func getRegisterCredsFromForm(r *http.Request) (username, password string, err error) {
+func getRegisterCredsFromForm(
+  r *http.Request,
+) (username, password string, err error) {
   username, err = bind.FormValue(r, _CREDS_USERNAME, _CREDS_VALIDATE)
   if err != nil { return }
   password1, err := bind.FormValue(r, _CREDS_PASSWORD+"-1", _CREDS_VALIDATE)
@@ -36,7 +38,9 @@ func getRegisterCredsFromForm(r *http.Request) (username, password string, err e
   return username, password1, nil
 }
 
-func getNewPasswordFromForm(r *http.Request) (oldPassword, newPassword string, err error) {
+func getNewPasswordFromForm(
+  r *http.Request,
+) (oldPassword, newPassword string, err error) {
   oldPassword, err = bind.FormValue(r, _CREDS_OLD_PASSWORD, _CREDS_VALIDATE)
   if err != nil { return }
   newPassword, err = bind.FormValue(r, _CREDS_NEW_PASSWORD, _CREDS_VALIDATE)

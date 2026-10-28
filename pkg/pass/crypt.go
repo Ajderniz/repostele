@@ -1,3 +1,4 @@
+// Package pass hashes passwords and makes random tokens.
 package pass
 
 import (

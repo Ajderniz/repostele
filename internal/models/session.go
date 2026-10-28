@@ -38,7 +38,8 @@ const (
                       ","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES
 )
 
-// Request context keys. A private type keeps them from colliding with other packages.
+// Request context keys. A private type keeps them from colliding with other
+// packages.
 type _CtxKey int
 const (
   _CTX_SESSION _CtxKey = iota
@@ -102,7 +103,8 @@ func GetSessionFromID(sid string) (Session, error) {
       "No se pudo acceder a la información de la sesión",
     ), err)
   }
-  // dbGet maps sql.ErrNoRows to nil, so a missing row shows up as an empty token.
+  // dbGet maps sql.ErrNoRows to nil, so a missing row shows up as an empty
+  // token.
   if session.SessionToken == "" {
     return Session{}, ErrSessionNotFound
   }
@@ -111,12 +113,16 @@ func GetSessionFromID(sid string) (Session, error) {
 
 // Usernames are unique per table, not across users and staff, so session
 // lookups by username also filter by role.
-func GetLatestOpenSessionFromUsername(username string, role SessionRole) (Session, error) {
+func GetLatestOpenSessionFromUsername(
+  username string,
+  role SessionRole,
+) (Session, error) {
   session := Session{}
   err := dbGet(&session,
     "SELECT * "+
     "FROM "+_SESSIONS+" "+
-    "WHERE "+_SESSION_USER+" = ? AND "+_SESSION_ROLE+" = ? AND ? < "+_SESSION_EXPIRES+" "+
+    "WHERE "+_SESSION_USER+" = ? AND "+_SESSION_ROLE+" = ? "+
+    "AND ? < "+_SESSION_EXPIRES+" "+
     "ORDER BY "+_SESSION_EXPIRES+" DESC "+
     "LIMIT 1",
     username, role, time.Now().Unix(),
@@ -160,7 +166,9 @@ func CloseAllSessions(users, staff bool) error {
     }
   }
   _, err := dbExec(query, time.Now().Unix())
-  if err != nil { return dbErr(errors.New("No se pudo cerrar todas las sesiones"), err) }
+  if err != nil {
+    return dbErr(errors.New("No se pudo cerrar todas las sesiones"), err)
+  }
   return nil
 }
 
@@ -170,12 +178,15 @@ var _SessionSortFields = []string{
 
 func GetActiveSessions(params *SelectParams) ([]Session, bool, error) {
   sessions, hasNext, err := selectPage[Session](
-    "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+_SESSION_STARTS+","+_SESSION_EXPIRES+" "+
+    "SELECT "+_SESSION_USER+","+_SESSION_ROLE+","+
+      _SESSION_STARTS+","+_SESSION_EXPIRES+" "+
     "FROM "+_SESSIONS+" WHERE ? < "+_SESSION_EXPIRES,
     params, _SessionSortFields, time.Now().Unix(),
   )
   if err != nil {
-    return []Session{}, false, dbErr(errors.New("No se pudo acceder a la lista de sesiones"), err)
+    return []Session{}, false, dbErr(
+      errors.New("No se pudo acceder a la lista de sesiones"), err,
+    )
   }
   return sessions, hasNext, nil
 }

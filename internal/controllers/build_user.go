@@ -42,7 +42,12 @@ func GetCartPage(w http.ResponseWriter, r *http.Request) {
 // since the form's own hx-target is #login-panel (not a shared *HX helper's
 // div-response slot) — losing the fields on error would be a worse UX than
 // the extra render.
-func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err error) {
+func registerFormErr(
+  w http.ResponseWriter,
+  r *http.Request,
+  status int,
+  err error,
+) {
   if isHX(r) {
     if status >= InternalServerError { reqlog.Error(r, err) }
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -57,7 +62,8 @@ func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err err
 func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   fp := models.FingerprintFromContext(r.Context())
   if _MAX_REG_ACCS <= fp.AccsCreated {
-    registerFormErr(w, r, Forbidden, errors.New("Se alcanzó el límite de creación de cuentas"))
+    registerFormErr(w, r, Forbidden,
+      errors.New("Se alcanzó el límite de creación de cuentas"))
     return
   }
 
@@ -67,7 +73,10 @@ func SelfRegisterAccount(w http.ResponseWriter, r *http.Request) {
   user := models.User{}
   user.Username = username
   user.PassHash, err = pass.HashPassword(password)
-  if err != nil { registerFormErr(w, r, InternalServerError, _ErrInternal); return }
+  if err != nil {
+    registerFormErr(w, r, InternalServerError, _ErrInternal)
+    return
+  }
   user.TimeCreated = time.Now().Unix()
 
   err = models.InsertUserAccount(user, fp)
@@ -93,9 +102,15 @@ func setAccountPassHash(username, hash string) error {
 }
 
 // Customers can't leave with an order still open.
-func selfDeactivate(w http.ResponseWriter, r *http.Request, username string) (int, error) {
+func selfDeactivate(
+  w http.ResponseWriter,
+  r *http.Request,
+  username string,
+) (int, error) {
   latestOrder, err := models.GetLatestOrderFromUsername(username)
   if err != nil { return InternalServerError, hideErr(err) }
-  if latestOrder.Pending() { return Conflict, errors.New("Hay una orden pendiente") }
+  if latestOrder.Pending() {
+    return Conflict, errors.New("Hay una orden pendiente")
+  }
   return deactivateUserAccount(w, r, username, true)
 }

@@ -30,7 +30,9 @@ func checkSessionUser(
   if err != nil { return "", 0, false }
 
   session, err := models.GetSessionFromID(sessionCookie.Value)
-  if err != nil && !errors.Is(err, models.ErrSessionNotFound) { reqlog.Error(r, err) }
+  if err != nil && !errors.Is(err, models.ErrSessionNotFound) {
+    reqlog.Error(r, err)
+  }
   if err != nil || session.SessionToken == "" { return "", 0, false }
 
   if session.Expires <= time.Now().Unix() { return "", 0, false }
@@ -165,7 +167,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
   reqlog.SetUser(r.Context(), username)
 
   // The page is rendered in this request, so its nav must see the new session.
-  serveMsg(w, r.WithContext(models.WithSession(r.Context(), session)), _MsgLoggedIn)
+  ctx := models.WithSession(r.Context(), session)
+  serveMsg(w, r.WithContext(ctx), _MsgLoggedIn)
 }
 
 func Logout(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +178,8 @@ func Logout(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   if isHX(r) {
-    w.Header().Set("HX-Redirect", "/login?msg="+url.QueryEscape("Sesión cerrada"))
+    msg := url.QueryEscape("Sesión cerrada")
+    w.Header().Set("HX-Redirect", "/login?msg="+msg)
     w.WriteHeader(OK)
     return
   }

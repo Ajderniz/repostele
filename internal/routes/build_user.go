@@ -29,7 +29,9 @@ func RegisterRoutes(r *chi.Mux) error {
     r.Group(func(r chi.Router) {
       r.Use(mymiddleware.RequireAuth())
 
-      r.Route("/cart",   func(r chi.Router) { r.Get("/", controllers.GetCartPage) })
+      r.Route("/cart", func(r chi.Router) {
+        r.Get("/", controllers.GetCartPage)
+      })
       r.Route("/orders", servePage)
 
       r.Route("/order", func(r chi.Router) {

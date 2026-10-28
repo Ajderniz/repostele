@@ -1,3 +1,4 @@
+// Package bind decodes and validates request data.
 package bind
 
 import (

@@ -17,17 +17,20 @@ import (
 var _AssetVer = map[string]string{}
 
 func loadAssetVersions() error {
-	return fs.WalkDir(static.FS, static.PUBLIC, func(p string, d fs.DirEntry, err error) error {
+	walk := func(p string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() { return err }
 		b, err := static.FS.ReadFile(p)
 		if err != nil { return err }
 		sum := sha256.Sum256(b)
-		_AssetVer[strings.TrimPrefix(p, static.PUBLIC)] = hex.EncodeToString(sum[:4])
+		url := strings.TrimPrefix(p, static.PUBLIC)
+		_AssetVer[url] = hex.EncodeToString(sum[:4])
 		return nil
-	})
+	}
+	return fs.WalkDir(static.FS, static.PUBLIC, walk)
 }
 
-// asset adds a content version to a public file URL so it can be cached for good.
+// asset adds a content version to a public file URL so it can be cached
+// for good.
 func asset(path string) string {
 	if v, ok := _AssetVer[path]; ok { return path + "?v=" + v }
 	return path

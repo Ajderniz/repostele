@@ -37,7 +37,8 @@ type Order struct {
   Lines   []OrderLine               `json:"lines"`
 }
 
-// OrderLine is one item of a new order, named and priced when the order is placed.
+// OrderLine is one item of a new order, named and priced when the order is
+// placed.
 type OrderLine struct {
   ItemID int     `json:"item_id"`
   Name   string  `json:"name"`
@@ -74,7 +75,7 @@ const (
   _ORDER_ITEM_PRICE    = "price"
   _ORDER_ITEM_NAME     = "name"
   _ORDER_ITEM_FIELDS   = _ORDER_ITEM_ORDER_ID+","+_ORDER_ITEM_ITEM_ID+","+
-                         _ORDER_ITEM_QUANT+","+_ORDER_ITEM_PRICE+","+_ORDER_ITEM_NAME
+    _ORDER_ITEM_QUANT+","+_ORDER_ITEM_PRICE+","+_ORDER_ITEM_NAME
 )
 
 var (
@@ -132,14 +133,20 @@ type PendingQueueStats struct {
 func GetPendingQueueStats() (PendingQueueStats, error) {
   var stats PendingQueueStats
   err := dbGet(&stats,
-    "SELECT COUNT(*) AS count, COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS unreviewed, "+
+    "SELECT COUNT(*) AS count, "+
+    "COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS unreviewed, "+
     "COALESCE(MAX("+ORDER_ID+"), 0) AS max_id, "+
     "COALESCE(MAX("+ORDER_UPDATED+"), 0) AS max_updated "+
     "FROM "+_ORDERS+" "+
     "WHERE "+ORDER_STATUS+" IN (?, ?, ?)",
-    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+    ORDER_STATUS_UNREVIEWED,
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
   )
-  if err != nil { return PendingQueueStats{}, dbErr(errors.New("No se pudo consultar la cola de órdenes"), err) }
+  if err != nil {
+    return PendingQueueStats{}, dbErr(
+      errors.New("No se pudo consultar la cola de órdenes"), err,
+    )
+  }
   return stats, nil
 }
 
@@ -157,14 +164,20 @@ func GetQueueCounts(since int64) (QueueCounts, error) {
     "SELECT COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS unreviewed, "+
     "COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS denied, "+
     "COALESCE(SUM("+ORDER_STATUS+" = ?), 0) AS accepted, "+
-    "COALESCE(SUM("+ORDER_STATUS+" = ? AND "+_ORDER_TIME+" >= ?), 0) AS fulfilled_today "+
+    "COALESCE(SUM("+ORDER_STATUS+" = ? AND "+_ORDER_TIME+" >= ?), 0) "+
+    "AS fulfilled_today "+
     "FROM "+_ORDERS+" "+
     "WHERE "+ORDER_STATUS+" IN (?, ?, ?, ?)",
     ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
     ORDER_STATUS_FULFILLED, since,
-    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED,
+    ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
+    ORDER_STATUS_FULFILLED,
   )
-  if err != nil { return QueueCounts{}, dbErr(errors.New("No se pudo contar las órdenes"), err) }
+  if err != nil {
+    return QueueCounts{}, dbErr(
+      errors.New("No se pudo contar las órdenes"), err,
+    )
+  }
   return c, nil
 }
 
@@ -178,11 +191,16 @@ func GetDayStats(since int64) (DayStats, error) {
   var d DayStats
   err := dbGet(&d,
     "SELECT COUNT(*) AS orders, "+
-    "COALESCE(SUM(CASE WHEN "+ORDER_STATUS+" IN (?, ?) THEN "+_ORDER_TOTAL+" ELSE 0 END), 0) AS sales "+
+    "COALESCE(SUM(CASE WHEN "+ORDER_STATUS+" IN (?, ?) "+
+      "THEN "+_ORDER_TOTAL+" ELSE 0 END), 0) AS sales "+
     "FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ?",
     ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED, since,
   )
-  if err != nil { return DayStats{}, dbErr(errors.New("No se pudo calcular las estadísticas"), err) }
+  if err != nil {
+    return DayStats{}, dbErr(
+      errors.New("No se pudo calcular las estadísticas"), err,
+    )
+  }
   return d, nil
 }
 
@@ -200,18 +218,21 @@ func GetPendingOrders(params *SelectParams) ([]Order, bool, error) {
   return orders, hasNext, nil
 }
 
-const _ORDER_HISTORY_QUERY = "SELECT * FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" IN (?, ?)"
+const _ORDER_HISTORY_QUERY =
+  "SELECT * FROM "+_ORDERS+" WHERE "+ORDER_STATUS+" IN (?, ?)"
 
 // GetOrderHistory pages through closed orders.
 func GetOrderHistory(params *SelectParams) ([]Order, bool, error) {
-  orders, hasNext, err := selectPage[Order](_ORDER_HISTORY_QUERY, params, _OrderSortFields,
-    ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
+  orders, hasNext, err := selectPage[Order](
+    _ORDER_HISTORY_QUERY, params, _OrderSortFields,
+      ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
   )
   if err != nil { return []Order{}, false, dbErr(_ErrGetOrders, err) }
   return orders, hasNext, nil
 }
 
-// GetAllOrderHistory lists every closed order in params' sort order (CSV export).
+// GetAllOrderHistory lists every closed order in params' sort order (CSV
+// export).
 func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
   orders := []Order{}
   params.Fix(_OrderSortFields)
@@ -238,14 +259,17 @@ func GetOrderItemDetails(orderId int) ([]OrderItemDetail, error) {
     "SELECT COALESCE(oi."+_ORDER_ITEM_NAME+", i."+_ITEM_NAME+") AS name, "+
       "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") AS price, "+
       "oi."+_ORDER_ITEM_QUANT+" AS quant, "+
-      "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") * oi."+_ORDER_ITEM_QUANT+" AS subtotal "+
+      "COALESCE(oi."+_ORDER_ITEM_PRICE+", i."+_ITEM_PRICE+") "+
+        "* oi."+_ORDER_ITEM_QUANT+" AS subtotal "+
     "FROM "+_ORDER_ITEMS+" oi "+
     "JOIN "+_ITEMS+" i ON i."+ITEM_ID+" = oi."+_ORDER_ITEM_ITEM_ID+" "+
     "WHERE oi."+_ORDER_ITEM_ORDER_ID+" = ?",
     orderId,
   )
   if err != nil {
-    return nil, dbErr(errors.New("No se pudo acceder al desglose de la orden"), err)
+    return nil, dbErr(
+      errors.New("No se pudo acceder al desglose de la orden"), err,
+    )
   }
   return details, nil
 }
@@ -266,13 +290,18 @@ func GetOrderFromID(id int) (Order, error) {
 }
 
 // GetOrdersFromUsername pages through a customer's orders.
-func GetOrdersFromUsername(username string, params *SelectParams) ([]Order, bool, error) {
+func GetOrdersFromUsername(
+  username string,
+  params *SelectParams,
+) ([]Order, bool, error) {
   orders, hasNext, err := selectPage[Order](
     "SELECT * FROM "+_ORDERS+" WHERE "+_ORDER_USER+" = ?",
     params, _OrderSortFields, username,
   )
   if err != nil {
-    return []Order{}, false, dbErr(errors.New("No se pudo acceder a la lista de órdenes"), err)
+    return []Order{}, false, dbErr(
+      errors.New("No se pudo acceder a la lista de órdenes"), err,
+    )
   }
   return orders, hasNext, nil
 }
@@ -288,7 +317,9 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
     username,
   )
   if err != nil {
-    return Order{},dbErr(errors.New("No se pudo acceder a la última orden"), err)
+    return Order{},dbErr(
+      errors.New("No se pudo acceder a la última orden"), err,
+    )
   }
   return order, nil
 }
@@ -302,14 +333,20 @@ func GetLatestOrderID() (int, error) {
     "LIMIT 1",
   )
   if err != nil {
-    return -1, dbErr(errors.New("No se pudo acceder al ID de la última orden"), err)
+    return -1, dbErr(
+      errors.New("No se pudo acceder al ID de la última orden"), err,
+    )
   }
   return id, nil
 }
 
 
 // One UPDATE for a ref edit plus its status change.
-func UpdateOrderRefNumAndStatus(id int, refNum string, status OrderStatus) error {
+func UpdateOrderRefNumAndStatus(
+  id int,
+  refNum string,
+  status OrderStatus,
+) error {
   _, err := dbExec(
     "UPDATE "+_ORDERS+" "+
     "SET "+ORDER_REF_NUM+" = ?, "+ORDER_STATUS+" = ?, "+ORDER_UPDATED+" = ? "+

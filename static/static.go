@@ -1,3 +1,4 @@
+// Package static embeds the templates and public files.
 package static
 
 import "embed"

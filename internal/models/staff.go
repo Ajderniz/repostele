@@ -35,11 +35,14 @@ func InsertStaffAccount(staff Staff) error {
 }
 
 var _StaffSortFields = _SortFields{
-	STAFF_USERNAME,_STAFF_FULL_NAME,STAFF_TIME_CREATED,STAFF_ACTIVE,_STAFF_ADMIN,
+	STAFF_USERNAME, _STAFF_FULL_NAME, STAFF_TIME_CREATED, STAFF_ACTIVE,
+	_STAFF_ADMIN,
 }
 
 func GetStaff(params *SelectParams) ([]Staff, bool, error) {
-	staff, hasNext, err := selectPage[Staff]("SELECT "+_STAFF_FIELDS+" FROM "+_STAFF, params, _StaffSortFields)
+	staff, hasNext, err := selectPage[Staff](
+		"SELECT "+_STAFF_FIELDS+" FROM "+_STAFF, params, _StaffSortFields,
+	)
 	if err != nil { return []Staff{}, false, dbErr(_ErrGetAcc, err) }
 	return staff, hasNext, nil
 }

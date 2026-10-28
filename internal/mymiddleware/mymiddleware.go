@@ -1,3 +1,4 @@
+// Package mymiddleware checks sessions, CSRF, fingerprints and setup.
 package mymiddleware
 
 import (
@@ -18,7 +19,10 @@ var (
   _ErrExpired = errors.New("La sesión expiró")
 )
 
-func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, error){
+func getSession(
+  w http.ResponseWriter,
+  r *http.Request,
+) (models.Session, int, error) {
   sessionCookie, err := r.Cookie(controllers.SESSION_ID)
   if err != nil {
     return models.Session{}, http.StatusUnauthorized, _ErrAuth
@@ -69,7 +73,8 @@ func OptUsername() func(next http.Handler) http.Handler {
       }
       if session.User != "" {
         reqlog.SetUser(r.Context(), session.User)
-        next.ServeHTTP(w, r.WithContext(models.WithSession(r.Context(), session)))
+        ctx := models.WithSession(r.Context(), session)
+        next.ServeHTTP(w, r.WithContext(ctx))
         return
       }
       next.ServeHTTP(w, r)
@@ -82,8 +87,12 @@ func RequireAuth() func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       session, status, err := getSession(w, r)
       if err != nil {
-        // Unknown or expired sessions (401/404) mean "log in again"; only real failures are 500.
-        if status == http.StatusInternalServerError { w.WriteHeader(status); return }
+        // Unknown or expired sessions (401/404) mean "log in again"; only real
+        // failures are 500.
+        if status == http.StatusInternalServerError {
+          w.WriteHeader(status)
+          return
+        }
         w.WriteHeader(http.StatusUnauthorized)
         return
       }

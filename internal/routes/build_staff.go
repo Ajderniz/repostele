@@ -50,7 +50,8 @@ func RegisterRoutes(r *chi.Mux) error {
           r.Route("/staff", func(r chi.Router) {
             r.Get(  "/",                      controllers.GetStaffList)
             r.Post( "/",                      controllers.RegisterStaffAccount)
-            r.Patch("/deactivate/{username}", controllers.DeactivateStaffAccount)
+            r.Patch("/deactivate/{username}",
+              controllers.DeactivateStaffAccount)
           })
 
           r.Route("/users", func(r chi.Router) {
@@ -61,7 +62,8 @@ func RegisterRoutes(r *chi.Mux) error {
           r.Route("/sessions", func(r chi.Router) {
             r.Get(  "/",                        controllers.GetActiveSessions)
             r.Patch("/close",                   controllers.CloseAllSessions)
-            r.Patch("/close/{role}/{username}", controllers.CloseSessionForUsername)
+            r.Patch("/close/{role}/{username}",
+              controllers.CloseSessionForUsername)
           })
 
           r.Route("/menu", func(r chi.Router) {

@@ -25,7 +25,8 @@ func GetItemCreateForm(w http.ResponseWriter, r *http.Request) {
   if !isHX(r) { http.NotFound(w, r); return }
   onLastPage := r.URL.Query().Get("hasNext") != "true"
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
-  _Tpl.ExecuteTemplate(w, "form-create-item", map[string]any{"OnLastPage": onLastPage})
+  _Tpl.ExecuteTemplate(w, "form-create-item",
+    map[string]any{"OnLastPage": onLastPage})
 }
 
 func PostItem(w http.ResponseWriter, r *http.Request) {
@@ -75,7 +76,8 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     w.Write([]byte(`<p id="menu-empty-msg" hx-swap-oob="delete"></p>`))
     w.Write([]byte(`<div hx-swap-oob="beforeend:#menu-item-list">`))
     _Tpl.ExecuteTemplate(w, "menu-item", map[string]any{
-      "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": "",
+      "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true,
+      "OOB": "",
     })
     w.Write([]byte(`</div>`))
   }
@@ -172,7 +174,8 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveInternalErrHX(w, r, err); return }
 
   if update.ImgPath != "" && oldItem.ImgPath != "" {
-    if err := os.Remove(filepath.Join(static.IMGDIR, filepath.Base(oldItem.ImgPath))); err != nil {
+    old := filepath.Join(static.IMGDIR, filepath.Base(oldItem.ImgPath))
+    if err := os.Remove(old); err != nil {
       reqlog.Error(r, err)
     }
   }
@@ -180,7 +183,9 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   item, err := models.GetItemFromID(id)
   if err != nil { serveInternalErrHX(w, r, err); return }
 
-  serveOOB(w, OK, _HXData{Msg: "Se actualizó el ítem"}, frag("menu-item", map[string]any{
-    "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": true,
-  }))
+  serveOOB(w, OK, _HXData{Msg: "Se actualizó el ítem"},
+    frag("menu-item", map[string]any{
+      "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true,
+      "OOB": true,
+    }))
 }

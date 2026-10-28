@@ -1,3 +1,4 @@
+// Command main is the user or staff app, picked by the USER/STAFF build tag.
 package main
 
 import (
@@ -24,7 +25,7 @@ const _LOG_DIR = "log"
 
 func main() {
 	port := flag.Int("port", 8080, "Port number")
-	quiet := flag.Bool("quiet", false, "Log to the log file only, not to stdout")
+	quiet := flag.Bool("quiet", false, "Log to the log file only")
 	flag.Parse()
 
 	exePath, err := os.Executable()
@@ -43,15 +44,19 @@ func main() {
 	if err != nil { log.Fatal(err.Error()) }
 
 	handlers := []slog.Handler{slog.NewTextHandler(logFile, nil)}
-	if !*quiet { handlers = append(handlers, slog.NewTextHandler(os.Stdout, nil)) }
-	logger := slog.New(slog.NewMultiHandler(handlers...)).With(slog.String("bin", exeBase))
+	if !*quiet {
+		handlers = append(handlers, slog.NewTextHandler(os.Stdout, nil))
+	}
+	logger := slog.New(slog.NewMultiHandler(handlers...)).
+		With(slog.String("bin", exeBase))
 	slog.SetDefault(logger)
 
 	err = models.OpenDB()
 	if err != nil { log.Fatal(err.Error()) }
 
 	purge := func() {
-		if err := models.PurgeExpired(time.Now().Unix()); err != nil { slog.Error(err.Error()) }
+		err := models.PurgeExpired(time.Now().Unix())
+		if err != nil { slog.Error(err.Error()) }
 	}
 	purge()
 	go func() { for range time.Tick(time.Hour) { purge() } }()
@@ -68,7 +73,8 @@ func main() {
 				RecoverPanics: true,
 				// Notification polls with no news are most of the traffic.
 				Skip: func(r *http.Request, status int) bool {
-					return status == http.StatusNoContent && r.URL.Path == "/htmx/notif"
+					return status == http.StatusNoContent &&
+						r.URL.Path == "/htmx/notif"
 				},
 			},
 		),

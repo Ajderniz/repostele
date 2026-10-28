@@ -16,7 +16,9 @@ func deactivateUserAccount(
   self bool,
 ) (int, error) {
 
-  if status, err := closeAccountSessions(w, r, username, models.SESSION_ROLE_USER, self); err != nil {
+  if status, err := closeAccountSessions(
+    w, r, username, models.SESSION_ROLE_USER, self,
+  ); err != nil {
     return status, err
   }
 

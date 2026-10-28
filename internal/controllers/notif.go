@@ -23,10 +23,16 @@ func ServeNotif(w http.ResponseWriter, r *http.Request) {
 		serveStaffNotif(w, r, prev, silent)
 		return
 	}
-	serveUserNotif(w, username, prev, silent, r.URL.Query().Get("widget") == "1")
+	hasSlot := r.URL.Query().Get("widget") == "1"
+	serveUserNotif(w, username, prev, silent, hasSlot)
 }
 
-func serveStaffNotif(w http.ResponseWriter, r *http.Request, prev string, silent bool) {
+func serveStaffNotif(
+	w http.ResponseWriter,
+	r *http.Request,
+	prev string,
+	silent bool,
+) {
 	stats, err := models.GetPendingQueueStats()
 	if err != nil { reqlog.Error(r, err); noNotif(w, prev); return }
 	token := fmt.Sprintf("%d|%d|%d", stats.Count, stats.MaxID, stats.MaxUpdated)
@@ -54,12 +60,17 @@ func serveStaffNotif(w http.ResponseWriter, r *http.Request, prev string, silent
 }
 
 // hasSlot: the page has #current-order, so send its OOB update.
-func serveUserNotif(w http.ResponseWriter, username, prev string, silent, hasSlot bool) {
+func serveUserNotif(
+	w http.ResponseWriter,
+	username, prev string,
+	silent, hasSlot bool,
+) {
 	order, err := models.GetLatestOrderFromUsername(username)
 	token := ""
 	active := err == nil && order.Pending()
 	if err == nil && order.RefNum != "" {
-		token = fmt.Sprintf("%d|%d|%s|%d", order.Id, order.Status, order.RefNum, order.Updated)
+		token = fmt.Sprintf("%d|%d|%s|%d",
+			order.Id, order.Status, order.RefNum, order.Updated)
 	}
 	if token == prev { noNotif(w, token); return }
 
@@ -69,7 +80,8 @@ func serveUserNotif(w http.ResponseWriter, username, prev string, silent, hasSlo
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.Header().Set("X-Notif-Token", token)
 	if prev != "" && !silent {
-		msg := fmt.Sprintf("Tu orden #%d: %s", order.Id, orderStatusName(order.Status))
+		msg := fmt.Sprintf("Tu orden #%d: %s",
+			order.Id, orderStatusName(order.Status))
 		w.Header().Set("HX-Trigger", "order-changed")
 		_Tpl.ExecuteTemplate(w, "toast", msg)
 	}

@@ -1,3 +1,4 @@
+// Package upload saves uploaded images.
 package upload
 
 import (
@@ -34,7 +35,11 @@ var (
 // writes it to dir with a random generated filename. Returns the path
 // to the saved file relative to dir (i.e. just the filename), which the
 // caller should join with the URL-facing prefix (e.g. "/dyn/items/").
-func SaveImage(file multipart.File, header *multipart.FileHeader, dir string) (string, error) {
+func SaveImage(
+	file multipart.File,
+	header *multipart.FileHeader,
+	dir string,
+) (string, error) {
 	defer file.Close()
 
 	if header.Size > _MAX_IMG_BYTES { return "", ErrTooLarge }
@@ -43,7 +48,10 @@ func SaveImage(file multipart.File, header *multipart.FileHeader, dir string) (s
 	// header.Header.Get("Content-Type") alone, it's client-controlled.
 	sniff := make([]byte, 512)
 	n, err := file.Read(sniff)
-	if err != nil && err != io.EOF { slog.Error(err.Error()); return "", _ErrSave}
+	if err != nil && err != io.EOF {
+		slog.Error(err.Error())
+		return "", _ErrSave
+	}
 	contentType := http.DetectContentType(sniff[:n])
 
 	ext, ok := _AllowedImgExt[contentType]

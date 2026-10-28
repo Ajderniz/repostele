@@ -1,3 +1,4 @@
+// Package routes maps URLs to controllers for each app.
 package routes
 
 import (
@@ -43,7 +44,8 @@ func cacheFor(policy string, h http.Handler) http.Handler {
   })
 }
 
-// cacheStatic: URLs from the asset template func carry ?v=<hash> and never change.
+// cacheStatic: URLs from the asset template func carry ?v=<hash> and never
+// change.
 func cacheStatic(h http.Handler) http.Handler {
   return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
     policy := _CACHE_SHORT

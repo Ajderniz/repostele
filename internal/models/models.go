@@ -1,3 +1,4 @@
+// Package models is the database layer.
 package models
 
 import (
@@ -17,8 +18,9 @@ const _DB_FILEPATH = "./data.db"
 // timeout makes a writer wait for the lock instead of failing.
 const _DB_DSN = _DB_FILEPATH+"?_journal_mode=WAL&_busy_timeout=5000"
 
-// Indexes for the hot lookups (latest order per user, queue by status, order items, user sessions).
-// Idempotent, so it runs on every start and also covers DBs created before they existed.
+// Indexes for the hot lookups (latest order per user, queue by status,
+// order items, user sessions). Idempotent, so it runs on every start and
+// also covers DBs created before they existed.
 var _INDEXES = []string{
   "CREATE INDEX IF NOT EXISTS idx_orders_user_time ON orders(user, time)",
   "CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status)",
@@ -38,15 +40,19 @@ func ensureIndexes() error {
 // columns get the item's current values, the best guess left.
 var _ADDED_COLUMNS = []struct{ table, column, def, backfill string }{
   {"order_items", "price", "NUMERIC CHECK(0 <= price)",
-    "UPDATE order_items SET price = (SELECT price FROM items WHERE items.id = order_items.item_id) WHERE price IS NULL"},
+    "UPDATE order_items SET price = (SELECT price FROM items " +
+      "WHERE items.id = order_items.item_id) WHERE price IS NULL"},
   {"order_items", "name", "TEXT",
-    "UPDATE order_items SET name = (SELECT name FROM items WHERE items.id = order_items.item_id) WHERE name IS NULL"},
+    "UPDATE order_items SET name = (SELECT name FROM items " +
+      "WHERE items.id = order_items.item_id) WHERE name IS NULL"},
 }
 
 func ensureColumns() error {
   for _, c := range _ADDED_COLUMNS {
     var n int
-    err := _DB.Get(&n, "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?", c.table, c.column)
+    err := _DB.Get(&n,
+      "SELECT COUNT(*) FROM pragma_table_info(?) WHERE name = ?",
+      c.table, c.column)
     if err != nil { return err }
     if n > 0 { continue }
 
@@ -72,7 +78,8 @@ func ensureSchema() error {
 }
 
 // PurgeExpired drops sessions and fingerprints whose expiry has passed.
-// Expired fingerprints are already ignored by lookups (see GetFingerPrintFromID), so this is safe.
+// Expired fingerprints are already ignored by lookups (see
+// GetFingerPrintFromID), so this is safe.
 func PurgeExpired(now int64) error {
   _, err := _DB.Exec(
     "DELETE FROM "+_SESSIONS+" WHERE "+_SESSION_EXPIRES+" <= ?", now,
@@ -123,7 +130,9 @@ func (params *SelectParams) Fix(fields _SortFields) {
 type dbError struct{ msg, cause error }
 
 func (e dbError) Error() string   { return e.msg.Error() }
-func (e dbError) Detail() string  { return e.msg.Error() + ": " + e.cause.Error() }
+func (e dbError) Detail() string {
+  return e.msg.Error() + ": " + e.cause.Error()
+}
 func (e dbError) Unwrap() []error { return []error{e.msg, e.cause} }
 
 func dbErr(msg, cause error) error { return dbError{msg, cause} }

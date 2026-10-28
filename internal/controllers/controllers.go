@@ -1,3 +1,4 @@
+// Package controllers holds the HTTP handlers and page rendering.
 package controllers
 
 import (
@@ -140,7 +141,8 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	init, redirect := checkInit(w, r, section)
 	if redirect { return }
 
-	// Set by the auth middleware; routes without it (e.g. /init) count as logged out.
+	// Set by the auth middleware; routes without it (e.g. /init) count as
+	// logged out.
 	session, hasSession := models.SessionFromContext(r.Context())
 	loggedIn := hasSession
 
@@ -151,12 +153,20 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 
 	if hasSession && session.Role == models.SESSION_ROLE_STAFF {
 		staff, err := models.GetStaffFromUsername(session.User)
-		if err != nil { reqlog.Error(r, err); w.WriteHeader(InternalServerError); return }
+		if err != nil {
+			reqlog.Error(r, err)
+			w.WriteHeader(InternalServerError)
+			return
+		}
 		isStaff = staff.Username != ""
 		isAdmin = staff.Admin
 		if isStaff {
 			stats, err := models.GetPendingQueueStats()
-			if err != nil { reqlog.Error(r, err) } else { pendingOrders = stats.Unreviewed }
+			if err != nil {
+				reqlog.Error(r, err)
+			} else {
+				pendingOrders = stats.Unreviewed
+			}
 		}
 	}
 
@@ -178,7 +188,8 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	var errStr string
 	if errAny != nil { errStr = errAny.(error).Error() }
 
-	// Render fully before writing, so a template error gives a clean 500, not half a page.
+	// Render fully before writing, so a template error gives a clean 500,
+	// not half a page.
 	var buf bytes.Buffer
 	err := _Tpl.Execute(&buf, _TplData{
 		Title: titleCaser.String(section),
@@ -202,11 +213,14 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
-	if status, ok := r.Context().Value(_STATUS).(int); ok { w.WriteHeader(status) }
+	if status, ok := r.Context().Value(_STATUS).(int); ok {
+		w.WriteHeader(status)
+	}
 	buf.WriteTo(w)
 }
 
-// ctxUsername is the logged-in username set by the auth middleware ("" if none).
+// ctxUsername is the logged-in username set by the auth middleware
+// ("" if none).
 func ctxUsername(r *http.Request) string {
 	s, _ := models.SessionFromContext(r.Context())
 	return s.User
@@ -287,8 +301,11 @@ func frag(name string, data any) _Frag { return _Frag{name, data} }
 func serveOOB(w http.ResponseWriter, status int, data _HXData, frags ..._Frag) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(status)
-	for _, f := range append([]_Frag{{"div-response", data}, {"toast", data.Msg}}, frags...) {
-		if err := _Tpl.ExecuteTemplate(w, f.Name, f.Data); err != nil { slog.Error(err.Error()) }
+	head := []_Frag{{"div-response", data}, {"toast", data.Msg}}
+	for _, f := range append(head, frags...) {
+		if err := _Tpl.ExecuteTemplate(w, f.Name, f.Data); err != nil {
+			slog.Error(err.Error())
+		}
 	}
 }
 
@@ -301,21 +318,32 @@ func serveInternalErrHX(w http.ResponseWriter, r *http.Request, err error) {
 	serveResponseHX(w, _ErrInternal.Error(), InternalServerError, nil)
 }
 
-// isHX reports whether the request came from htmx (or a fetch that sets the header).
+// isHX reports whether the request came from htmx (or a fetch that sets
+// the header).
 func isHX(r *http.Request) bool {
 	return r.Header.Get("HX-Request") == "true"
 }
 
 // serveErrAuto answers with the div-response fragment for htmx requests and
 // the full error page otherwise.
-func serveErrAuto(w http.ResponseWriter, r *http.Request, status int, err error) {
+func serveErrAuto(
+	w http.ResponseWriter,
+	r *http.Request,
+	status int,
+	err error,
+) {
 	if isHX(r) { serveStatusErrHX(w, r, status, err); return }
 	serveErr(w, r, status, err)
 }
 
 // serveStatusErrHX shows err with the status a helper picked, logging it
 // when that status is a server error.
-func serveStatusErrHX(w http.ResponseWriter, r *http.Request, status int, err error) {
+func serveStatusErrHX(
+	w http.ResponseWriter,
+	r *http.Request,
+	status int,
+	err error,
+) {
 	if status >= InternalServerError { reqlog.Error(r, err) }
 	serveResponseHX(w, err.Error(), status, nil)
 }
@@ -328,7 +356,12 @@ func serveInternalErrAuto(w http.ResponseWriter, r *http.Request, err error) {
 // serveDataHX renders tplName directly (a bare partial, no page chrome) when
 // the request came from htmx, and falls back to the normal full-page
 // serveData otherwise.
-func serveDataHX(w http.ResponseWriter, r *http.Request, data any, tplName string) {
+func serveDataHX(
+	w http.ResponseWriter,
+	r *http.Request,
+	data any,
+	tplName string,
+) {
 	if isHX(r) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := _Tpl.ExecuteTemplate(w, tplName, data); err != nil {
