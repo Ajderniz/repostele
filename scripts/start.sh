@@ -34,9 +34,10 @@ start() {
     exit 1
   fi
   mkdir -p "$BIN/log"
-  # The servers write their own log files; stderr keeps startup failures.
+  # -quiet keeps logs in the log file only; stderr keeps startup failures.
+  # setsid detaches the server from this terminal.
   (cd "$BIN"
-   nohup "./$name" -port "$port" >/dev/null 2>>"log/$name.err" &
+   setsid "./$name" -port "$port" -quiet 2>>"log/$name.err" &
    echo $! >"$name.pid")
   echo "$name started on port $port (pid $(cat "$BIN/$name.pid"))"
 }
@@ -64,3 +65,4 @@ if ((fresh_db)); then
   wait_listening staff "$STAFF_PORT"
 fi
 start user "$USER_PORT"
+wait_listening user "$USER_PORT"

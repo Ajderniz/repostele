@@ -23,6 +23,7 @@ const _LOG_DIR = "log"
 
 func main() {
 	port := flag.Int("port", 8080, "Port number")
+	quiet := flag.Bool("quiet", false, "Log to the log file only, not to stdout")
 	flag.Parse()
 
 	exePath, err := os.Executable()
@@ -40,10 +41,9 @@ func main() {
 	)
 	if err != nil { log.Fatal(err.Error()) }
 
-	logger := slog.New(slog.NewMultiHandler(
-		slog.NewTextHandler(os.Stdout, nil),
-		slog.NewTextHandler(logFile, nil),
-	))
+	handlers := []slog.Handler{slog.NewTextHandler(logFile, nil)}
+	if !*quiet { handlers = append(handlers, slog.NewTextHandler(os.Stdout, nil)) }
+	logger := slog.New(slog.NewMultiHandler(handlers...)).With(slog.String("bin", exeBase))
 	slog.SetDefault(logger)
 
 	err = models.OpenDB()
