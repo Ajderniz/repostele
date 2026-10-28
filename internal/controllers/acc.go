@@ -77,10 +77,11 @@ func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { serveInternalErrHX(w, r, err); return }
+  if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   passHash, err := accountPassHash(username)
-  if err != nil || passHash == "" { serveInternalErrHX(w, r, err); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
+  if passHash == "" { serveResponseHX(w, _MsgAccNotFound, NotFound, nil); return }
 
   err = pass.CheckPasswordHash(password, passHash)
   if err != nil {
