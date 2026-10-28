@@ -6,16 +6,20 @@
     {{$endpoint := "/dashboard/admin/users"}}
     {{$target := "#dash-panel"}}
     <div class="sort-bar">
-      {{template "sort-link" (dict "Field" "username"     "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "time_created" "Label" "Creado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "active"       "Label" "Activo"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "username" "Label" "Usuario"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "time_created" "Label" "Creado"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "active" "Label" "Activo"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
     </div>
     <ul class="row-card-list">
       {{range .Users}}
       <li class="row-card" id="user-{{.Username}}">
         <div class="row-card-head">
           <span class="row-card-id">{{.Username}}</span>
-          {{template "user-active-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+          {{template "user-active-cell"
+            (dict "Username" .Username "Active" .Active "OOB" false)}}
         </div>
         <dl class="row-card-fields">
           <div class="row-card-field">
@@ -23,21 +27,31 @@
             <dd>{{UnixToTime .TimeCreated}}</dd>
           </div>
         </dl>
-        {{template "user-actions-cell" (dict "Username" .Username "Active" .Active "OOB" false)}}
+        {{template "user-actions-cell"
+          (dict "Username" .Username "Active" .Active "OOB" false)}}
       </li>
       {{end}}
     </ul>
-    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
+    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext
+      "Endpoint" $endpoint "Target" $target)}}
   {{end}}
 
 {{end}}
 
 {{define "user-active-cell"}}
-<span id="user-active-{{.Username}}" class="row-card-status" {{if .OOB}}hx-swap-oob="true"{{end}}>{{if .Active}}Activo{{else}}Inactivo{{end}}</span>
+<span
+id="user-active-{{.Username}}"
+class="row-card-status"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>{{if .Active}}Activo{{else}}Inactivo{{end}}</span>
 {{end}}
 
 {{define "user-actions-cell"}}
-<div id="user-actions-{{.Username}}" class="row-card-actions" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div
+id="user-actions-{{.Username}}"
+class="row-card-actions"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>
   {{if .Active}}
   <button
   class="btn btn-compact btn-danger"

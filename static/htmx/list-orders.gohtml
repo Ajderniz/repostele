@@ -7,7 +7,12 @@
 {{$aside := .Aside}}
 {{if .Export}}
   <div class="order-list-tools">
-    <a class="btn btn-compact" href="/dashboard/orders/history/export?sort={{.Params.Sort}}&dir={{.Params.Dir}}" download>Exportar CSV</a>
+    <a
+    class="btn btn-compact"
+    href="/dashboard/orders/history/export?sort={{.Params.Sort}}&dir=
+      {{- .Params.Dir}}"
+    download
+    >Exportar CSV</a>
   </div>
 {{end}}
 {{if not .Orders}}
@@ -15,18 +20,24 @@
 {{else}}
   {{if $isStaff}}
     <div class="sort-bar">
-      {{template "sort-link" (dict "Field" "id"     "Label" "ID"      "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "user"   "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "total"  "Label" "Total"   "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "status" "Label" "Estado"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "id" "Label" "ID"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "user" "Label" "Usuario"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "total" "Label" "Total"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "status" "Label" "Estado"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
     </div>
   {{end}}
   <ul class="order-list">
     {{range .Orders}}
-      {{template "order-row" (dict "Order" . "IsStaff" $isStaff "Aside" $aside)}}
+      {{template "order-row"
+        (dict "Order" . "IsStaff" $isStaff "Aside" $aside)}}
     {{end}}
   </ul>
-  {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
+  {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext
+    "Endpoint" $endpoint "Target" $target)}}
 {{end}}
 
 {{end}}
@@ -39,24 +50,29 @@
 <li
 class="order-entry{{if $track}} order-entry-current{{end}}"
 id="order-{{$o.Id}}"
-hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}{{else}}/order/{{$o.Id}}{{end}}"
+hx-get="{{if $isStaff}}/dashboard/orders/{{$o.Id}}
+  {{- else}}/order/{{$o.Id}}{{end}}"
 hx-target="{{if $track}}#order-detail-{{$o.Id}}{{else}}#{{$aside}}{{end}}"
 hx-swap="innerHTML"
-hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail')]"
+hx-trigger="click[!event.target.closest('button,a,input,form,
+  {{- ""}}.order-entry-detail')]"
 {{if not $track}}data-aside-target="{{$aside}}" data-id="{{$o.Id}}"{{end}}
 >
   <div class="order-entry-main">
     <div class="order-entry-head">
       <span class="row-card-id">#{{$o.Id}}</span>
       {{if $isStaff}}<span class="order-entry-user">{{$o.User}}</span>{{end}}
-      {{template "order-status" (dict "Id" $o.Id "Status" $o.Status "OOB" false)}}
+      {{template "order-status"
+        (dict "Id" $o.Id "Status" $o.Status "OOB" false)}}
     </div>
     {{if $track}}
       {{$s := $o.Status}}
       <div class="order-track">
         <span class="done">Recibida</span>
-        <span class="{{if $s.IsUnreviewed}}on{{else if $s.IsDenied}}denied{{else}}done{{end}}">Revisión</span>
-        <span class="{{if $s.IsAccepted}}on{{else if $s.IsFulfilled}}done{{end}}">Lista</span>
+        <span class="{{if $s.IsUnreviewed}}on
+          {{- else if $s.IsDenied}}denied{{else}}done{{end}}">Revisión</span>
+        <span class="{{if $s.IsAccepted}}on
+          {{- else if $s.IsFulfilled}}done{{end}}">Lista</span>
       </div>
       <span class="order-ref-label">Referencia SINPE</span>
     {{end}}
@@ -65,22 +81,39 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
       {{template "order-ref-slot" (dict "Id" $o.Id "RefNum" $o.RefNum)}}
     </div>
   </div>
-  {{template "order-actions" (dict "Id" $o.Id "Status" $o.Status "IsStaff" $isStaff "OOB" false)}}
+  {{template "order-actions" (dict "Id" $o.Id "Status" $o.Status
+    "IsStaff" $isStaff "OOB" false)}}
   <div id="order-detail-{{$o.Id}}" class="hx-slot order-entry-detail"></div>
 </li>
 {{end}}
 
 {{define "order-ref-num"}}
-<code id="order-ref-{{.Id}}" class="order-ref order-ref-num" {{if .OOB}}hx-swap-oob="true"{{end}}>{{GroupRef .RefNum}}</code>
+<code
+id="order-ref-{{.Id}}"
+class="order-ref order-ref-num"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>{{GroupRef .RefNum}}</code>
 {{end}}
 
-{{/* Without Id (the detail table) the badge has no id, so OOB swaps hit only the row. */}}
+{{/* Without Id (the detail table) the badge has no id, so OOB swaps hit
+only the row. */}}
 {{define "order-status"}}
-<span {{with .Id}}id="order-status-{{.}}" {{end}}class="row-card-status{{if .Status.IsUnreviewed}} status-unreviewed{{else if .Status.IsDenied}} status-denied{{else if .Status.IsAccepted}} status-accepted{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>{{OrderStatusName .Status}}</span>
+<span
+{{with .Id}}id="order-status-{{.}}"{{end}}
+class="row-card-status
+  {{- if .Status.IsUnreviewed}} status-unreviewed
+  {{- else if .Status.IsDenied}} status-denied
+  {{- else if .Status.IsAccepted}} status-accepted{{end}}"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>{{OrderStatusName .Status}}</span>
 {{end}}
 
 {{define "order-actions"}}
-<div id="order-actions-{{.Id}}" class="order-entry-actions{{if .IsStaff}} queue-entry-actions{{end}}" {{if .OOB}}hx-swap-oob="true"{{end}}>
+<div
+id="order-actions-{{.Id}}"
+class="order-entry-actions{{if .IsStaff}} queue-entry-actions{{end}}"
+{{if .OOB}}hx-swap-oob="true"{{end}}
+>
   {{template "buttons-order-actions" (dict
     "IsStaff" .IsStaff
     "Status"  .Status
@@ -90,10 +123,16 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
 {{end}}
 
 {{define "queue-counts"}}
-<div class="queue-tile"><b class="warn">{{.Unreviewed}}</b><span>Sin revisar</span></div>
-<div class="queue-tile"><b class="ok">{{.Accepted}}</b><span>Aceptadas</span></div>
+<div class="queue-tile">
+  <b class="warn">{{.Unreviewed}}</b><span>Sin revisar</span>
+</div>
+<div class="queue-tile">
+  <b class="ok">{{.Accepted}}</b><span>Aceptadas</span>
+</div>
 <div class="queue-tile"><b>{{.Denied}}</b><span>Denegadas</span></div>
-<div class="queue-tile"><b>{{.FulfilledToday}}</b><span>Cumplidas hoy</span></div>
+<div class="queue-tile">
+  <b>{{.FulfilledToday}}</b><span>Cumplidas hoy</span>
+</div>
 {{end}}
 
 {{define "order-ref-slot"}}
@@ -104,7 +143,12 @@ hx-trigger="click[!event.target.closest('button,a,input,form,.order-entry-detail
 
 {{define "order-ref-edit"}}
 <div id="order-ref-slot-{{.Id}}" class="order-ref-slot order-ref-editing">
-  <form class="order-ref-form" hx-patch="/order/update" hx-target="#order-ref-slot-{{.Id}}" hx-swap="outerHTML">
+  <form
+  class="order-ref-form"
+  hx-patch="/order/update"
+  hx-target="#order-ref-slot-{{.Id}}"
+  hx-swap="outerHTML"
+  >
     <input
     class="field order-ref order-ref-input"
     type="text"

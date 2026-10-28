@@ -1,5 +1,5 @@
-// Cart kept in localStorage. Drives the menu steppers, the nav badge, the cart page
-// and checkout (SINPE receipt scan, then order POST).
+// Cart kept in localStorage. Drives the menu steppers, the nav badge, the
+// cart page and checkout (SINPE receipt scan, then order POST).
 
 const CART_KEY = 'cart';
 const CART_MAX_QTY = 4;
@@ -49,7 +49,7 @@ function setQuant(id, quant) {
 function addToCart(id, name, price) {
   const cart = readCart();
   if (cart[id]) cart[id].quant = Math.min(cart[id].quant + 1, CART_MAX_QTY);
-  else cart[id] = { id: Number(id), name: name, price: Number(price), quant: 1 };
+  else cart[id] = { id: Number(id), name, price: Number(price), quant: 1 };
   writeCart(cart);
   refreshCart();
 }
@@ -195,7 +195,8 @@ function updateContinueState(cart = readCart()) {
   if (missing) {
     let text = '';
     if (n === 0) text = 'Agregue ítems desde el menú para continuar.';
-    else if (!ok) text = 'Falta el comprobante SINPE: suba la captura o ingrese el código de 25 dígitos.';
+    else if (!ok) text = 'Falta el comprobante SINPE: suba la captura o '
+      + 'ingrese el código de 25 dígitos.';
     missing.textContent = text;
     missing.hidden = !text;
   }
@@ -213,10 +214,11 @@ function showRefPreview(file) {
 // /vendor/tesseract/ so it works on a network without internet. It's ~7 MB,
 // so it loads only when a receipt is picked.
 const TESSERACT_DIR = '/vendor/tesseract/';
+const tesseractURL = f => new URL(TESSERACT_DIR + f, location.href).href;
 const TESSERACT_OPTS = {
-  workerPath: new URL(TESSERACT_DIR + 'worker.min.js', location.href).href,
-  corePath:   new URL(TESSERACT_DIR + 'tesseract-core-simd-lstm.wasm.js', location.href).href,
-  langPath:   new URL(TESSERACT_DIR, location.href).href,
+  workerPath: tesseractURL('worker.min.js'),
+  corePath:   tesseractURL('tesseract-core-simd-lstm.wasm.js'),
+  langPath:   tesseractURL(''),
 };
 let tesseractLoading = null;
 function loadTesseract() {
@@ -257,7 +259,8 @@ async function scanRefImg(file) {
 
   try {
     await loadTesseract();
-    const { data: { text } } = await Tesseract.recognize(file, 'eng', TESSERACT_OPTS);
+    const { data: { text } } =
+      await Tesseract.recognize(file, 'eng', TESSERACT_OPTS);
     const code = extractRefNum(text);
     // Keep a hand-typed code when the scan finds nothing.
     if (code) input.value = code;
@@ -266,7 +269,8 @@ async function scanRefImg(file) {
       : 'No se detectó código. Ingréselo manualmente.';
   } catch (e) {
     console.error('OCR failed:', e);
-    statusEl.textContent = 'No se pudo leer la imagen. Ingrese el código manualmente.';
+    statusEl.textContent =
+      'No se pudo leer la imagen. Ingrese el código manualmente.';
   }
   updateContinueState();
 }
@@ -303,7 +307,8 @@ async function submitOrder() {
       updateContinueState();
     }
   } catch (e) {
-    if (result) result.innerHTML = '<div class="hx-flash"><p class="hx-msg">No se pudo enviar la orden.</p></div>';
+    if (result) result.innerHTML = '<div class="hx-flash">'
+      + '<p class="hx-msg">No se pudo enviar la orden.</p></div>';
     updateContinueState();
   }
 }

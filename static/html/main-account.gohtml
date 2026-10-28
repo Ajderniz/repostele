@@ -6,7 +6,10 @@
     <div class="account-avatar">{{printf "%.1s" .Username}}</div>
     <div>
       <div class="account-name">{{.Username}}</div>
-      <div class="account-role">{{if .IsAdmin}}Administrador{{else if .IsStaff}}Personal{{else}}Cliente{{end}}</div>
+      <div class="account-role">
+        {{- if .IsAdmin}}Administrador{{else if .IsStaff}}Personal
+        {{- else}}Cliente{{end -}}
+      </div>
     </div>
   </div>
 
@@ -31,7 +34,8 @@
     hx-target="#account-content"
     hx-swap="innerHTML"
     >
-      <span>Desactivar cuenta<small>Pide la contraseña y confirmación</small></span>
+      <span>Desactivar cuenta<small>Pide la contraseña y
+        confirmación</small></span>
       <span class="chev" aria-hidden="true">›</span>
     </button>
   </div>

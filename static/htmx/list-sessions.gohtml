@@ -6,17 +6,23 @@
     {{$endpoint := "/dashboard/admin/sessions"}}
     {{$target := "#dash-panel"}}
     <div class="sort-bar">
-      {{template "sort-link" (dict "Field" "user"    "Label" "Usuario" "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "role"    "Label" "Rol"     "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "starts"  "Label" "Inicio"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
-      {{template "sort-link" (dict "Field" "expires" "Label" "Expira"  "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "user" "Label" "Usuario"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "role" "Label" "Rol"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "starts" "Label" "Inicio"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
+      {{template "sort-link" (dict "Field" "expires" "Label" "Expira"
+        "Params" .Params "Endpoint" $endpoint "Target" $target)}}
     </div>
     <ul class="row-card-list">
       {{range .Sessions}}
       <li class="row-card" id="session-{{.Role}}-{{.User}}">
         <div class="row-card-head">
           <span class="row-card-id">{{.User}}</span>
-          <span class="row-card-status">{{if .Role.IsStaff}}Personal{{else}}Cliente{{end}}</span>
+          <span class="row-card-status">
+            {{- if .Role.IsStaff}}Personal{{else}}Cliente{{end -}}
+          </span>
         </div>
         <dl class="row-card-fields">
           <div class="row-card-field">
@@ -41,7 +47,8 @@
       </li>
       {{end}}
     </ul>
-    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext "Endpoint" $endpoint "Target" $target)}}
+    {{template "list-pagination" (dict "Params" .Params "HasNext" .HasNext
+      "Endpoint" $endpoint "Target" $target)}}
     <button
     class="btn btn-block btn-danger"
     hx-patch="/dashboard/admin/sessions/close"

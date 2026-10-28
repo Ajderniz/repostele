@@ -9,14 +9,18 @@
   {{$customer := and $loggedIn (not $isStaff)}}
   <div class="menu-layout">
     <div class="menu-main">
-      {{if $isAdmin}}{{template "button-create-item" (dict "Target" "menu-new-item" "HasNext" .HasNext)}}{{end}}
+      {{if $isAdmin}}
+        {{template "button-create-item"
+          (dict "Target" "menu-new-item" "HasNext" .HasNext)}}
+      {{end}}
       {{block "prev-next" (dict "Params" .Params "HasNext" .HasNext)}}
         {{if or .Params.Start .HasNext}}
           <div class="list-pagination">
             {{if .Params.Start}}
               <a
               class="btn btn-compact pag-prev"
-              href="/menu?start={{subClamped .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+              href="/menu?start={{subClamped .Params.Start .Params.Limit}}
+                {{- ""}}&limit={{.Params.Limit}}"
               >« Anterior</a>
             {{else}}
               <div class="pag-prev"></div>
@@ -24,7 +28,8 @@
             {{if .HasNext}}
               <a
               class="btn btn-compact pag-next"
-              href="/menu?start={{add .Params.Start .Params.Limit}}&limit={{.Params.Limit}}"
+              href="/menu?start={{add .Params.Start .Params.Limit}}
+                {{- ""}}&limit={{.Params.Limit}}"
               >Siguiente »</a>
             {{else}}
               <div class="pag-next"></div>
@@ -55,7 +60,10 @@
         {{template "current-order" (dict "Order" .CurrentOrder "OOB" false)}}
         <div class="menu-cart-summary">
           <h3 class="panel-title">Tu carrito</h3>
-          <p class="menu-cart-line"><span id="menu-cart-count">0 ítems</span> <span id="menu-cart-total" class="menu-item-price">₡0</span></p>
+          <p class="menu-cart-line">
+            <span id="menu-cart-count">0 ítems</span>
+            <span id="menu-cart-total" class="menu-item-price">₡0</span>
+          </p>
           <a class="btn btn-block" href="/cart">Ir a pagar</a>
         </div>
       </aside>

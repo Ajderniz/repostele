@@ -210,11 +210,13 @@
   box-shadow: none;
 }
 
-.menu-item .hx-container > .button-clear + .page-form .form-table tr:first-child th {
+.menu-item .hx-container > .button-clear + .page-form
+  .form-table tr:first-child th {
   padding-right: 1.7rem;
 }
 
-.menu-item .hx-container > .button-clear + .page-form .form-table tr:first-child td {
+.menu-item .hx-container > .button-clear + .page-form
+  .form-table tr:first-child td {
   padding-right: 0;
 }
 

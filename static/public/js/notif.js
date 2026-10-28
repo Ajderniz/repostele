@@ -1,4 +1,5 @@
-// Polling for #notif-poll. Keeps the server token so unchanged polls return 204.
+// Polling for #notif-poll. Keeps the server token so unchanged polls return
+// 204.
 // After own writes, a silent sync refreshes the notif state without a toast.
 
 // widget=1 only where the page has the #current-order slot to swap into.
@@ -6,11 +7,12 @@ function notifParams() {
   const poll = document.getElementById('notif-poll');
   const widget = document.getElementById('current-order') ? '1' : '';
   if (!poll) return { token: '', silent: '', widget };
-  return { token: poll.dataset.token || '', silent: poll.dataset.silent || '', widget };
+  const { token = '', silent = '' } = poll.dataset;
+  return { token, silent, widget };
 }
 
-// Call after any write. Silent poll sync (no toast for own action), then the same
-// order-changed event a poll change would fire.
+// Call after any write. Silent poll sync (no toast for own action), then the
+// same order-changed event a poll change would fire.
 function notifyWrite() {
   const poll = document.getElementById('notif-poll');
   if (poll) {
@@ -23,7 +25,8 @@ function notifyWrite() {
 document.addEventListener('htmx:afterRequest', function (e) {
   const el = e.detail.elt;
   if (el && el.id === 'notif-poll') {
-    const token = e.detail.xhr && e.detail.xhr.getResponseHeader('X-Notif-Token');
+    const xhr = e.detail.xhr;
+    const token = xhr && xhr.getResponseHeader('X-Notif-Token');
     if (token !== null) el.dataset.token = token;
     delete el.dataset.silent;
     return;
@@ -36,5 +39,7 @@ document.addEventListener('htmx:afterRequest', function (e) {
 // Polls pause in background tabs; catch up as soon as the tab is shown again.
 document.addEventListener('visibilitychange', function () {
   const poll = document.getElementById('notif-poll');
-  if (poll && document.visibilityState === 'visible') htmx.trigger(poll, 'notif-sync');
+  if (poll && document.visibilityState === 'visible') {
+    htmx.trigger(poll, 'notif-sync');
+  }
 });

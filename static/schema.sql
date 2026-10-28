@@ -48,7 +48,8 @@ CREATE TABLE IF NOT EXISTS "sessions" (
 	PRIMARY KEY("session_token")
 );
 CREATE TABLE IF NOT EXISTS "staff" (
-	"username"	TEXT CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
+	"username"	TEXT
+		CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
 	"pass_hash"	TEXT NOT NULL,
 	"full_name"	TEXT NOT NULL,
 	"time_created"	INTEGER NOT NULL DEFAULT 0 CHECK(0 <= "time_created"),
@@ -57,7 +58,8 @@ CREATE TABLE IF NOT EXISTS "staff" (
 	PRIMARY KEY("username")
 );
 CREATE TABLE IF NOT EXISTS "users" (
-	"username"	TEXT CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
+	"username"	TEXT
+		CHECK(4 <= LENGTH("username") AND LENGTH("username") <= 16),
 	"pass_hash"	TEXT NOT NULL,
 	"time_created"	INTEGER NOT NULL,
 	"active"	INTEGER NOT NULL DEFAULT 1 CHECK("active" IN (0, 1)),

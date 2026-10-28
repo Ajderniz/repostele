@@ -1,5 +1,6 @@
 {{define "buttons-order-actions"}}
-{{$msg := printf "msg-%v" .Id}}{{if .Card}}{{$msg = printf "card-msg-%v" .Id}}{{end}}
+{{$msg := printf "msg-%v" .Id}}
+{{if .Card}}{{$msg = printf "card-msg-%v" .Id}}{{end}}
 
 {{if .IsStaff}}
   {{if .Status.InReview}}

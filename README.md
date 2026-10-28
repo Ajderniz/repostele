@@ -145,8 +145,7 @@ between the two apps; everything else is shared. Templates and
 
 ### Vendored browser libraries
 
-| Library | Version | Path |
-|---------|---------|------|
-| htmx | 2.0.10 | `static/public/vendor/htmx.min.js` |
-| tesseract.js | 6.0.1 (core 6.0.0) | `static/public/vendor/tesseract/` |
-| English OCR data | 4.0.0_best_int | `static/public/vendor/tesseract/eng.traineddata.gz` |
+- htmx 2.0.10: `static/public/vendor/htmx.min.js`
+- tesseract.js 6.0.1 (core 6.0.0): `static/public/vendor/tesseract/`
+- English OCR data 4.0.0_best_int:
+  `static/public/vendor/tesseract/eng.traineddata.gz`

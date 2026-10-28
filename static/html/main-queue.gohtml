@@ -9,7 +9,8 @@
   hx-trigger="load, order-changed from:body"
   hx-swap="innerHTML"
   ></div>
-  {{template "split-list" (dict "List" "queue-list" "Get" "/dashboard/orders" "Aside" "queue-detail")}}
+  {{template "split-list" (dict "List" "queue-list" "Get" "/dashboard/orders"
+    "Aside" "queue-detail")}}
 </article>
 
 {{end}}

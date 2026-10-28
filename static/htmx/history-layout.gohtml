@@ -1,3 +1,4 @@
 {{define "history-layout"}}
-{{template "split-list" (dict "List" "dash-list" "Aside" "dash-detail" "Content" (CallTemplate "list-orders" .))}}
+{{template "split-list" (dict "List" "dash-list" "Aside" "dash-detail"
+  "Content" (CallTemplate "list-orders" .))}}
 {{end}}

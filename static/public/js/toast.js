@@ -1,4 +1,5 @@
-// Shows #toast whenever its text changes (htmx OOB swaps), and once for a ?msg= query param.
+// Shows #toast whenever its text changes (htmx OOB swaps), and once for a
+// ?msg= query param.
 
 const TOAST_MS = 4000;
 let toastTimer = null;
@@ -30,7 +31,8 @@ function toastFromQuery() {
 document.addEventListener('DOMContentLoaded', function () {
   const wrap = document.getElementById('toast-wrap');
   if (wrap) {
-    new MutationObserver(showToast).observe(wrap, { childList: true, subtree: true, characterData: true });
+    new MutationObserver(showToast).observe(wrap,
+      { childList: true, subtree: true, characterData: true });
   }
   toastFromQuery();
 });

@@ -1,4 +1,5 @@
-// htmx defaults for this app: send the CSRF header on writes, and swap error responses too.
+// htmx defaults for this app: send the CSRF header on writes, and swap error
+// responses too.
 
 function readCookie(name) {
   const match = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');

@@ -6,7 +6,15 @@ class="menu-item {{if not .Item.Available}}unavailable{{end}}"
 >
   <div class="menu-thumb{{if not .Item.ImgPath}} none{{end}}">
     {{if .Item.ImgPath}}
-      <img class="menu-item-img" src="{{.Item.ImgPath}}" alt="{{.Item.Name}}" width="56" height="56" loading="lazy" decoding="async">
+      <img
+      class="menu-item-img"
+      src="{{.Item.ImgPath}}"
+      alt="{{.Item.Name}}"
+      width="56"
+      height="56"
+      loading="lazy"
+      decoding="async"
+      >
     {{else}}
       Sin foto
     {{end}}
