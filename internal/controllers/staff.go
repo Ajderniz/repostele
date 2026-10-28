@@ -5,12 +5,13 @@ package controllers
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 )
@@ -48,7 +49,7 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetDashboard(w http.ResponseWriter, r *http.Request) {
-  stats := getDashStats()
+  stats := getDashStats(r)
   ctx := context.WithValue(r.Context(), _MAIN_DATA, &_MainData{Stats: &stats})
   ServeMainTemplate(w, r.WithContext(ctx))
 }
@@ -61,21 +62,21 @@ func startOfToday() int64 {
 
 func GetQueueCounts(w http.ResponseWriter, r *http.Request) {
   c, err := models.GetQueueCounts(startOfToday())
-  if err != nil { slog.Error(err.Error()) }
+  if err != nil { reqlog.Error(r, err) }
   serveDataHX(w, r, c, "queue-counts")
 }
 
 func GetDashTiles(w http.ResponseWriter, r *http.Request) {
-  serveDataHX(w, r, getDashStats(), "dash-tiles")
+  serveDataHX(w, r, getDashStats(r), "dash-tiles")
 }
 
-func getDashStats() _DashStats {
+func getDashStats(r *http.Request) _DashStats {
   var stats _DashStats
   day, err := models.GetDayStats(startOfToday())
-  if err != nil { slog.Error(err.Error()) }
+  if err != nil { reqlog.Error(r, err) }
   stats.OrdersToday, stats.SalesToday = day.Orders, day.Sales
   queue, err := models.GetPendingQueueStats()
-  if err != nil { slog.Error(err.Error()) } else { stats.InQueue = queue.Count }
+  if err != nil { reqlog.Error(r, err) } else { stats.InQueue = queue.Count }
   return stats
 }
 
@@ -100,9 +101,9 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
   list, _, err := models.GetStaff(&models.SelectParams{
     Start: 0, Limit: 1, Sort: models.USER_USERNAME, Dir: models.SORT_DIR_ASC,
   })
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
   if 1 <= len(list) {
-    slog.Error(_ErrAlreadyInit.Error())
+    reqlog.Error(r, _ErrAlreadyInit)
     http.Redirect(w, r, "/", MovedPermanently)
     return
   }
@@ -120,21 +121,21 @@ func InitMainStaffAccount(w http.ResponseWriter, r *http.Request) {
   staff.Admin = true
 
   err = models.InsertStaffAccount(staff)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   serveResponse(w, r, &_MainData{Msg: _MsgAccCreated}, Created, nil)
 }
 
 func RegisterStaffAccount(w http.ResponseWriter, r *http.Request) {
   staff, status, err := makeNewStaffFromForm(r)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
+  if err != nil { serveStatusErrHX(w, r, status, err); return }
 
   adminStr, err := bind.FormValue(r, "admin", "required,boolean")
   if err != nil { serveBadRequestHX(w, "Parámetro 'admin' inválido"); return }
   staff.Admin, _ = strconv.ParseBool(adminStr)
 
   err = models.InsertStaffAccount(staff)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
   
   serveResponseHX(w, _MsgAccCreated, Created, &_NextAction{
     URL: "/htmx/form-register-staff-admin",
@@ -178,7 +179,7 @@ func DeactivateStaffAccount(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   status, err := deactivateStaffAccount(w, r, username, false)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
+  if err != nil { serveStatusErrHX(w, r, status, err); return }
 
   cell := map[string]any{"Username": username, "Active": false, "OOB": true}
   serveOOB(w, OK, _HXData{Msg: _MsgAccDeactivated},
@@ -191,7 +192,7 @@ func GetStaffList(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   staff, hasNext, err := models.GetStaff(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   serveDataHX(w, r, map[string]any{
     "Staff":   staff,

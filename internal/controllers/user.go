@@ -4,6 +4,8 @@ import (
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/bind"
 )
 
@@ -36,6 +38,7 @@ func DeactivateUserAccount(w http.ResponseWriter, r *http.Request) {
 
   status, err := deactivateUserAccount(w, r, username, false)
   if err != nil {
+    if status >= InternalServerError { reqlog.Error(r, err) }
     serveResponseHX(w, err.Error(), status, &nextAction)
     return
   }
@@ -51,7 +54,7 @@ func GetUserList(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   users, hasNext, err := models.GetUsers(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   serveDataHX(w, r, map[string]any{
     "Users":   users,

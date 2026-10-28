@@ -69,7 +69,7 @@ func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   status, err := updatePassword(ctxUsername(r), oldPassword, newPassword)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
+  if err != nil { serveStatusErrHX(w, r, status, err); return }
 
   serveResponseHX(w, _MsgPasswordChanged, OK, nil)
 }
@@ -77,10 +77,10 @@ func SelfUpdatePassword(w http.ResponseWriter, r *http.Request) {
 func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   password, err := bind.FormValue(r, _CREDS_PASSWORD, _CREDS_VALIDATE)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   passHash, err := accountPassHash(username)
-  if err != nil || passHash == "" { serveInternalErrHX(w); return }
+  if err != nil || passHash == "" { serveInternalErrHX(w, r, err); return }
 
   err = pass.CheckPasswordHash(password, passHash)
   if err != nil {
@@ -89,7 +89,7 @@ func SelfDeactivateAccount(w http.ResponseWriter, r *http.Request) {
   }
 
   status, err := selfDeactivate(w, r, username)
-  if err != nil { serveResponseHX(w, err.Error(), status, nil); return }
+  if err != nil { serveStatusErrHX(w, r, status, err); return }
 
   if isHX(r) {
     w.Header().Set("HX-Redirect", "/login")

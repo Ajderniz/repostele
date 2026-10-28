@@ -21,7 +21,6 @@ func HashPassword(pass string) (string, error) {
 func CheckPasswordHash(pass, hash string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pass))
 	if err != nil {
-		slog.Error(err.Error())
 		return errors.New("Contraseña incorrecta")
 	}
 	return nil

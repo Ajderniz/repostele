@@ -14,6 +14,8 @@ import (
 	"golang.org/x/text/language"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/static"
 )
 
@@ -119,7 +121,7 @@ func ServeHTMX(w http.ResponseWriter, r *http.Request) {
 	}
 	err := _Tpl.ExecuteTemplate(w, path, nil)
 	if err != nil {
-		slog.Error(err.Error())
+		reqlog.Error(r, err)
 		http.Error(w, _ErrInternal.Error(), InternalServerError);
 	}
 }
@@ -141,12 +143,12 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 
 	if hasSession && session.Role == models.SESSION_ROLE_STAFF {
 		staff, err := models.GetStaffFromUsername(session.User)
-		if err != nil { w.WriteHeader(InternalServerError); return }
+		if err != nil { reqlog.Error(r, err); w.WriteHeader(InternalServerError); return }
 		isStaff = staff.Username != ""
 		isAdmin = staff.Admin
 		if isStaff {
 			stats, err := models.GetPendingQueueStats()
-			if err != nil { slog.Error(err.Error()) } else { pendingOrders = stats.Unreviewed }
+			if err != nil { reqlog.Error(r, err) } else { pendingOrders = stats.Unreviewed }
 		}
 	}
 
@@ -186,7 +188,7 @@ func ServeMainTemplate(w http.ResponseWriter, r *http.Request) {
 		},
 	})
 	if err != nil {
-		slog.Error(err.Error())
+		reqlog.Error(r, err)
 		http.Error(w, _ErrInternal.Error(), InternalServerError)
 		return
 	}
@@ -228,6 +230,7 @@ func serveNoResults(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveErr(w http.ResponseWriter, r *http.Request, status int, err error) {
+	if status >= InternalServerError { reqlog.Error(r, err) }
 	serveResponse(w, r, nil, status, err)
 }
 
@@ -235,8 +238,24 @@ func serveBadRequest(w http.ResponseWriter, r *http.Request, err error) {
 	serveErr(w, r, BadRequest, err)
 }
 
-func serveInternalErr(w http.ResponseWriter, r *http.Request) {
-	serveErr(w, r, InternalServerError, _ErrInternal)
+// hideErr shows users _ErrInternal while the log still gets err's cause.
+func hideErr(err error) error { return _HiddenErr{err} }
+
+type _HiddenErr struct{ cause error }
+
+func (e _HiddenErr) Error() string { return _ErrInternal.Error() }
+func (e _HiddenErr) Unwrap() error { return e.cause }
+func (e _HiddenErr) Detail() string {
+	var d interface{ Detail() string }
+	if errors.As(e.cause, &d) { return d.Detail() }
+	return e.cause.Error()
+}
+
+// The serveInternalErr* helpers log err with its request, then answer with
+// the generic _ErrInternal.
+func serveInternalErr(w http.ResponseWriter, r *http.Request, err error) {
+	reqlog.Error(r, err)
+	serveResponse(w, r, nil, InternalServerError, _ErrInternal)
 }
 
 func serveResponseHX(
@@ -269,7 +288,8 @@ func serveBadRequestHX(w http.ResponseWriter, msg string) {
 	serveResponseHX(w, msg, BadRequest, nil)
 }
 
-func serveInternalErrHX(w http.ResponseWriter) {
+func serveInternalErrHX(w http.ResponseWriter, r *http.Request, err error) {
+	reqlog.Error(r, err)
 	serveResponseHX(w, _ErrInternal.Error(), InternalServerError, nil)
 }
 
@@ -281,13 +301,20 @@ func isHX(r *http.Request) bool {
 // serveErrAuto answers with the div-response fragment for htmx requests and
 // the full error page otherwise.
 func serveErrAuto(w http.ResponseWriter, r *http.Request, status int, err error) {
-	if isHX(r) { serveResponseHX(w, err.Error(), status, nil); return }
+	if isHX(r) { serveStatusErrHX(w, r, status, err); return }
 	serveErr(w, r, status, err)
 }
 
-func serveInternalErrAuto(w http.ResponseWriter, r *http.Request) {
-	if isHX(r) { serveInternalErrHX(w); return }
-	serveInternalErr(w, r)
+// serveStatusErrHX shows err with the status a helper picked, logging it
+// when that status is a server error.
+func serveStatusErrHX(w http.ResponseWriter, r *http.Request, status int, err error) {
+	if status >= InternalServerError { reqlog.Error(r, err) }
+	serveResponseHX(w, err.Error(), status, nil)
+}
+
+func serveInternalErrAuto(w http.ResponseWriter, r *http.Request, err error) {
+	if isHX(r) { serveInternalErrHX(w, r, err); return }
+	serveInternalErr(w, r, err)
 }
 
 // serveDataHX renders tplName directly (a bare partial, no page chrome) when
@@ -297,8 +324,7 @@ func serveDataHX(w http.ResponseWriter, r *http.Request, data any, tplName strin
 	if isHX(r) {
 		w.Header().Set("Content-Type", "text/html; charset=utf-8")
 		if err := _Tpl.ExecuteTemplate(w, tplName, data); err != nil {
-			slog.Error(err.Error())
-			serveInternalErrHX(w)
+			serveInternalErrHX(w, r, err)
 		}
 		return
 	}

@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	_ "embed"
 	"errors"
-	"log/slog"
 	"slices"
 	"strings"
 
@@ -119,10 +118,19 @@ func (params *SelectParams) Fix(fields _SortFields) {
   }
 }
 
+// dbError keeps a user-facing message while carrying the DB failure behind it.
+// reqlog.Error logs Detail, so the cause reaches the log with its request.
+type dbError struct{ msg, cause error }
+
+func (e dbError) Error() string   { return e.msg.Error() }
+func (e dbError) Detail() string  { return e.msg.Error() + ": " + e.cause.Error() }
+func (e dbError) Unwrap() []error { return []error{e.msg, e.cause} }
+
+func dbErr(msg, cause error) error { return dbError{msg, cause} }
+
 func dbSelectErr(err error) error {
   if err != nil {
     if err == sql.ErrNoRows{ return nil }
-    slog.Error(err.Error())
     return err
   }
   return nil
@@ -141,13 +149,13 @@ func dbSelect(dst any, query string, args ...any) error {
 // Single statements run in SQLite's implicit transaction.
 func dbExec(query string, args ...any) (sql.Result, error) {
   result, err := _DB.Exec(query, args...)
-  if err != nil { slog.Error(err.Error()); return nil, err }
+  if err != nil { return nil, err }
   return result, nil
 }
 
 func dbNamedExec(query string, v any) (sql.Result, error) {
   result, err := _DB.NamedExec(query, v)
-  if err != nil { slog.Error(err.Error()); return nil, err }
+  if err != nil { return nil, err }
   return result, nil
 }
 

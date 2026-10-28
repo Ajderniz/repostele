@@ -1,12 +1,15 @@
 package controllers
 
 import (
+	"errors"
 	"net/http"
 	"net/url"
 	"strconv"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/bind"
 	"github.com/ajderniz/repostele/pkg/pass"
 )
@@ -27,11 +30,13 @@ func checkSessionUser(
   if err != nil { return "", 0, false }
 
   session, err := models.GetSessionFromID(sessionCookie.Value)
+  if err != nil && !errors.Is(err, models.ErrSessionNotFound) { reqlog.Error(r, err) }
   if err != nil || session.SessionToken == "" { return "", 0, false }
 
   if session.Expires <= time.Now().Unix() { return "", 0, false }
   if session.Role != models.APP_ROLE { return "", 0, false }
 
+  reqlog.SetUser(r.Context(), session.User)
   return session.User, session.Role, true
 }
 
@@ -113,7 +118,7 @@ func CloseSessionForUsername(w http.ResponseWriter, r *http.Request) {
   role, _ := strconv.Atoi(roleStr)
 
   err = models.CloseSessionForUsername(username, models.SessionRole(role))
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   serveOOB(w, OK, _HXData{Msg: "La sesión fue cerrada"},
     frag("oob-delete", "session-"+roleStr+"-"+username))
@@ -130,7 +135,7 @@ func CloseAllSessions(w http.ResponseWriter, r *http.Request) {
 
   if users || staff {
     err = models.CloseAllSessions(users, staff)
-    if err != nil { serveInternalErrHX(w); return }
+    if err != nil { serveInternalErrHX(w, r, err); return }
   }
   serveResponseHX(w, "Se cerraron todas las sesiones deseadas", OK, nil)
 }
@@ -145,7 +150,7 @@ func Login(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   passHash, err := accountPassHash(username)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
   if passHash == "" { serveMsg(w, r, _MsgAccNotFound); return }
 
   err = pass.CheckPasswordHash(password, passHash)
@@ -156,7 +161,8 @@ func Login(w http.ResponseWriter, r *http.Request) {
   if sessionIDCookie != nil { sessionID = sessionIDCookie.Value }
 
   session, err := openSession(w, username, models.APP_ROLE, sessionID, fp.Id)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
+  reqlog.SetUser(r.Context(), username)
 
   // The page is rendered in this request, so its nav must see the new session.
   serveMsg(w, r.WithContext(models.WithSession(r.Context(), session)), _MsgLoggedIn)
@@ -181,7 +187,7 @@ func GetActiveSessions(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   sessions, hasNext, err := models.GetActiveSessions(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   serveDataHX(w, r, map[string]any{
     "Sessions": sessions,

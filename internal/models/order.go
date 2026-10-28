@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"log/slog"
 	"time"
 )
 
@@ -91,13 +90,13 @@ func updateOrderField(id int, field string, v any) error {
     "WHERE "+ORDER_ID+" = ?",
     v, time.Now().Unix(), id,
   )
-  if err != nil { return _ErrUpdateOrder }
+  if err != nil { return dbErr(_ErrUpdateOrder, err) }
   return nil
 }
 
 func InsertOrder(order Order) error {
   tx, err := _DB.Beginx()
-  if err != nil { slog.Error(err.Error()); return _ErrInsertOrder }
+  if err != nil { return dbErr(_ErrInsertOrder, err) }
 
   _, err = tx.NamedExec(
     "INSERT INTO "+_ORDERS+" ("+ ORDER_ID+","+_ORDER_USER+","+_ORDER_TOTAL+","+
@@ -106,7 +105,7 @@ func InsertOrder(order Order) error {
             ORDER_REF_NUM+",:"+_ORDER_TIME+",:"+ORDER_STATUS+")",
     &order,
   )
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertOrder}
+  if err != nil { tx.Rollback(); return dbErr(_ErrInsertOrder, err) }
 
   for _, line := range order.Lines {
     _, err := tx.Exec(
@@ -114,11 +113,11 @@ func InsertOrder(order Order) error {
       "VALUES (?, ?, ?, ?, ?)",
       order.Id, line.ItemID, line.Quant, line.Price, line.Name,
     )
-    if err != nil {tx.Rollback(); slog.Error(err.Error());return _ErrInsertOrder}
+    if err != nil {tx.Rollback(); return dbErr(_ErrInsertOrder, err) }
   }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertOrder}
+  if err != nil { tx.Rollback(); return dbErr(_ErrInsertOrder, err) }
 
   return nil
 }
@@ -140,7 +139,7 @@ func GetPendingQueueStats() (PendingQueueStats, error) {
     "WHERE "+ORDER_STATUS+" IN (?, ?, ?)",
     ORDER_STATUS_UNREVIEWED, ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
   )
-  if err != nil { return PendingQueueStats{}, errors.New("No se pudo consultar la cola de órdenes") }
+  if err != nil { return PendingQueueStats{}, dbErr(errors.New("No se pudo consultar la cola de órdenes"), err) }
   return stats, nil
 }
 
@@ -165,7 +164,7 @@ func GetQueueCounts(since int64) (QueueCounts, error) {
     ORDER_STATUS_FULFILLED, since,
     ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED,
   )
-  if err != nil { return QueueCounts{}, errors.New("No se pudo contar las órdenes") }
+  if err != nil { return QueueCounts{}, dbErr(errors.New("No se pudo contar las órdenes"), err) }
   return c, nil
 }
 
@@ -183,7 +182,7 @@ func GetDayStats(since int64) (DayStats, error) {
     "FROM "+_ORDERS+" WHERE "+_ORDER_TIME+" >= ?",
     ORDER_STATUS_ACCEPTED, ORDER_STATUS_FULFILLED, since,
   )
-  if err != nil { return DayStats{}, errors.New("No se pudo calcular las estadísticas") }
+  if err != nil { return DayStats{}, dbErr(errors.New("No se pudo calcular las estadísticas"), err) }
   return d, nil
 }
 
@@ -197,7 +196,7 @@ func GetPendingOrders(params *SelectParams) ([]Order, bool, error) {
     params, _OrderSortFields,
     ORDER_STATUS_UNREVIEWED, ORDER_STATUS_DENIED, ORDER_STATUS_ACCEPTED,
   )
-  if err != nil { return []Order{}, false, _ErrGetOrders }
+  if err != nil { return []Order{}, false, dbErr(_ErrGetOrders, err) }
   return orders, hasNext, nil
 }
 
@@ -208,7 +207,7 @@ func GetOrderHistory(params *SelectParams) ([]Order, bool, error) {
   orders, hasNext, err := selectPage[Order](_ORDER_HISTORY_QUERY, params, _OrderSortFields,
     ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
   )
-  if err != nil { return []Order{}, false, _ErrGetOrders }
+  if err != nil { return []Order{}, false, dbErr(_ErrGetOrders, err) }
   return orders, hasNext, nil
 }
 
@@ -220,7 +219,7 @@ func GetAllOrderHistory(params *SelectParams) ([]Order, error) {
     _ORDER_HISTORY_QUERY+" ORDER BY "+params.Sort+" "+string(params.Dir),
     ORDER_STATUS_CANCELLED, ORDER_STATUS_FULFILLED,
   )
-  if err != nil { return []Order{}, _ErrGetOrders }
+  if err != nil { return []Order{}, dbErr(_ErrGetOrders, err) }
   return orders, nil
 }
 
@@ -246,8 +245,7 @@ func GetOrderItemDetails(orderId int) ([]OrderItemDetail, error) {
     orderId,
   )
   if err != nil {
-    slog.Error(err.Error())
-    return nil, errors.New("No se pudo acceder al desglose de la orden")
+    return nil, dbErr(errors.New("No se pudo acceder al desglose de la orden"), err)
   }
   return details, nil
 }
@@ -274,7 +272,7 @@ func GetOrdersFromUsername(username string, params *SelectParams) ([]Order, bool
     params, _OrderSortFields, username,
   )
   if err != nil {
-    return []Order{}, false, errors.New("No se pudo acceder a la lista de órdenes")
+    return []Order{}, false, dbErr(errors.New("No se pudo acceder a la lista de órdenes"), err)
   }
   return orders, hasNext, nil
 }
@@ -290,7 +288,7 @@ func GetLatestOrderFromUsername(username string) (Order, error) {
     username,
   )
   if err != nil {
-    return Order{},errors.New("No se pudo acceder a la última orden")
+    return Order{},dbErr(errors.New("No se pudo acceder a la última orden"), err)
   }
   return order, nil
 }
@@ -304,7 +302,7 @@ func GetLatestOrderID() (int, error) {
     "LIMIT 1",
   )
   if err != nil {
-    return -1, errors.New("No se pudo acceder al ID de la última orden")
+    return -1, dbErr(errors.New("No se pudo acceder al ID de la última orden"), err)
   }
   return id, nil
 }
@@ -318,7 +316,7 @@ func UpdateOrderRefNumAndStatus(id int, refNum string, status OrderStatus) error
     "WHERE "+ORDER_ID+" = ?",
     refNum, status, time.Now().Unix(), id,
   )
-  if err != nil { return _ErrUpdateOrder }
+  if err != nil { return dbErr(_ErrUpdateOrder, err) }
   return nil
 }
 

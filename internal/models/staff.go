@@ -1,7 +1,5 @@
 package models
 
-import "log/slog"
-
 type Staff struct {
 	Username    string `db:"username"     json:"username"`
 	PassHash    string `db:"pass_hash"`
@@ -32,7 +30,7 @@ func InsertStaffAccount(staff Staff) error {
 			",:"+STAFF_TIME_CREATED+",:"+_STAFF_ADMIN+")",
 		&staff,
 	)
-  if err != nil { return _ErrInsertAcc }
+  if err != nil { return dbErr(_ErrInsertAcc, err) }
 	return nil
 }
 
@@ -42,7 +40,7 @@ var _StaffSortFields = _SortFields{
 
 func GetStaff(params *SelectParams) ([]Staff, bool, error) {
 	staff, hasNext, err := selectPage[Staff]("SELECT "+_STAFF_FIELDS+" FROM "+_STAFF, params, _StaffSortFields)
-	if err != nil { return []Staff{}, false, _ErrGetAcc }
+	if err != nil { return []Staff{}, false, dbErr(_ErrGetAcc, err) }
 	return staff, hasNext, nil
 }
 
@@ -53,7 +51,7 @@ func GetStaffAdmins() ([]Staff, error) {
 		"FROM "+_STAFF+" "+
 		"WHERE "+_STAFF_ADMIN+" = true AND "+STAFF_ACTIVE+" = true",
 	)
-	if err != nil { return []Staff{}, _ErrGetAccs }
+	if err != nil { return []Staff{}, dbErr(_ErrGetAccs, err) }
 	return admins, nil
 }
 
@@ -65,13 +63,13 @@ func GetStaffFromUsername(username string) (Staff, error) {
 		"WHERE "+STAFF_USERNAME+" = ? AND "+STAFF_ACTIVE+" = true",
 		username,
 	)
-	if err != nil { return Staff{}, _ErrGetAcc }
+	if err != nil { return Staff{}, dbErr(_ErrGetAcc, err) }
 	return staff, nil
 }
 
 func UpdateStaffField(username, field string, v any) error {
 	_, err := dbUpdateTableField(_STAFF, field, v, STAFF_USERNAME, username)
-  if err != nil { slog.Error(err.Error()); return _ErrModAcc }
+  if err != nil { return dbErr(_ErrModAcc, err) }
   return nil
 }
 

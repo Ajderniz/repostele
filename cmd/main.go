@@ -16,6 +16,7 @@ import (
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/internal/routes"
 )
 
@@ -71,6 +72,7 @@ func main() {
 				},
 			},
 		),
+		reqlog.Middleware,
 		middleware.CleanPath,
 		middleware.Compress(5),
 		middleware.Throttle(20),

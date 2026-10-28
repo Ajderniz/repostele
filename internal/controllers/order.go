@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"encoding/csv"
 	"errors"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"sync"
@@ -12,6 +12,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/bind"
 )
 
@@ -66,7 +68,7 @@ var _ErrOrderIDMax = errors.New("Se excedió el límite de órdenes diarias")
 func PostOrder(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   if latestOrder.Pending() {
     serveErrAuto(w, r, TooManyRequests, errors.New(
       "Se permite solo una orden pendiente por usuario"),
@@ -83,13 +85,13 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
   ids := make([]int, 0, len(request.Items))
   for itemId := range request.Items { ids = append(ids, itemId) }
   found, err := models.GetItemsFromIDs(ids)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
 
   var total float32
   lines := make([]models.OrderLine, 0, len(request.Items))
   for itemId, quant := range request.Items {
     item, ok := found[itemId]
-    if !ok || item.Name == "" { slog.Error("Ítem inválido"); continue }
+    if !ok || item.Name == "" { reqlog.Error(r, fmt.Errorf("Ítem inválido: %d", itemId)); continue }
     if !item.Available {
       serveErrAuto(w, r, BadRequest, errors.New(item.Name+" ya no está disponible"))
       return
@@ -98,13 +100,12 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     lines = append(lines, models.OrderLine{ItemID: item.Id, Name: item.Name, Quant: quant, Price: item.Price})
   }
   if len(lines) == 0 {
-    slog.Error(_ErrNoItems.Error())
     serveErrAuto(w, r, BadRequest, _ErrNoItems)
     return
   }
 
   orderId, err := nextOrderID()
-  if err != nil { slog.Error(err.Error()); serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
 
   err = models.InsertOrder(models.Order{
     Id:     orderId,
@@ -115,7 +116,7 @@ func PostOrder(w http.ResponseWriter, r *http.Request) {
     Status: models.ORDER_STATUS_UNREVIEWED,
     Lines:  lines,
   })
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
 
   if isHX(r) {
     serveResponseHX(w, "Orden enviada. Esperando aprobación.", Created, nil)
@@ -134,7 +135,7 @@ func GetAllOrders(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   orders, hasNext, err := models.GetPendingOrders(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   serveDataHX(
     w,
@@ -158,7 +159,7 @@ func GetOrderHistory(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   orders, hasNext, err := models.GetOrderHistory(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   // A full-panel swap (tab, sort, paging) gets the list plus its aside; an
   // order-changed reload targets #dash-list and gets the list alone.
@@ -187,7 +188,7 @@ func ExportOrderHistory(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequest(w, r, err); return }
 
   orders, err := models.GetAllOrderHistory(&params)
-  if err != nil { serveInternalErr(w, r); return }
+  if err != nil { serveInternalErr(w, r, err); return }
 
   w.Header().Set("Content-Type", "text/csv; charset=utf-8")
   w.Header().Set("Content-Disposition", `attachment; filename="historial-ordenes.csv"`)
@@ -218,7 +219,7 @@ func getOrderFromIdUrlParam(r *http.Request) (models.Order, int, error) {
 
 func serveOrderDetail(w http.ResponseWriter, r *http.Request, order models.Order, isStaff bool) {
   details, err := models.GetOrderItemDetails(order.Id)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   serveDataHX(w, r, map[string]any{
     "Order":       order,
     "IsStaff":     isStaff,
@@ -240,7 +241,7 @@ func GetUserOrderList(w http.ResponseWriter, r *http.Request) {
   if params.Dir == "" { params.Dir = models.SORT_DIR_DESC }
 
   orders, hasNext, err := models.GetOrdersFromUsername(ctxUsername(r), &params)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   serveDataHX(w, r, map[string]any{
     "Orders":   orders,
     "IsStaff":  false,
@@ -256,13 +257,13 @@ func CheckUserOrderFromID(w http.ResponseWriter, r *http.Request) {
   idStr := chi.URLParam(r, models.ORDER_ID)
   id, err := strconv.Atoi(idStr)
   if err != nil {
-    slog.Error(err.Error())
+    reqlog.Error(r, err)
     serveErrAuto(w, r, BadRequest, errors.New("ID de orden inválido"))
     return
   }
 
   order, err := models.GetOrderFromID(id)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   if order.User == "" { serveNoResults(w, r); return }
 
   username := ctxUsername(r)
@@ -276,33 +277,31 @@ var _ErrCantModOrder = errors.New("No se puede modificar esta orden")
 func GetOrderRefNumEditForm(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   if !latestOrder.Editable() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
   }
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   if err := _Tpl.ExecuteTemplate(w, "order-ref-edit", latestOrder); err != nil {
-    slog.Error(err.Error())
-    serveInternalErrHX(w)
+    serveInternalErrHX(w, r, err)
   }
 }
 
 func GetOrderRefView(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   if err := _Tpl.ExecuteTemplate(w, "order-ref-slot", latestOrder); err != nil {
-    slog.Error(err.Error())
-    serveInternalErrHX(w)
+    serveInternalErrHX(w, r, err)
   }
 }
 
 func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   if !latestOrder.Editable() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
@@ -311,7 +310,7 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveErrAuto(w, r, BadRequest, err); return }
   // editing puts a denied order back in the staff review queue
   err = models.UpdateOrderRefNumAndStatus(latestOrder.Id, refNum, models.ORDER_STATUS_UNREVIEWED)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
 
   if isHX(r) {
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
@@ -330,13 +329,13 @@ func UpdateUserOrderRefNum(w http.ResponseWriter, r *http.Request) {
 func CancelUserOrder(w http.ResponseWriter, r *http.Request) {
   username := ctxUsername(r)
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
   if !latestOrder.Pending() {
     serveErrAuto(w, r, Forbidden, _ErrCantModOrder)
     return
   }
   err = models.CancelOrder(latestOrder.Id)
-  if err != nil { serveInternalErrAuto(w, r); return }
+  if err != nil { serveInternalErrAuto(w, r, err); return }
 
   if isHX(r) {
     // Row stays (customer list shows history); status and actions update in place.
@@ -361,7 +360,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   setStatus := models.OrderStatus(status)
 
   order, httpStatus, err := getOrderFromIdUrlParam(r)
-  if err != nil { serveResponseHX(w, err.Error(), httpStatus, nil); return }
+  if err != nil { serveStatusErrHX(w, r, httpStatus, err); return }
   if order.RefNum == "" { serveBadRequestHX(w, "La orden no existe"); return }
 
   switch order.Status {
@@ -380,7 +379,7 @@ func UpdateOrderStatus(w http.ResponseWriter, r *http.Request) {
   }
 
   err = models.UpdateOrderStatus(order.Id, setStatus)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   // Rows update in place; the order lists re-sync from the server on order-changed.
   serveOOB(w, OK, _HXData{Msg: "Se actualizó el estado de la orden"},

@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"log/slog"
 	"reflect"
 	"strings"
 
@@ -42,9 +41,9 @@ func InsertItem(item Item) (int, error) {
       _ITEM_AVAILABLE+",:"+_ITEM_DESC+",:"+_ITEM_IMG_PATH+")",
     &item,
   )
-  if err != nil { return 0, errors.New("No se pudo publicar el nuevo ítem") }
+  if err != nil { return 0, dbErr(errors.New("No se pudo publicar el nuevo ítem"), err) }
   id, err := result.LastInsertId()
-  if err != nil { return 0, errors.New("No se pudo publicar el nuevo ítem") }
+  if err != nil { return 0, dbErr(errors.New("No se pudo publicar el nuevo ítem"), err) }
   return int(id), nil
 }
 
@@ -54,7 +53,7 @@ func GetItems(params *SelectParams, includeUnavailable bool) ([]Item, bool, erro
   if !includeUnavailable { query += " WHERE "+_ITEM_AVAILABLE+" = 1" }
   items, hasNext, err := selectPage[Item](query, params, _ItemSortFields)
   if err != nil {
-    return []Item{}, false, errors.New("No se pudo acceder a la lista de ítemes")
+    return []Item{}, false, dbErr(errors.New("No se pudo acceder a la lista de ítemes"), err)
   }
   return items, hasNext, nil
 }
@@ -72,7 +71,7 @@ func GetAvailableCartItems() ([]CartItem, error) {
     "SELECT "+ITEM_ID+","+_ITEM_NAME+","+_ITEM_PRICE+" FROM "+_ITEMS+" "+
     "WHERE "+_ITEM_AVAILABLE+" = 1",
   )
-  if err != nil { return []CartItem{}, errors.New("No se pudo acceder a la lista de ítemes") }
+  if err != nil { return []CartItem{}, dbErr(errors.New("No se pudo acceder a la lista de ítemes"), err) }
   return items, nil
 }
 
@@ -84,7 +83,7 @@ func GetItemFromID(id int) (Item, error) {
     "WHERE "+ITEM_ID+" = ?",
     id,
   )
-  if err != nil { return Item{}, errors.New("No se pudo acceder al ítem") }
+  if err != nil { return Item{}, dbErr(errors.New("No se pudo acceder al ítem"), err) }
   return item, nil
 }
 
@@ -96,11 +95,11 @@ func GetItemsFromIDs(ids []int) (map[int]Item, error) {
   query, args, err := sqlx.In(
     "SELECT * FROM "+_ITEMS+" WHERE "+ITEM_ID+" IN (?)", ids,
   )
-  if err != nil { return nil, errors.New("No se pudo acceder a los ítemes") }
+  if err != nil { return nil, dbErr(errors.New("No se pudo acceder a los ítemes"), err) }
 
   list := []Item{}
   err = dbSelect(&list, query, args...)
-  if err != nil { return nil, errors.New("No se pudo acceder a los ítemes") }
+  if err != nil { return nil, dbErr(errors.New("No se pudo acceder a los ítemes"), err) }
   for _, it := range list { items[it.Id] = it }
   return items, nil
 }
@@ -148,8 +147,7 @@ func UpdateItem(id int, update ItemUpdate) error {
     args...,
   )
   if err != nil {
-    slog.Error(err.Error())
-    return errors.New("No se pudo actualizar el ítem")
+    return dbErr(errors.New("No se pudo actualizar el ítem"), err)
   }
 
   return nil

@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/internal/reqlog"
 )
 
 // Called AFTER staff authentication for the '/staff' path
@@ -14,7 +15,7 @@ func RequireAdminAuth() func(next http.Handler) http.Handler {
     return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
       session, _ := models.SessionFromContext(r.Context())
       staff, err := models.GetStaffFromUsername(session.User)
-      if err != nil { w.WriteHeader(http.StatusInternalServerError); return }
+      if err != nil { reqlog.Error(r, err); w.WriteHeader(http.StatusInternalServerError); return }
       if staff.Username == "" { w.WriteHeader(http.StatusBadRequest); return }
       if !staff.Admin { w.WriteHeader(http.StatusUnauthorized); return }
       next.ServeHTTP(w, r)

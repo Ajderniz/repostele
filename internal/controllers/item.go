@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"net/http"
-  "log/slog"
   "os"
   "path/filepath"
 	"strconv"
@@ -11,6 +10,8 @@ import (
 	"github.com/go-chi/chi/v5"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/bind"
   "github.com/ajderniz/repostele/pkg/upload"
   "github.com/ajderniz/repostele/static"
@@ -60,7 +61,7 @@ func PostItem(w http.ResponseWriter, r *http.Request) {
     ImgPath:   imgPath,
   }
   id, err := models.InsertItem(item)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
   item.Id = id
 
   serveOOB(w, Created, _HXData{Msg: "Se creó el item", NextAction: &_NextAction{
@@ -92,12 +93,12 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   session, hasSession := models.SessionFromContext(r.Context())
   if hasSession && session.Role.IsStaff() {
     staff, err := models.GetStaffFromUsername(session.User)
-    if err != nil { serveInternalErr(w, r); return }
+    if err != nil { serveInternalErr(w, r, err); return }
     isAdmin = staff.Admin
   }
 
   items, hasNext, err := models.GetItems(&params, isAdmin)
-  if err != nil{ serveInternalErr(w, r); return }
+  if err != nil{ serveInternalErr(w, r, err); return }
   data.Data = items
   data.Params = params
   data.HasNext = hasNext
@@ -106,7 +107,7 @@ func GetItems(w http.ResponseWriter, r *http.Request) {
   if hasSession && session.Role == models.SESSION_ROLE_USER {
     order, err := models.GetLatestOrderFromUsername(session.User)
     if err != nil {
-      slog.Error(err.Error())
+      reqlog.Error(r, err)
     } else if order.Pending() {
       data.CurrentOrder = &order
     }
@@ -121,13 +122,12 @@ func GetItemEditForm(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequestHX(w, "ID inválido"); return }
 
   item, err := models.GetItemFromID(id)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
   if item.Name == "" { serveBadRequestHX(w, "Ítem no encontrado"); return }
 
   w.Header().Set("Content-Type", "text/html; charset=utf-8")
   if err := _Tpl.ExecuteTemplate(w, "form-edit-item", item); err != nil {
-    slog.Error(err.Error())
-    serveInternalErrHX(w)
+    serveInternalErrHX(w, r, err)
   }
 }
 
@@ -140,7 +140,7 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   if err != nil { serveBadRequestHX(w, err.Error()); return }
 
   oldItem, err := models.GetItemFromID(id)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   update := models.ItemUpdate{
     Name: r.FormValue("name"),
@@ -169,16 +169,16 @@ func UpdateItem(w http.ResponseWriter, r *http.Request) {
   }
 
   err = models.UpdateItem(id, update)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   if update.ImgPath != "" && oldItem.ImgPath != "" {
     if err := os.Remove(filepath.Join(static.IMGDIR, filepath.Base(oldItem.ImgPath))); err != nil {
-      slog.Error(err.Error())
+      reqlog.Error(r, err)
     }
   }
 
   item, err := models.GetItemFromID(id)
-  if err != nil { serveInternalErrHX(w); return }
+  if err != nil { serveInternalErrHX(w, r, err); return }
 
   serveOOB(w, OK, _HXData{Msg: "Se actualizó el ítem"}, frag("menu-item", map[string]any{
     "Item": item, "LoggedIn": true, "IsStaff": true, "IsAdmin": true, "OOB": true,

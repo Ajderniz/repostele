@@ -2,12 +2,13 @@ package controllers
 
 import (
 	"fmt"
-	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 )
 
 func ServeNotif(w http.ResponseWriter, r *http.Request) {
@@ -19,15 +20,15 @@ func ServeNotif(w http.ResponseWriter, r *http.Request) {
 
 	if !loggedIn { noNotif(w, ""); return }
 	if role == models.SESSION_ROLE_STAFF {
-		serveStaffNotif(w, prev, silent)
+		serveStaffNotif(w, r, prev, silent)
 		return
 	}
 	serveUserNotif(w, username, prev, silent, r.URL.Query().Get("widget") == "1")
 }
 
-func serveStaffNotif(w http.ResponseWriter, prev string, silent bool) {
+func serveStaffNotif(w http.ResponseWriter, r *http.Request, prev string, silent bool) {
 	stats, err := models.GetPendingQueueStats()
-	if err != nil { slog.Error(err.Error()); noNotif(w, prev); return }
+	if err != nil { reqlog.Error(r, err); noNotif(w, prev); return }
 	token := fmt.Sprintf("%d|%d|%d", stats.Count, stats.MaxID, stats.MaxUpdated)
 	if token == prev { noNotif(w, token); return }
 

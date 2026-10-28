@@ -2,12 +2,12 @@ package mymiddleware
 
 import (
 	"errors"
-	"log/slog"
 	"net/http"
 	"time"
 
 	"github.com/ajderniz/repostele/internal/controllers"
 	"github.com/ajderniz/repostele/internal/models"
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/anhnmt/go-fingerprint"
 )
 
@@ -29,24 +29,24 @@ func getSession(w http.ResponseWriter, r *http.Request) (models.Session, int, er
     return models.Session{}, http.StatusNotFound, _ErrGetSession
   }
   if err != nil {
-    slog.Error(err.Error())
+    reqlog.Error(r, err)
     return models.Session{}, http.StatusInternalServerError, _ErrGetSession
   }
 
   if r.Method != http.MethodGet && r.Method != http.MethodHead {
     csrf := r.Header.Get("X-CSRF-Token")
     if csrf == "" {
-      slog.Error("No se encontró el header X-CSRF-Token")
+      reqlog.Error(r, errors.New("No se encontró el header X-CSRF-Token"))
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
     if csrf != session.CSRFToken {
-      slog.Error("Token CSRF inválido")
+      reqlog.Error(r, errors.New("Token CSRF inválido"))
       return models.Session{}, http.StatusUnauthorized, _ErrAuth
     }
   }
 
   if session.Expires <= time.Now().Unix() {
-    slog.Error(_ErrExpired.Error())
+    reqlog.Error(r, _ErrExpired)
     return models.Session{}, http.StatusUnauthorized, _ErrExpired
   }
 
@@ -68,6 +68,7 @@ func OptUsername() func(next http.Handler) http.Handler {
         return
       }
       if session.User != "" {
+        reqlog.SetUser(r.Context(), session.User)
         next.ServeHTTP(w, r.WithContext(models.WithSession(r.Context(), session)))
         return
       }
@@ -86,6 +87,7 @@ func RequireAuth() func(next http.Handler) http.Handler {
         w.WriteHeader(http.StatusUnauthorized)
         return
       }
+      reqlog.SetUser(r.Context(), session.User)
       next.ServeHTTP(w, r.WithContext(models.WithSession(r.Context(), session)))
     })
   }
@@ -99,7 +101,7 @@ func GetFingerprint() func(next http.Handler) http.Handler {
 
       fp, err := models.GetFingerPrintFromID(id)
       if err != nil {
-        slog.Error(err.Error())
+        reqlog.Error(r, err)
         w.WriteHeader(http.StatusInternalServerError)
         return
       }
@@ -111,7 +113,7 @@ func GetFingerprint() func(next http.Handler) http.Handler {
         fp.AccsCreated  = 0
         err = models.InsertFingerprint(fp)
         if err != nil {
-          slog.Error(err.Error())
+          reqlog.Error(r, err)
           w.WriteHeader(http.StatusInternalServerError)
           return
         }

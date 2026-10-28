@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/ajderniz/repostele/internal/models"
+
+	"github.com/ajderniz/repostele/internal/reqlog"
 	"github.com/ajderniz/repostele/pkg/pass"
 )
 
@@ -30,9 +32,9 @@ func HandleRoot(w http.ResponseWriter, r *http.Request) {
 // so cart.js can refresh names and prices kept in localStorage.
 func GetCartPage(w http.ResponseWriter, r *http.Request) {
 	items, err := models.GetAvailableCartItems()
-	if err != nil { serveInternalErr(w, r); return }
+	if err != nil { serveInternalErr(w, r, err); return }
 	b, err := json.Marshal(items)
-	if err != nil { serveInternalErr(w, r); return }
+	if err != nil { serveInternalErr(w, r, err); return }
 	serveData(w, r, string(b))
 }
 
@@ -42,6 +44,7 @@ func GetCartPage(w http.ResponseWriter, r *http.Request) {
 // the extra render.
 func registerFormErr(w http.ResponseWriter, r *http.Request, status int, err error) {
   if isHX(r) {
+    if status >= InternalServerError { reqlog.Error(r, err) }
     w.Header().Set("Content-Type", "text/html; charset=utf-8")
     w.WriteHeader(status)
     _Tpl.ExecuteTemplate(w, "div-msg", err.Error())
@@ -92,7 +95,7 @@ func setAccountPassHash(username, hash string) error {
 // Customers can't leave with an order still open.
 func selfDeactivate(w http.ResponseWriter, r *http.Request, username string) (int, error) {
   latestOrder, err := models.GetLatestOrderFromUsername(username)
-  if err != nil { return InternalServerError, _ErrInternal }
+  if err != nil { return InternalServerError, hideErr(err) }
   if latestOrder.Pending() { return Conflict, errors.New("Hay una orden pendiente") }
   return deactivateUserAccount(w, r, username, true)
 }

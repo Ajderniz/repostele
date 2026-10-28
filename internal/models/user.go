@@ -1,7 +1,5 @@
 package models
 
-import "log/slog"
-
 type User struct {
   Username     string `db:"username"     json:"username"`
   PassHash     string `db:"pass_hash"`
@@ -21,7 +19,7 @@ const (
 
 func InsertUserAccount(user User, fp Fingerprint) error {
   tx, err := _DB.Beginx()
-  if err != nil { slog.Error(err.Error()); return _ErrInsertAcc }
+  if err != nil { return dbErr(_ErrInsertAcc, err) }
 
   _, err = tx.NamedExec(
     "INSERT INTO "+_USERS+" ("+USER_USERNAME+","+USER_PASS_HASH+","+
@@ -29,7 +27,7 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "VALUES (:"+USER_USERNAME+",:"+USER_PASS_HASH+",:"+USER_TIME_CREATED+")",
     &user,
   )
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); return dbErr(_ErrInsertAcc, err) }
 
   _, err = tx.Exec(
     "UPDATE "+_FINGERPRINTS+" "+
@@ -37,10 +35,10 @@ func InsertUserAccount(user User, fp Fingerprint) error {
     "WHERE "+FINGERPRINT_ID+" = ?",
     fp.AccsCreated + 1, fp.Id,
   )
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); return dbErr(_ErrInsertAcc, err) }
 
   err = tx.Commit()
-  if err != nil { tx.Rollback(); slog.Error(err.Error()); return _ErrInsertAcc }
+  if err != nil { tx.Rollback(); return dbErr(_ErrInsertAcc, err) }
 
   return nil
 }
@@ -49,7 +47,7 @@ var _UserSortFields = []string{ USER_USERNAME, USER_TIME_CREATED, USER_ACTIVE }
 
 func GetUsers(params *SelectParams) ([]User, bool, error) {
   users, hasNext, err := selectPage[User]("SELECT "+_USER_FIELDS+" FROM "+_USERS, params, _UserSortFields)
-  if err != nil { return []User{}, false, _ErrGetAcc }
+  if err != nil { return []User{}, false, dbErr(_ErrGetAcc, err) }
   return users, hasNext, nil
 }
 
@@ -61,12 +59,12 @@ func GetUserFromUsername(username string) (User, error) {
     "WHERE "+USER_USERNAME+" = ? AND "+USER_ACTIVE+" = true",
     username,
   )
-  if err != nil { return User{}, _ErrGetAcc }
+  if err != nil { return User{}, dbErr(_ErrGetAcc, err) }
   return user, nil
 }
 
 func UpdateUserField(username, field string, v any) error {
   _, err := dbUpdateTableField(_USERS, field, v, USER_USERNAME, username)
-  if err != nil { slog.Error(err.Error()); return _ErrModAcc }
+  if err != nil { return dbErr(_ErrModAcc, err) }
   return nil
 }

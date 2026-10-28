@@ -38,7 +38,7 @@ func InsertFingerprint(fg Fingerprint) (error) {
 		"WHERE excluded."+_FINGERPRINT_USER+"!="+_FINGERPRINTS+"."+_FINGERPRINT_USER,
 		&fg,
 	)
-	if err != nil { return errors.New("No se pudo guardar la huella") }
+	if err != nil { return dbErr(errors.New("No se pudo guardar la huella"), err) }
 	return nil
 }
 
@@ -53,13 +53,13 @@ func GetFingerPrintFromID(id string) (Fingerprint, error) {
 		id, time.Now().Unix(),
 	)
 	if err != nil {
-		return Fingerprint{}, errors.New("No se pudo acceder a la huella")
+		return Fingerprint{}, dbErr(errors.New("No se pudo acceder a la huella"), err)
 	}
 	return fg, nil
 }
 
 func UpdateFingerprintField(id, field string, v any) error {
 	_, err := dbUpdateTableField(_FINGERPRINTS, field, v, FINGERPRINT_ID, id)
-	if err != nil { return errors.New("No se pudo actualizar la huella") }
+	if err != nil { return dbErr(errors.New("No se pudo actualizar la huella"), err) }
 	return nil
 }
