@@ -21,7 +21,7 @@ import (
   "testing"
   "time"
 
-  _ "github.com/mattn/go-sqlite3"
+  _ "modernc.org/sqlite"
 )
 
 const (
@@ -253,8 +253,8 @@ func dumpLogsOnFailure(t *testing.T, dir string) {
 
 func openDB(t *testing.T, dir string) *sql.DB {
   t.Helper()
-  dsn := filepath.Join(dir, "data.db") + "?_busy_timeout=5000"
-  db, err := sql.Open("sqlite3", dsn)
+  dsn := filepath.Join(dir, "data.db") + "?_pragma=busy_timeout(5000)"
+  db, err := sql.Open("sqlite", dsn)
   if err != nil { t.Fatal(err) }
   t.Cleanup(func() { db.Close() })
   return db

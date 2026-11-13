@@ -9,14 +9,15 @@ import (
 	"strings"
 
 	"github.com/jmoiron/sqlx"
-	_ "github.com/mattn/go-sqlite3"
+	_ "modernc.org/sqlite"
 )
 
 const _DB_FILEPATH = "./data.db"
 
 // WAL lets readers (the polls) run while the other app writes; the busy
 // timeout makes a writer wait for the lock instead of failing.
-const _DB_DSN = _DB_FILEPATH+"?_journal_mode=WAL&_busy_timeout=5000"
+const _DB_DSN = _DB_FILEPATH+
+  "?_pragma=journal_mode(WAL)&_pragma=busy_timeout(5000)"
 
 // Indexes for the hot lookups (latest order per user, queue by status,
 // order items, user sessions). Idempotent, so it runs on every start and
