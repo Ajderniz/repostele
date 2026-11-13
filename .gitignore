@@ -2,3 +2,4 @@
 bin
 .last_build
 *.css*
+dist

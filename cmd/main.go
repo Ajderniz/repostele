@@ -9,6 +9,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-chi/chi/v5"
@@ -35,7 +36,8 @@ func main() {
 	if err != nil { log.Fatal(err.Error()) }
 
 	os.MkdirAll(_LOG_DIR, os.ModePerm)
-	exeBase := filepath.Base(exePath)
+	// Same log names on Windows: user.exe logs as "user".
+	exeBase := strings.TrimSuffix(filepath.Base(exePath), ".exe")
 	logFile, err := os.OpenFile(
 		_LOG_DIR+"/"+exeBase+"."+time.Now().Format("060102150405")+".log",
 		os.O_CREATE|os.O_TRUNC|os.O_WRONLY,

@@ -17,9 +17,14 @@ system runs on a network with no Internet access.
 
 ## Requirements
 
-- Go 1.26+ and a C compiler (`github.com/mattn/go-sqlite3` uses cgo)
+- Go 1.26+ (no C compiler: the SQLite driver, `modernc.org/sqlite`, is pure
+  Go)
 - [Dart Sass](https://sass-lang.com/dart-sass/) (`sass`) to build the CSS
 - `sqlite3` command-line tool, for seeding and backups
+- `zip`, for the Windows build
+
+All builds run on Linux, including the Windows one. The Windows machines only
+need the built folder (see Windows).
 
 ## Build
 
@@ -27,6 +32,7 @@ system runs on a network with no Internet access.
 make all      # CSS, then bin/user and bin/staff
 make vet      # go vet for both build tags
 make test     # end-to-end test (see Testing)
+make windows  # dist/repostele-windows/ and dist/repostele-windows.zip
 ```
 
 Do not run `make clean` casually: it deletes the binaries and the generated
@@ -51,6 +57,28 @@ directory first, so `data.db`, `dyn/` and `log/` always live next to it:
 bin/staff -port 8081           # logs to bin/log and stdout
 bin/user  -port 8080 -quiet    # log file only
 ```
+
+### Windows
+
+`make windows` puts `user.exe`, `staff.exe` and the scripts from
+`scripts/windows/` into `dist/repostele-windows/` (and a zip of it). Copy that
+folder anywhere on the Windows machine; nothing needs installing. For 32-bit
+Windows, build with `make windows WIN_ARCH=386`.
+
+```bat
+start.bat   :: staff on :8081, user on :8080, each in a minimized window
+stop.bat
+```
+
+Ports can be changed with `set STAFF_PORT=...` and `set USER_PORT=...` before
+`start.bat`. Everything the apps write (`data.db`, `dyn\`, `log\`) goes in
+that same folder. Closing a server's window stops that server.
+
+- On first start, Windows Firewall asks about `user.exe` and `staff.exe`.
+  Allow them on private networks, or phones on the Wi-Fi cannot connect.
+- The staff browser must be Chrome or Edge 111+, or Firefox 113+. The old
+  Edge (Edge Legacy) shipped with early Windows 10 renders the pages broken.
+- `stop.bat` stops processes by name (`user.exe`, `staff.exe`).
 
 ### First start
 
@@ -84,7 +112,8 @@ scripts/backup.sh /mnt/usb   # or into another directory
 ```
 
 It works while the servers are running and copies the database and the
-uploaded images.
+uploaded images. On Windows, `backup.bat [dest-dir]` does the same into
+`backup\<timestamp>\`; it needs `sqlite3.exe` next to it or on `PATH`.
 
 To restore a backup:
 
@@ -94,6 +123,16 @@ rm -f bin/data.db-wal bin/data.db-shm
 cp bin/backup/<timestamp>/data.db bin/data.db
 rm -rf bin/dyn && cp -r bin/backup/<timestamp>/dyn bin/dyn
 scripts/start.sh
+```
+
+On Windows, the same steps from the app folder:
+
+```bat
+stop.bat
+del data.db-wal data.db-shm
+copy /y backup\<timestamp>\data.db data.db
+rmdir /s /q dyn & xcopy backup\<timestamp>\dyn dyn /e /i /q
+start.bat
 ```
 
 Logs are text (logfmt), one line per request plus error lines tied to it:
@@ -135,7 +174,8 @@ static/html            page templates (main-<section>.gohtml)
 static/htmx            partial templates for htmx swaps
 static/public          files served as-is: css/, js/, img/, vendor/
 scss/                  stylesheet sources (built into static/public/css)
-scripts/               start, stop, backup, seed
+scripts/               start, stop, backup, seed (Linux)
+scripts/windows        start, stop, backup (.bat)
 test/e2e               end-to-end test
 ```
 
