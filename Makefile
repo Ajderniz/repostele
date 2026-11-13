@@ -56,7 +56,6 @@ windows: style.css
 	for f in scripts/windows/*.bat; do \
 	  sed 's/$$/\r/' $$f > $(WIN_DIR)/$$(basename $$f); \
 	done
-	cd dist && zip -qr $(WIN_NAME).zip $(WIN_NAME)
 
 run:
 	./$$(cat $(LAST_BUILD) 2>/dev/null) -port $(PORT)
